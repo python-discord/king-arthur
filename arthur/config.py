@@ -1,10 +1,9 @@
+"""Utilities for interacting with the config for King Arthur."""
 from pydantic import BaseSettings
 
 
 class Config(BaseSettings):
-    """
-    Configuration for King Arthur.
-    """
+    """Configuration for King Arthur."""
 
     # Discord bot token
     token: str
