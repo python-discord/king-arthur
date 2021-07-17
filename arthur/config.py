@@ -9,10 +9,10 @@ class Config(BaseSettings):
     token: str
 
     # Discord bot prefix
-    prefix: str
+    prefix: str = "arthur "
 
     # Authorised role ID for usage
-    devops_role: int
+    devops_role: int = 409416496733880320
 
     class Config:  # noqa: D106
         env_file = ".env"
