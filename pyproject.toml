@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "king-arthur"
+version = "0.1.0"
+description = "King Arthur is a helper for the Python Discord DevOps team."
+authors = ["Joe Banks <joe@jb3.dev>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+"discord.py" = "^1.7.3"
+discord-components = "^1.1.2"
+pydantic = {extras = ["dotenv"], version = "^1.8.2"}
+loguru = "^0.5.3"
+kubernetes_asyncio = "^12.1.1"
+tabulate = {extras = ["widechars"], version = "^0.8.9"}
+
+[tool.poetry.dev-dependencies]
+black = "^21.6b0"
+taskipy = "^1.8.1"
+flake8 = "^3.9.2"
+isort = "^5.9.2"
+flake8-annotations = "^2.6.2"
+flake8-bandit = "^2.1.2"
+flake8-docstrings = "^1.6.0"
+flake8-isort = "^4.0.0"
+
+[tool.taskipy.tasks]
+start = "python -m arthur"
+lint = "flake8"
+format = "black arthur"
+
+[tool.black]
+line-length = 100
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
