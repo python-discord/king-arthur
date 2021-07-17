@@ -38,7 +38,7 @@ class KingArthur(Bot):
         DiscordComponents(self)
 
         # Authenticate with Kubernetes
-        if Path("~/.kube/config").exists():
+        if (Path.home() / ".kube/config").exists():
             await config.load_kube_config()
         else:
             config.load_incluster_config()
