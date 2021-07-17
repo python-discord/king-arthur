@@ -23,7 +23,7 @@ class Deployments(commands.Cog):
         """Commands for working with Kubernetes Deployments."""
         await ctx.send_help(ctx.command)
 
-    @deployments.command(name="list")
+    @deployments.command(name="list", aliases=["ls"])
     async def deployments_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List deployments in the selected namespace (defaults to default)."""
         async with ApiClient() as api:

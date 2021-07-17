@@ -22,7 +22,7 @@ class Certificates(commands.Cog):
         """Commands for working with TLS certificates."""
         await ctx.send_help(ctx.command)
 
-    @certificates.command(name="list")
+    @certificates.command(name="list", aliases=["ls"])
     async def certificates_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List TLS certificates in the selected namespace (defaults to default)."""
         async with ApiClient() as api:
