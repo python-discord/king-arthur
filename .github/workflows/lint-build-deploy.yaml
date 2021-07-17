@@ -120,11 +120,11 @@ jobs:
           build-args: |
             git_sha=${{ github.sha }}
 
-  build:
+  deploy:
     environment: production
-    if: github.event.workflow_run.conclusion == 'success'
     name: Build & Push
     runs-on: ubuntu-latest
+    needs: [lint, build]
 
     steps:
       - name: Create SHA Container Tag
