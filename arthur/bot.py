@@ -41,7 +41,7 @@ class KingArthur(Bot):
         if Path("~/.kube/config").exists():
             await config.load_kube_config()
         else:
-            await config.load_incluster_config()
+            config.load_incluster_config()
 
         logger.info(f"Logged in <red>{self.user}</>")
 
