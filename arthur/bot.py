@@ -1,4 +1,5 @@
 """Module containing the core bot base for King Arthur."""
+from pathlib import Path
 from typing import Any
 
 from discord.ext import commands
@@ -37,7 +38,10 @@ class KingArthur(Bot):
         DiscordComponents(self)
 
         # Authenticate with Kubernetes
-        await config.load_kube_config()
+        if Path("~/.kube/config").exists():
+            await config.load_kube_config()
+        else:
+            await config.load_incluster_config()
 
         logger.info(f"Logged in <red>{self.user}</>")
 
