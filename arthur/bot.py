@@ -16,7 +16,7 @@ class KingArthur(Bot):
     """Base bot class for King Arthur."""
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
-        config = {"command_prefix": CONFIG.prefix}
+        config = {"command_prefix": CONFIG.prefix, "case_insensitive": True}
 
         kwargs.update(config)
 
