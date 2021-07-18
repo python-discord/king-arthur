@@ -69,14 +69,14 @@ class Deployments(commands.Cog):
 
         return_message = dedent(
             f"""
-            **Deployments in namespace `{namespace}`**
+            **Deployments in namespace `{0}`**
             ```
-            {table}
+            {1}
             ```
             """
         )
 
-        await ctx.send(return_message)
+        await ctx.send(return_message.format(namespace, table))
 
     @deployments.command(name="restart", aliases=["redeploy"])
     async def deployments_restart(
