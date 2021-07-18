@@ -1,12 +1,11 @@
 """The Nodes cog helps with managing Kubernetes nodes."""
-import textwrap
+from textwrap import dedent
 
-from discord import Embed
 from discord.ext import commands
+from tabulate import tabulate
 
 from arthur.apis.kubernetes import nodes
 from arthur.bot import KingArthur
-from arthur.utils import datetime_to_discord
 
 
 class Nodes(commands.Cog):
@@ -25,7 +24,7 @@ class Nodes(commands.Cog):
         """List Kubernetes nodes in the cluster."""
         cluster_nodes = await nodes.list_nodes()
 
-        return_embed = Embed(title="Cluster nodes")
+        table_data = []
 
         for node in cluster_nodes.items:
             statuses = []
@@ -50,19 +49,27 @@ class Nodes(commands.Cog):
 
             node_creation = node.metadata.creation_timestamp
 
-            return_embed.add_field(
-                name=node.metadata.name,
-                value=textwrap.dedent(
-                    f"""
-                    **Status:** {", ".join(statuses)}
-                    **Kubernetes version:** {node.status.node_info.kubelet_version}
-                    **Created**: {datetime_to_discord(node_creation, "R")}
-                    """
-                ),
-                inline=False,
+            table_data.append(
+                [
+                    node.metadata.name,
+                    ", ".join(statuses),
+                    node.status.node_info.kubelet_version,
+                    node_creation,
+                ]
             )
 
-        await ctx.send(embed=return_embed)
+        table = tabulate(table_data, headers=["Name", "Status", "Kubernetes Version", "Created"])
+
+        return_message = dedent(
+            f"""
+            **Cluster nodes**
+            ```
+            {table}
+            ```
+            """
+        )
+
+        await ctx.send(return_message)
 
     @nodes.command(name="cordon")
     async def nodes_cordon(self, ctx: commands.Context, *, node: str) -> None:
@@ -74,10 +81,8 @@ class Nodes(commands.Cog):
         await nodes.cordon_node(node)
 
         await ctx.send(
-            embed=Embed(
-                title=f"Cordoned {node}",
-                description=f"`{node}` is now cordoned and no pods will be scheduled to it.",
-            )
+            f":construction: **Cordoned {node}** `{node}` is now "
+            "cordoned and no pods will be scheduled to it."
         )
 
     @nodes.command(name="uncordon")
@@ -90,10 +95,8 @@ class Nodes(commands.Cog):
         await nodes.uncordon_node(node)
 
         await ctx.send(
-            embed=Embed(
-                title=f"Uncordoned {node}",
-                description=f"`{node}` is now uncordoned, future pods may be scheduled to it.",
-            )
+            f":construction: **Uncordoned {node}** `{node}` is now "
+            "uncordoned, future pods may be scheduled to it."
         )
 
 

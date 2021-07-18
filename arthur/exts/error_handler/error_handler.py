@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 
 from arthur.bot import KingArthur
-from arthur.utils import generate_error_embed
+from arthur.utils import generate_error_message
 
 
 class ErrorHandler(Cog):
@@ -38,7 +38,7 @@ class ErrorHandler(Cog):
         elif isinstance(error, commands.CommandInvokeError):
             await self._add_error_reaction(ctx.message)
             await ctx.send(
-                embed=generate_error_embed(
+                generate_error_message(
                     description=(
                         f"Command raised an error: `{error.original.__class__.__name__}:"
                         f" {error.original}`"
@@ -47,7 +47,7 @@ class ErrorHandler(Cog):
             )
         else:
             await ctx.send(
-                embed=generate_error_embed(
+                generate_error_message(
                     description=(
                         f"Unknown exception occurred: `{error.__class__.__name__}:"
                         f" {error}`"

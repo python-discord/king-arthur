@@ -1,7 +1,7 @@
 """The Deployments cog helps with managing Kubernetes deployments."""
 import asyncio
+from textwrap import dedent
 
-from discord import Colour, Embed
 from discord.ext import commands
 from discord_components.component import ActionRow, Button, ButtonStyle
 from kubernetes_asyncio.client.models import V1Deployment
@@ -10,7 +10,7 @@ from tabulate import tabulate
 
 from arthur.apis.kubernetes import deployments
 from arthur.bot import KingArthur
-from arthur.utils import generate_error_embed
+from arthur.utils import generate_error_message
 
 
 def deployment_to_emote(deployment: V1Deployment) -> str:
@@ -67,23 +67,22 @@ class Deployments(commands.Cog):
             colalign=("center", "left", "center"),
         )
 
-        return_embed = Embed(
-            title=f"Deployments in namespace {namespace}", description=f"```\n{table}\n```"
+        return_message = dedent(
+            f"""
+            **Deployments in namespace `{namespace}`**
+            ```
+            {table}
+            ```
+            """
         )
 
-        await ctx.send(embed=return_embed)
+        await ctx.send(return_message)
 
     @deployments.command(name="restart", aliases=["redeploy"])
     async def deployments_restart(
         self, ctx: commands.Context, deployment: str, namespace: str = "default"
     ) -> None:
         """Restart the specified deployment in the selected namespace (defaults to default)."""
-        confirm_embed = Embed(
-            title="Confirm redeployment",
-            description=f"Confirm you want to redeploy `{deployment}` in namespace `{namespace}`.",
-            colour=Colour.orange(),
-        )
-
         components = ActionRow(
             Button(
                 label="Redeploy",
@@ -98,7 +97,7 @@ class Deployments(commands.Cog):
         )
 
         msg = await ctx.send(
-            embed=confirm_embed,
+            f":warning: Please confirm you want to restart `deploy/{deployment}` in `{namespace}`",
             components=[components],
         )
 
@@ -111,25 +110,20 @@ class Deployments(commands.Cog):
             )
         except asyncio.TimeoutError:
             return await msg.edit(
-                embed=Embed(
+                generate_error_message(
                     title="What is the airspeed velocity of an unladen swallow?",
                     description=(
                         "Whatever the answer may be, it's certainly "
                         "faster than you could select a confirmation option."
                     ),
-                    colour=Colour.greyple(),
                 ),
                 components=[],
             )
 
         if interaction.component.custom_id == f"{ctx.message.id}-abort":
             await interaction.respond(
+                ":x: Redeployment aborted",
                 ephemeral=False,
-                embed=Embed(
-                    title="Deployment aborted",
-                    description="The deployment was aborted.",
-                    colour=Colour.red(),
-                ),
             )
         else:
             try:
@@ -137,33 +131,32 @@ class Deployments(commands.Cog):
             except ApiException as e:
                 if e.status == 404:
                     return await interaction.respond(
-                        ephemeral=False,
-                        embed=generate_error_embed(
+                        generate_error_message(
                             description="Could not find deployment, check the namespace.",
                         ),
+                        ephemeral=False
                     )
 
                 return await interaction.respond(
-                    ephemeral=False,
-                    embed=generate_error_embed(
+                    generate_error_message(
                         description=f"Unexpected error occurred, error code {e.status}"
                     ),
+                    ephemeral=False
                 )
             else:
-                description = f"Restarted deployment `{deployment}` in namespace `{namespace}`."
+                description = (
+                    f":white_check_mark: Restarted deployment "
+                    f"`{deployment}` in namespace `{namespace}`."
+                )
                 await interaction.respond(
+                    description,
                     ephemeral=False,
-                    embed=Embed(
-                        title="Redeployed",
-                        description=description,
-                        colour=Colour.blurple(),
-                    ),
                 )
 
         for component in components.components:
             component.disabled = True
 
-        await msg.edit(embed=confirm_embed, components=[components])
+        await msg.edit(components=[components])
 
 
 def setup(bot: KingArthur) -> None:

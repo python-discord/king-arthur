@@ -2,15 +2,15 @@
 
 from datetime import datetime
 
-from discord import Embed
-from discord.colour import Colour
 
-
-def generate_error_embed(
-    *, title: str = "'Tis but a scratch!", description: str = "An error occurred"
-) -> Embed:
-    """Generate an error embed to return to Discord."""
-    return Embed(title=title, description=description, colour=Colour.red())
+def generate_error_message(
+    *,
+    title: str = "'Tis but a scratch!",
+    description: str = "An error occurred",
+    emote: str = ":no_entry_sign:",
+) -> str:
+    """Generate an error message to return to Discord."""
+    return f"{emote} **{description}** {description}"
 
 
 def datetime_to_discord(time: datetime, format: str = "f") -> str:
