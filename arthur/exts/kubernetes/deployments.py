@@ -1,41 +1,26 @@
 """The Deployments cog helps with managing Kubernetes deployments."""
 import asyncio
-from datetime import datetime, timezone
 
 from discord import Colour, Embed
 from discord.ext import commands
 from discord_components.component import ActionRow, Button, ButtonStyle
-from kubernetes_asyncio import client
-from kubernetes_asyncio.client.api_client import ApiClient
+from kubernetes_asyncio.client.models import V1Deployment
 from kubernetes_asyncio.client.rest import ApiException
 from tabulate import tabulate
 
+from arthur.apis.kubernetes import deployments
 from arthur.bot import KingArthur
 from arthur.utils import generate_error_embed
 
 
-async def restart_deployment(deployment: str, namespace: str) -> None:
-    """Patch a deployment with a custom annotation to trigger redeployment."""
-    async with ApiClient() as api:
-        v1 = client.AppsV1Api(api)
-        await v1.patch_namespaced_deployment(
-            name=deployment,
-            namespace=namespace,
-            body={
-                "spec": {
-                    "template": {
-                        "metadata": {
-                            "annotations": {
-                                "king-arthur.pydis.com/restartedAt": datetime.now(
-                                    timezone.utc
-                                ).isoformat()
-                            }
-                        }
-                    }
-                }
-            },
-            field_manager="King Arthur",
-        )
+def deployment_to_emote(deployment: V1Deployment):
+    """Convert a deployment to an emote based on it's replica status."""
+    if deployment.status.available_replicas == deployment.spec.replicas:
+        return "\N{LARGE GREEN CIRCLE}"
+    elif deployment.status.available_replicas == 0 or not deployment.status.available_replicas:
+        return "\N{LARGE RED CIRCLE}"
+    else:
+        return "\N{LARGE YELLOW CIRCLE}"
 
 
 class Deployments(commands.Cog):
@@ -52,30 +37,28 @@ class Deployments(commands.Cog):
     @deployments.command(name="list", aliases=["ls"])
     async def deployments_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List deployments in the selected namespace (defaults to default)."""
-        async with ApiClient() as api:
-            v1 = client.AppsV1Api(api)
-            ret = await v1.list_namespaced_deployment(namespace=namespace)
+        deploys = await deployments.list_deployments(namespace)
 
-            table_data = []
+        table_data = []
 
-            for deployment in ret.items:
-                if deployment.status.available_replicas == deployment.spec.replicas:
-                    emote = "\N{LARGE GREEN CIRCLE}"
-                elif (
-                    deployment.status.available_replicas == 0
-                    or not deployment.status.available_replicas
-                ):
-                    emote = "\N{LARGE RED CIRCLE}"
-                else:
-                    emote = "\N{LARGE YELLOW CIRCLE}"
+        for deployment in deploys.items:
+            if deployment.status.available_replicas == deployment.spec.replicas:
+                emote = "\N{LARGE GREEN CIRCLE}"
+            elif (
+                deployment.status.available_replicas == 0
+                or not deployment.status.available_replicas
+            ):
+                emote = "\N{LARGE RED CIRCLE}"
+            else:
+                emote = "\N{LARGE YELLOW CIRCLE}"
 
-                table_data.append(
-                    [
-                        emote,
-                        deployment.metadata.name,
-                        f"{deployment.status.available_replicas or 0}/{deployment.spec.replicas}",
-                    ]
-                )
+            table_data.append(
+                [
+                    emote,
+                    deployment.metadata.name,
+                    f"{deployment.status.available_replicas or 0}/{deployment.spec.replicas}",
+                ]
+            )
 
         table = tabulate(
             table_data,
@@ -150,7 +133,7 @@ class Deployments(commands.Cog):
             )
         else:
             try:
-                await restart_deployment(deployment, namespace)
+                await deployments.restart_deployment(deployment, namespace)
             except ApiException as e:
                 if e.status == 404:
                     return await interaction.respond(
