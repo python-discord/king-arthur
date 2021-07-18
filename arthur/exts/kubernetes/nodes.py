@@ -58,7 +58,7 @@ class Nodes(commands.Cog):
                 ]
             )
 
-        table = tabulate(table_data, headers=["Name", "Status", "Kubernetes Version", "Created"])
+        table = tabulate(table_data, headers=["Name", "Status", "Kubernetes Version", "Created"], tablefmt="psql")
 
         return_message = dedent(
             f"""
@@ -81,7 +81,7 @@ class Nodes(commands.Cog):
         await nodes.cordon_node(node)
 
         await ctx.send(
-            f":construction: **Cordoned {node}** `{node}` is now "
+            f":construction: **Cordoned {node}** Node is now "
             "cordoned and no pods will be scheduled to it."
         )
 
@@ -95,7 +95,7 @@ class Nodes(commands.Cog):
         await nodes.uncordon_node(node)
 
         await ctx.send(
-            f":construction: **Uncordoned {node}** `{node}` is now "
+            f":construction: **Uncordoned {node}** Node is now "
             "uncordoned, future pods may be scheduled to it."
         )
 
