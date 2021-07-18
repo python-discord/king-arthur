@@ -34,3 +34,14 @@ body:
         - label: Other
     validations:
       required: true
+  - type: dropdown
+    id: permissions
+    attributes:
+      label: Who should be authorised to use this command?
+      options:
+        - DevOps
+        - Admins + DevOps
+        - Helper+
+        - Everyone
+    validations:
+      required: true
