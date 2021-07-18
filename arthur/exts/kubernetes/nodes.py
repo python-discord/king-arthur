@@ -58,7 +58,9 @@ class Nodes(commands.Cog):
                 ]
             )
 
-        table = tabulate(table_data, headers=["Name", "Status", "Kubernetes Version", "Created"], tablefmt="psql")
+        table = tabulate(
+            table_data, headers=["Name", "Status", "Kubernetes Version", "Created"], tablefmt="psql"
+        )
 
         return_message = dedent(
             f"""
