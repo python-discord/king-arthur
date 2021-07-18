@@ -26,5 +26,5 @@ async def cordon_node(node: str) -> None:
 
 
 async def uncordon_node(node: str) -> None:
-    """Cordon a Kubernetes node."""
+    """Uncordon a Kubernetes node."""
     await _change_cordon(node, False)
