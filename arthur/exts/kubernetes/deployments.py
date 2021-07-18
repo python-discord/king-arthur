@@ -105,8 +105,8 @@ class Deployments(commands.Cog):
         except asyncio.TimeoutError:
             await msg.edit(
                 embed=Embed(
-                    title="Confirm timed out",
-                    description="Respond earlier when making your choice.",
+                    title="What is the airspeed velocity of an unladen swallow?",
+                    description="Whatever the answer may be, it's certainly faster than you could select a confirmation option.",
                     colour=Colour.greyple(),
                 ),
                 components=[],
