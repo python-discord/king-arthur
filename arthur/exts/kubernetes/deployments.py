@@ -14,6 +14,30 @@ from arthur.bot import KingArthur
 from arthur.utils import generate_error_embed
 
 
+async def restart_deployment(deployment: str, namespace: str) -> None:
+    """Patch a deployment with a custom annotation to trigger redeployment."""
+    async with ApiClient() as api:
+        v1 = client.AppsV1Api(api)
+        await v1.patch_namespaced_deployment(
+            name=deployment,
+            namespace=namespace,
+            body={
+                "spec": {
+                    "template": {
+                        "metadata": {
+                            "annotations": {
+                                "king-arthur.pydis.com/restartedAt": datetime.now(
+                                    timezone.utc
+                                ).isoformat()
+                            }
+                        }
+                    }
+                }
+            },
+            field_manager="King Arthur",
+        )
+
+
 class Deployments(commands.Cog):
     """Commands for working with Kubernetes Deployments."""
 
@@ -106,7 +130,10 @@ class Deployments(commands.Cog):
             await msg.edit(
                 embed=Embed(
                     title="What is the airspeed velocity of an unladen swallow?",
-                    description="Whatever the answer may be, it's certainly faster than you could select a confirmation option.",
+                    description=(
+                        "Whatever the answer may be, it's certainly "
+                        "faster than you could select a confirmation option.",
+                    ),
                     colour=Colour.greyple(),
                 ),
                 components=[],
@@ -122,53 +149,33 @@ class Deployments(commands.Cog):
                 ),
             )
         else:
-            async with ApiClient() as api:
-                v1 = client.AppsV1Api(api)
-
-                try:
-                    await v1.patch_namespaced_deployment(
-                        name=deployment,
-                        namespace=namespace,
-                        body={
-                            "spec": {
-                                "template": {
-                                    "metadata": {
-                                        "annotations": {
-                                            "king-arthur.pydis.com/restartedAt": datetime.now(
-                                                timezone.utc
-                                            ).isoformat()
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        field_manager="King Arthur",
-                    )
-                except ApiException as e:
-                    if e.status == 404:
-                        return await interaction.respond(
-                            ephemeral=False,
-                            embed=generate_error_embed(
-                                description="Could not find deployment, check the namespace.",
-                            ),
-                        )
-
+            try:
+                await restart_deployment(deployment, namespace)
+            except ApiException as e:
+                if e.status == 404:
                     return await interaction.respond(
                         ephemeral=False,
                         embed=generate_error_embed(
-                            description=f"Unexpected error occurred, error code {e.status}"
+                            description="Could not find deployment, check the namespace.",
                         ),
                     )
-                else:
-                    description = f"Restarted deployment `{deployment}` in namespace `{namespace}`."
-                    await interaction.respond(
-                        ephemeral=False,
-                        embed=Embed(
-                            title="Redeployed",
-                            description=description,
-                            colour=Colour.blurple(),
-                        ),
-                    )
+
+                return await interaction.respond(
+                    ephemeral=False,
+                    embed=generate_error_embed(
+                        description=f"Unexpected error occurred, error code {e.status}"
+                    ),
+                )
+            else:
+                description = f"Restarted deployment `{deployment}` in namespace `{namespace}`."
+                await interaction.respond(
+                    ephemeral=False,
+                    embed=Embed(
+                        title="Redeployed",
+                        description=description,
+                        colour=Colour.blurple(),
+                    ),
+                )
 
         for component in components.components:
             component.disabled = True
