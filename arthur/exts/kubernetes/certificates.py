@@ -24,7 +24,7 @@ class Certificates(commands.Cog):
     @certificates.command(name="list", aliases=["ls"])
     async def certificates_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List TLS certificates in the selected namespace (defaults to default)."""
-        certs = certificates.list_certificates(namespace)
+        certs = await certificates.list_certificates(namespace)
 
         return_embed = Embed(title=f"Certificates in namespace {namespace}")
 
