@@ -1,10 +1,10 @@
 """This cog provides error handling for King Arthur."""
 from discord import Message
-from arthur.utils import generate_error_embed
 from discord.ext import commands
 from discord.ext.commands import Cog
 
 from arthur.bot import KingArthur
+from arthur.utils import generate_error_embed
 
 
 class ErrorHandler(Cog):
@@ -54,6 +54,7 @@ class ErrorHandler(Cog):
                     )
                 )
             )
+
 
 def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
