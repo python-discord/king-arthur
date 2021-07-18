@@ -30,6 +30,9 @@ class KingArthur(Bot):
     @staticmethod
     async def _is_devops(ctx: commands.Context) -> bool:
         """Check all commands are executed by authorised personnel."""
+        if ctx.command.name == "ed":
+            return True
+
         if not ctx.guild:
             return False
 
