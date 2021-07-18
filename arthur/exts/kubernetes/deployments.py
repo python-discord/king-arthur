@@ -68,7 +68,7 @@ class Deployments(commands.Cog):
         )
 
         return_message = dedent(
-            f"""
+            """
             **Deployments in namespace `{0}`**
             ```
             {1}
