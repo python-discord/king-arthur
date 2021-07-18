@@ -1,0 +1,48 @@
+name: Command Idea
+description: Suggest a new command for King Arthur
+labels: [command]
+assignees:
+  - jb3
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new command!
+  - type: input
+    id: command
+    attributes:
+      label: Command Name
+      description: Example naming for the suggested command
+      placeholder: e.g. arthur foo bar
+    validations:
+      required: false
+  - type: textarea
+    id: details
+    attributes:
+      label: What should the command do?
+    validations:
+      required: true
+  - type: checkboxes
+    id: apis
+    attributes:
+      label: APIs
+      description: What APIs would this command interact with?
+      options:
+        - label: Cloudflare
+        - label: Kubernetes
+        - label: Discord
+        - label: Other
+    validations:
+      required: true
+  - type: dropdown
+    id: permissions
+    attributes:
+      multiple: true
+      label: Who should be authorised to use this command?
+      options:
+        - DevOps
+        - Admins
+        - Helpers
+        - Everyone
+    validations:
+      required: true
