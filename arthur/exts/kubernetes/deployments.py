@@ -1,8 +1,10 @@
 """The Deployments cog helps with managing Kubernetes deployments."""
+import asyncio
 from datetime import datetime, timezone
 
 from discord import Colour, Embed
 from discord.ext import commands
+from discord_components.component import ActionRow, Button, ButtonStyle
 from kubernetes_asyncio import client
 from kubernetes_asyncio.client.api_client import ApiClient
 from kubernetes_asyncio.client.rest import ApiException
@@ -64,54 +66,114 @@ class Deployments(commands.Cog):
 
         await ctx.send(embed=return_embed)
 
-    @deployments.command(name="restart")
+    @deployments.command(name="restart", aliases=["redeploy"])
     async def deployments_restart(
         self, ctx: commands.Context, deployment: str, namespace: str = "default"
     ) -> None:
         """Restart the specified deployment in the selected namespace (defaults to default)."""
-        async with ApiClient() as api:
-            v1 = client.AppsV1Api(api)
+        confirm_embed = Embed(
+            title="Confirm redeployment",
+            description=f"Confirm you want to redeploy `{deployment}` in namespace `{namespace}`.",
+            colour=Colour.orange(),
+        )
 
-            try:
-                await v1.patch_namespaced_deployment(
-                    name=deployment,
-                    namespace=namespace,
-                    body={
-                        "spec": {
-                            "template": {
-                                "metadata": {
-                                    "annotations": {
-                                        "king-arthur.pythondiscord.com/restartedAt": datetime.now(
-                                            timezone.utc
-                                        ).isoformat()
+        components = ActionRow(
+            Button(
+                label="Redeploy",
+                style=ButtonStyle.green,
+                custom_id=f"{ctx.message.id}-redeploy",
+            ),
+            Button(
+                label="Abort",
+                style=ButtonStyle.red,
+                custom_id=f"{ctx.message.id}-abort",
+            ),
+        )
+
+        msg = await ctx.send(
+            embed=confirm_embed,
+            components=[components],
+        )
+
+        try:
+            interaction = await self.bot.wait_for(
+                "button_click",
+                check=lambda i: i.component.custom_id.startswith(str(ctx.message.id))
+                and i.user.id == ctx.author.id,
+                timeout=30,
+            )
+        except asyncio.TimeoutError:
+            await msg.edit(
+                embed=Embed(
+                    title="Confirm timed out",
+                    description="Respond earlier when making your choice.",
+                    colour=Colour.greyple(),
+                ),
+                components=[],
+            )
+
+        if interaction.component.custom_id == f"{ctx.message.id}-abort":
+            await interaction.respond(
+                ephemeral=False,
+                embed=Embed(
+                    title="Deployment aborted",
+                    description="The deployment was aborted.",
+                    colour=Colour.red(),
+                ),
+            )
+        else:
+            async with ApiClient() as api:
+                v1 = client.AppsV1Api(api)
+
+                try:
+                    await v1.patch_namespaced_deployment(
+                        name=deployment,
+                        namespace=namespace,
+                        body={
+                            "spec": {
+                                "template": {
+                                    "metadata": {
+                                        "annotations": {
+                                            "king-arthur.pydis.com/restartedAt": datetime.now(
+                                                timezone.utc
+                                            ).isoformat()
+                                        }
                                     }
                                 }
                             }
-                        }
-                    },
-                    field_manager="King Arthur",
-                )
-            except ApiException as e:
-                if e.status == 404:
-                    return await ctx.send(
-                        embed=generate_error_embed(
-                            description="Could not find deployment, check the namespace."
+                        },
+                        field_manager="King Arthur",
+                    )
+                except ApiException as e:
+                    if e.status == 404:
+                        return await interaction.respond(
+                            ephemeral=False,
+                            embed=generate_error_embed(
+                                description="Could not find deployment, check the namespace.",
+                            ),
                         )
+
+                    return await interaction.respond(
+                        ephemeral=False,
+                        embed=generate_error_embed(
+                            description=f"Unexpected error occurred, error code {e.status}"
+                        ),
+                    )
+                else:
+                    description = f"Restarted deployment `{deployment}` in namespace `{namespace}`."
+                    await interaction.respond(
+                        ephemeral=False,
+                        embed=Embed(
+                            title="Redeployed",
+                            description=description,
+                            colour=Colour.blurple(),
+                        ),
                     )
 
-                return await ctx.send(
-                    embed=generate_error_embed(
-                        description=f"Unexpected error occurred, error code {e.status}"
-                    )
-                )
+        for component in components.components:
+            component.disabled = True
 
-        return_embed = Embed(
-            title="Deployment restarted",
-            description=f"Restarted deployment `{deployment}` in the `{namespace}` namespace.",
-            colour=Colour.blurple(),
-        )
-
-        await ctx.send(embed=return_embed)
+        await msg.edit(embed=confirm_embed, components=[components])
 
 
 def setup(bot: KingArthur) -> None:
