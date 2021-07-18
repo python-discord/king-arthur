@@ -63,15 +63,15 @@ class Nodes(commands.Cog):
         )
 
         return_message = dedent(
-            f"""
+            """
             **Cluster nodes**
             ```
-            {table}
+            {0}
             ```
             """
         )
 
-        await ctx.send(return_message)
+        await ctx.send(return_message.format(table))
 
     @nodes.command(name="cordon")
     async def nodes_cordon(self, ctx: commands.Context, *, node: str) -> None:
