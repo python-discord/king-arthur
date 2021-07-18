@@ -28,9 +28,9 @@ body:
       label: APIs
       description: What APIs would this command interact with?
       options:
-        - Cloudflare
-        - Kubernetes
-        - Discord
-        - Other
+        - label: Cloudflare
+        - label: Kubernetes
+        - label: Discord
+        - label: Other
     validations:
       required: true
