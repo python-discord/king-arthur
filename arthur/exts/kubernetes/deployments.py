@@ -13,7 +13,7 @@ from arthur.bot import KingArthur
 from arthur.utils import generate_error_embed
 
 
-def deployment_to_emote(deployment: V1Deployment):
+def deployment_to_emote(deployment: V1Deployment) -> str:
     """Convert a deployment to an emote based on it's replica status."""
     if deployment.status.available_replicas == deployment.spec.replicas:
         return "\N{LARGE GREEN CIRCLE}"
