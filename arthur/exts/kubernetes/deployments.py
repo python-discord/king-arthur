@@ -110,12 +110,12 @@ class Deployments(commands.Cog):
                 timeout=30,
             )
         except asyncio.TimeoutError:
-            await msg.edit(
+            return await msg.edit(
                 embed=Embed(
                     title="What is the airspeed velocity of an unladen swallow?",
                     description=(
                         "Whatever the answer may be, it's certainly "
-                        "faster than you could select a confirmation option.",
+                        "faster than you could select a confirmation option."
                     ),
                     colour=Colour.greyple(),
                 ),
