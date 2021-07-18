@@ -41,15 +41,15 @@ class Certificates(commands.Cog):
         )
 
         return_message = dedent(
-            f"""
-            **Certificates in namespace `{namespace}`**
+            """
+            **Certificates in namespace `{0}`**
             ```
-            {table}
+            {1}
             ```
             """
         )
 
-        await ctx.send(return_message)
+        await ctx.send(return_message.format(namespace, table))
 
 
 def setup(bot: KingArthur) -> None:
