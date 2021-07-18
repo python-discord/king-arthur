@@ -36,12 +36,13 @@ body:
       required: true
   - type: dropdown
     id: permissions
+    multiple: true
     attributes:
       label: Who should be authorised to use this command?
       options:
         - DevOps
-        - Admins + DevOps
-        - Helper+
+        - Admins
+        - Helpers
         - Everyone
     validations:
       required: true
