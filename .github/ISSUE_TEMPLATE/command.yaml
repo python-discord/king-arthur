@@ -36,8 +36,8 @@ body:
       required: true
   - type: dropdown
     id: permissions
-    multiple: true
     attributes:
+      multiple: true
       label: Who should be authorised to use this command?
       options:
         - DevOps
