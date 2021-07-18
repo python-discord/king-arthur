@@ -9,8 +9,8 @@ from kubernetes_asyncio.client.models import V1DeploymentList
 async def restart_deployment(deployment: str, namespace: str) -> None:
     """Patch a deployment with a custom annotation to trigger redeployment."""
     async with ApiClient() as api:
-        v1 = client.AppsV1Api(api)
-        await v1.patch_namespaced_deployment(
+        api = client.AppsV1Api(api)
+        await api.patch_namespaced_deployment(
             name=deployment,
             namespace=namespace,
             body={
@@ -33,5 +33,5 @@ async def restart_deployment(deployment: str, namespace: str) -> None:
 async def list_deployments(namespace: str) -> V1DeploymentList:
     """Query the Kubernetes API for a list of deployments in the provided namespace."""
     async with ApiClient() as api:
-        v1 = client.AppsV1Api(api)
-        return await v1.list_namespaced_deployment(namespace=namespace)
+        api = client.AppsV1Api(api)
+        return await api.list_namespaced_deployment(namespace=namespace)
