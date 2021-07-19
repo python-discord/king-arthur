@@ -10,7 +10,7 @@ def generate_error_message(
     emote: str = ":no_entry_sign:",
 ) -> str:
     """Generate an error message to return to Discord."""
-    return f"{emote} **{description}** {description}"
+    return f"{emote} **{title}** {description}"
 
 
 def datetime_to_discord(time: datetime, format: str = "f") -> str:
