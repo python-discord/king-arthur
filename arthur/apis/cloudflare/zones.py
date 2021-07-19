@@ -17,7 +17,7 @@ async def list_zones(zone_name: Optional[str] = None) -> dict[str, str]:
         endpoint += f"?name={zone_name}"
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(endpoint, headers=request_headers) as response:
+        async with session.get(endpoint, headers=request_headers) as response:
             info = await response.json()
 
     zones = info["result"]
