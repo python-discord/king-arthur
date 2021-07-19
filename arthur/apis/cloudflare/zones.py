@@ -1,15 +1,15 @@
+"""APIs for managing Cloudflare zones."""
 from typing import Optional
 
 import aiohttp
 
 from arthur.config import CONFIG
 
-
 CF_TOKEN = CONFIG.cloudflare_token
 
 
 async def list_zones(zone_name: Optional[str] = None) -> dict[str, str]:
-
+    """List all Cloudflare zones."""
     endpoint = "https://api.cloudflare.com/client/v4/zones"
     request_headers = {"X-Auth-User-Service-Key": CF_TOKEN}
 
@@ -26,7 +26,7 @@ async def list_zones(zone_name: Optional[str] = None) -> dict[str, str]:
 
 
 async def purge_zone(zone_identifier: str) -> dict:
-
+    """Purge the cache for a Cloudflare zone."""
     endpoint = f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}/purge_cache?purge_everything=true"  # noqa: E501
     request_headers = {"X-Auth-User-Service-Key": CF_TOKEN}
 
