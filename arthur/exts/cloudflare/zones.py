@@ -6,8 +6,8 @@ from discord.ext import commands
 from arthur.apis.cloudflare import zones
 from arthur.bot import KingArthur
 
-class Zones(commands.Cog):
 
+class Zones(commands.Cog):
     def __init__(self, bot: KingArthur) -> None:
         self.bot = bot
 
@@ -37,6 +37,7 @@ class Zones(commands.Cog):
                     message += f"**Code**: `{error.code}`\n"
                     message += f"**Message**: {error.message}\n"
             return await ctx.send(message)
+
 
 def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""

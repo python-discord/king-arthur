@@ -134,14 +134,14 @@ class Deployments(commands.Cog):
                         content=generate_error_message(
                             description="Could not find deployment, check the namespace.",
                         ),
-                        ephemeral=False
+                        ephemeral=False,
                     )
 
                 return await interaction.respond(
                     content=generate_error_message(
                         description=f"Unexpected error occurred, error code {e.status}"
                     ),
-                    ephemeral=False
+                    ephemeral=False,
                 )
             else:
                 description = (
