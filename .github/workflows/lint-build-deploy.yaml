@@ -74,6 +74,7 @@ jobs:
         [flake8] %(code)s: %(text)s'"
   
   build:
+    if: github.ref == 'refs/heads/main'
     name: Build & Push
     runs-on: ubuntu-latest
 
