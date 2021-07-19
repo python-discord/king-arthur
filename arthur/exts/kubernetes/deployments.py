@@ -141,7 +141,7 @@ class Deployments(commands.Cog):
                     content=generate_error_message(
                         description=f"Unexpected error occurred, error code {e.status}"
                     ),
-                    ephemeral=False,
+                    ephemeral=False
                 )
             else:
                 description = (
@@ -150,7 +150,7 @@ class Deployments(commands.Cog):
                 )
                 await interaction.respond(
                     content=description,
-                    ephemeral=False,
+                    ephemeral=False
                 )
 
         for component in components.components:
