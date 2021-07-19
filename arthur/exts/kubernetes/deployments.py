@@ -122,7 +122,7 @@ class Deployments(commands.Cog):
 
         if interaction.component.custom_id == f"{ctx.message.id}-abort":
             await interaction.respond(
-                ":x: Redeployment aborted",
+                content=":x: Redeployment aborted",
                 ephemeral=False,
             )
         else:
@@ -131,14 +131,14 @@ class Deployments(commands.Cog):
             except ApiException as e:
                 if e.status == 404:
                     return await interaction.respond(
-                        generate_error_message(
+                        content=generate_error_message(
                             description="Could not find deployment, check the namespace.",
                         ),
                         ephemeral=False
                     )
 
                 return await interaction.respond(
-                    generate_error_message(
+                    content=generate_error_message(
                         description=f"Unexpected error occurred, error code {e.status}"
                     ),
                     ephemeral=False
@@ -149,7 +149,7 @@ class Deployments(commands.Cog):
                     f"`{deployment}` in namespace `{namespace}`."
                 )
                 await interaction.respond(
-                    description,
+                    content=description,
                     ephemeral=False,
                 )
 
