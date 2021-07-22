@@ -30,12 +30,12 @@ async def purge_zone(zone_identifier: str) -> dict:
     """Purge the cache for a Cloudflare zone."""
     endpoint = f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}"
 
-    PURGE_EVERYTHING = {
+    request_body = {
         "purge_everything": True
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(endpoint, headers=AUTH_HEADER, body=PURGE_EVERYTHING) as response:
+        async with session.post(endpoint, headers=AUTH_HEADER, body=request_body) as response:
             info = await response.json()
 
     return {"success": info["success"], "errors": info["errors"]}
