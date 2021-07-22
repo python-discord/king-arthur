@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from arthur.apis.cloudflare import zones
 from arthur.bot import KingArthur
+from arthur.utils import generate_error_message
 
 
 class Zones(commands.Cog):
@@ -21,26 +22,26 @@ class Zones(commands.Cog):
     @zones.command(name="purge")
     async def purge(self, ctx: commands.Context,
                     zone_name: Optional[str] = "pythondiscord.com"
-                    ) -> None:
+    ) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
         pydis_zones = await zones.list_zones(zone_name)
         required_id = pydis_zones[zone_name]
         purge_attempt_response = await zones.purge_zone(required_id)
 
-        message = ""
-
         if purge_attempt_response["success"]:
-            message += ":white_check_mark:"
-            message += f"**Cache cleared!** The Cloudflare cache for `{zone_name}` was cleared."
+            message = ":white_check_mark:"
+            message += f" **Cache cleared!** The Cloudflare cache for `{zone_name}` was cleared."
         else:
-            message += f":x: **'Tis but a scratch! The cache for `{zone_name}` couldn't be cleared."
+            description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
             if errors := purge_attempt_response["errors"]:
-                message += "\nReceived errors:\n"
                 for error in errors:
-                    message += f"**Code**: `{error.code}`\n"
-                    message += f"**Message**: {error.message}\n"
-            return await ctx.send(message)
+                    description_content += f"`{error['code']}`: {error['message']}\n"
+            message = generate_error_message(
+                description=description_content,
+                emote=":x:"
+            )
 
+        await ctx.send(message)
 
 def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
