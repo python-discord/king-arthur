@@ -27,16 +27,15 @@ class Zones(commands.Cog):
         required_id = pydis_zones[zone_name]
         purge_attempt_response = await zones.purge_zone(required_id)
 
-        message = "__Cloudflare cache purge status__\n"
+        message = ""
 
         if purge_attempt_response["success"]:
-            message += "Purge status: **Successful** :white_check_mark:\n"
-            message += f"Zone purged: **Zone purged: `{zone_name}`"
-            return await ctx.send(message)
+            message += ":white_check_mark:"
+            message += f"**Cache cleared!** The Cloudflare cache for `{zone_name}` was cleared."
         else:
-            message += "Purge status: **Failed** :x:\n"
+            message += f":x: **'Tis but a scratch! The cache for `{zone_name}` couldn't be cleared."
             if errors := purge_attempt_response["errors"]:
-                message += "__Errors:__\n"
+                message += "\nReceived errors:\n"
                 for error in errors:
                     message += f"**Code**: `{error.code}`\n"
                     message += f"**Message**: {error.message}\n"
