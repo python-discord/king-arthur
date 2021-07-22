@@ -22,7 +22,7 @@ class Zones(commands.Cog):
     @zones.command(name="purge")
     async def purge(self, ctx: commands.Context,
                     zone_name: Optional[str] = "pythondiscord.com"
-    ) -> None:
+                    ) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
         pydis_zones = await zones.list_zones(zone_name)
         required_id = pydis_zones[zone_name]
@@ -42,6 +42,7 @@ class Zones(commands.Cog):
             )
 
         await ctx.send(message)
+
 
 def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
