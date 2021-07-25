@@ -28,7 +28,7 @@ async def list_zones(zone_name: Optional[str] = None) -> dict[str, str]:
 
 async def purge_zone(zone_identifier: str) -> dict:
     """Purge the cache for a Cloudflare zone."""
-    endpoint = f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}"
+    endpoint = f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}/purge_cache"
 
     request_body = {
         "purge_everything": True
