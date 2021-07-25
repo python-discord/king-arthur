@@ -134,7 +134,7 @@ class Deployments(commands.Cog):
                         content=generate_error_message(
                             description="Could not find deployment, check the namespace.",
                         ),
-                        ephemeral=False
+                        ephemeral=False,
                     )
 
                 return await interaction.respond(
@@ -150,7 +150,7 @@ class Deployments(commands.Cog):
                 )
                 await interaction.respond(
                     content=description,
-                    ephemeral=False,
+                    ephemeral=False
                 )
 
         for component in components.components:
