@@ -35,7 +35,7 @@ async def purge_zone(zone_identifier: str) -> dict:
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(endpoint, headers=AUTH_HEADER, body=request_body) as response:
+        async with session.post(endpoint, headers=AUTH_HEADER, json=request_body) as response:
             info = await response.json()
 
     return {"success": info["success"], "errors": info["errors"]}
