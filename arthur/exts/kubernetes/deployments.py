@@ -103,6 +103,13 @@ class Deployments(commands.Cog):
 
         table_data = []
 
+        if len(deploys.items) == 0:
+            return await ctx.send(
+                generate_error_message(
+                    description="No deployments found, check the namespace exists."
+                )
+            )
+
         for deployment in deploys.items:
             if deployment.status.available_replicas == deployment.spec.replicas:
                 emote = "\N{LARGE GREEN CIRCLE}"
