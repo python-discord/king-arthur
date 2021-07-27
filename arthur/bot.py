@@ -4,7 +4,6 @@ from typing import Any
 
 from discord.ext import commands
 from discord.ext.commands import Bot
-from discord_components import DiscordComponents
 from kubernetes_asyncio import config
 
 from arthur import logger
@@ -40,9 +39,6 @@ class KingArthur(Bot):
 
     async def on_ready(self) -> None:
         """Initialise bot once connected and authorised with Discord."""
-        # Initialise components (e.g. buttons, selections)
-        DiscordComponents(self)
-
         # Authenticate with Kubernetes
         if (Path.home() / ".kube/config").exists():
             await config.load_kube_config()
