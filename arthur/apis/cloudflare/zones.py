@@ -5,9 +5,7 @@ import aiohttp
 
 from arthur.config import CONFIG
 
-AUTH_HEADER = {
-    "Authorization": f"Bearer {CONFIG.cloudflare_token}"
-}
+AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.cloudflare_token}"}
 
 
 async def list_zones(zone_name: Optional[str] = None) -> dict[str, str]:
@@ -30,9 +28,7 @@ async def purge_zone(zone_identifier: str) -> dict:
     """Purge the cache for a Cloudflare zone."""
     endpoint = f"https://api.cloudflare.com/client/v4/zones/{zone_identifier}/purge_cache"
 
-    request_body = {
-        "purge_everything": True
-    }
+    request_body = {"purge_everything": True}
 
     async with aiohttp.ClientSession() as session:
         async with session.post(endpoint, headers=AUTH_HEADER, json=request_body) as response:

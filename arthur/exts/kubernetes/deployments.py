@@ -1,9 +1,8 @@
 """The Deployments cog helps with managing Kubernetes deployments."""
-import asyncio
 from textwrap import dedent
 
+from discord import ButtonStyle, Interaction, ui
 from discord.ext import commands
-from discord_components.component import ActionRow, Button, ButtonStyle
 from kubernetes_asyncio.client.models import V1Deployment
 from kubernetes_asyncio.client.rest import ApiException
 from tabulate import tabulate
@@ -11,6 +10,69 @@ from tabulate import tabulate
 from arthur.apis.kubernetes import deployments
 from arthur.bot import KingArthur
 from arthur.utils import generate_error_message
+
+
+class ConfirmDeployment(ui.View):
+    """A confirmation view for redeploying to Kubernetes."""
+
+    def __init__(self, author_id: int, deployment_ns: tuple[str, str]) -> None:
+        super().__init__()
+        self.confirmed = None
+        self.interaction = None
+        self.authorization = author_id
+        self.deployment = deployment_ns[1]
+        self.namespace = deployment_ns[0]
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        """Check the interactor is authorised."""
+        if interaction.user.id == self.authorization:
+            return True
+
+        await interaction.response.send_message(
+            generate_error_message(description="You are not authorized to perform this action."),
+            ephemeral=True,
+        )
+
+        return False
+
+    @ui.button(label="Confirm", style=ButtonStyle.green, row=0)
+    async def confirm(self, _button: ui.Button, interaction: Interaction) -> None:
+        """Redeploy the specified service."""
+        try:
+            await deployments.restart_deployment(self.deployment, self.namespace)
+        except ApiException as e:
+            if e.status == 404:
+                return await interaction.response.send_message(
+                    content=generate_error_message(
+                        description="Could not find deployment, check the namespace.",
+                    ),
+                    ephemeral=False,
+                )
+
+            await interaction.response.send_message(
+                content=generate_error_message(
+                    description=f"Unexpected error occurred, error code {e.status}"
+                ),
+                ephemeral=False,
+            )
+        else:
+            description = (
+                f":white_check_mark: Restarted deployment "
+                f"`{self.deployment}` in namespace `{self.namespace}`."
+            )
+
+            await interaction.response.send_message(content=description, ephemeral=False)
+
+        self.stop()
+
+    @ui.button(label="Cancel", style=ButtonStyle.grey, row=0)
+    async def cancel(self, _button: ui.Button, interaction: Interaction) -> None:
+        """Logic for if the deployment is not approved."""
+        await interaction.response.send_message(
+            content=":x: Redeployment aborted",
+            ephemeral=False,
+        )
+        self.stop()
 
 
 def deployment_to_emote(deployment: V1Deployment) -> str:
@@ -83,80 +145,25 @@ class Deployments(commands.Cog):
         self, ctx: commands.Context, deployment: str, namespace: str = "default"
     ) -> None:
         """Restart the specified deployment in the selected namespace (defaults to default)."""
-        components = ActionRow(
-            Button(
-                label="Redeploy",
-                style=ButtonStyle.green,
-                custom_id=f"{ctx.message.id}-redeploy",
-            ),
-            Button(
-                label="Abort",
-                style=ButtonStyle.red,
-                custom_id=f"{ctx.message.id}-abort",
-            ),
-        )
+        confirmation = ConfirmDeployment(ctx.author.id, [namespace, deployment])
 
         msg = await ctx.send(
             f":warning: Please confirm you want to restart `deploy/{deployment}` in `{namespace}`",
-            components=[components],
+            view=confirmation,
         )
 
-        try:
-            interaction = await self.bot.wait_for(
-                "button_click",
-                check=lambda i: i.component.custom_id.startswith(str(ctx.message.id))
-                and i.user.id == ctx.author.id,
-                timeout=30,
-            )
-        except asyncio.TimeoutError:
-            return await msg.edit(
-                generate_error_message(
+        timed_out = await confirmation.wait()
+
+        if timed_out:
+            await msg.edit(
+                content=generate_error_message(
                     title="What is the airspeed velocity of an unladen swallow?",
                     description=(
                         "Whatever the answer may be, it's certainly "
                         "faster than you could select a confirmation option."
                     ),
-                ),
-                components=[],
+                )
             )
-
-        if interaction.component.custom_id == f"{ctx.message.id}-abort":
-            await interaction.respond(
-                content=":x: Redeployment aborted",
-                ephemeral=False,
-            )
-        else:
-            try:
-                await deployments.restart_deployment(deployment, namespace)
-            except ApiException as e:
-                if e.status == 404:
-                    return await interaction.respond(
-                        content=generate_error_message(
-                            description="Could not find deployment, check the namespace.",
-                        ),
-                        ephemeral=False,
-                    )
-
-                return await interaction.respond(
-                    content=generate_error_message(
-                        description=f"Unexpected error occurred, error code {e.status}"
-                    ),
-                    ephemeral=False
-                )
-            else:
-                description = (
-                    f":white_check_mark: Restarted deployment "
-                    f"`{deployment}` in namespace `{namespace}`."
-                )
-                await interaction.respond(
-                    content=description,
-                    ephemeral=False
-                )
-
-        for component in components.components:
-            component.disabled = True
-
-        await msg.edit(components=[components])
 
 
 def setup(bot: KingArthur) -> None:

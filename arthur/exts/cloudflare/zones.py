@@ -21,9 +21,7 @@ class Zones(commands.Cog):
 
     @zones.command(name="purge")
     async def purge(
-        self,
-        ctx: commands.Context,
-        zone_name: Optional[str] = "pythondiscord.com"
+        self, ctx: commands.Context, zone_name: Optional[str] = "pythondiscord.com"
     ) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
         pydis_zones = await zones.list_zones(zone_name)
@@ -38,10 +36,7 @@ class Zones(commands.Cog):
             if errors := purge_attempt_response["errors"]:
                 for error in errors:
                     description_content += f"`{error['code']}`: {error['message']}\n"
-            message = generate_error_message(
-                description=description_content,
-                emote=":x:"
-            )
+            message = generate_error_message(description=description_content, emote=":x:")
 
         await ctx.send(message)
 

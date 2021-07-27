@@ -49,8 +49,7 @@ class ErrorHandler(Cog):
             await ctx.send(
                 generate_error_message(
                     description=(
-                        f"Unknown exception occurred: `{error.__class__.__name__}:"
-                        f" {error}`"
+                        f"Unknown exception occurred: `{error.__class__.__name__}:" f" {error}`"
                     )
                 )
             )

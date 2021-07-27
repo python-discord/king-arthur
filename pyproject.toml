@@ -7,12 +7,11 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-"discord.py" = "^1.7.3"
-discord-components = "^1.1.2"
 pydantic = {extras = ["dotenv"], version = "^1.8.2"}
 loguru = "^0.5.3"
 kubernetes_asyncio = "^12.1.1"
 tabulate = {extras = ["widechars"], version = "^0.8.9"}
+"discord.py" = {url = "https://github.com/Rapptz/discord.py/archive/master.zip"}
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"
