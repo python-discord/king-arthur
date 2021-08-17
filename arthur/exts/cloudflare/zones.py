@@ -9,6 +9,7 @@ from arthur.utils import generate_error_message
 
 class ZonesView(discord.ui.View):
     """This view allows users to select and purge the zones specified."""
+
     OPTIONS = [
         discord.SelectOption(label="pythondiscord.com", emoji="🌐"),
         discord.SelectOption(label="pythondiscord.org", emoji="🌐"),
@@ -20,6 +21,7 @@ class ZonesView(discord.ui.View):
         super().__init__()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """Ensure the user has the DevOps role."""
         return KingArthur._is_devops(interaction)
 
     @discord.ui.select(
@@ -35,19 +37,24 @@ class ZonesView(discord.ui.View):
         self, dropdown: discord.ui.Select,
         interaction: discord.Interaction
     ) -> None:
-        """The drop down menu containing the list of zones."""
+        """Drop down menu contains the list of zones."""
         pass
 
     @discord.ui.button(label="Purge zones!", style=discord.ButtonStyle.primary)
-    async def purge_zones(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
-        """The button that actually purges the zones."""
+    async def purge_zones(
+        self,
+        button: discord.ui.Button,
+        interaction: discord.Interaction
+    ) -> None:
+        """Button to purge the zones."""
         for zone_name in [child for child in self.children if child._provided_custom_id][0].values:
             pydis_zones = await zones.list_zones(zone_name)
             required_id = pydis_zones[zone_name]
             purge_attempt_response = await zones.purge_zone(required_id)
             if purge_attempt_response["success"]:
                 message = ":white_check_mark:"
-                message += f" **Cache cleared!** The Cloudflare cache for `{zone_name}` was cleared."
+                message += f" **Cache cleared!** "
+                message += "The Cloudflare cache for `{zone_name}` was cleared."
             else:
                 description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
                 if errors := purge_attempt_response["errors"]:
