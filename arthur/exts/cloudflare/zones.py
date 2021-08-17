@@ -1,6 +1,7 @@
 """The zones cog helps with managing Cloudflare zones."""
 from typing import Optional
 
+import discord
 from discord.ext import commands
 
 from arthur.apis.cloudflare import zones
@@ -8,22 +9,25 @@ from arthur.bot import KingArthur
 from arthur.utils import generate_error_message
 
 
-class Zones(commands.Cog):
-    """Commands for working with Cloudflare zones."""
+class ZonesDropdown(discord.ui.Select):
 
-    def __init__(self, bot: KingArthur) -> None:
-        self.bot = bot
+    def __init__(self):
+        options = [
+            discord.SelectOption(label="pythondiscord.com", emoji="🌐", default=True),
+            discord.SelectOption(label="pythondiscord.org", emoji="🌐"),
+            discord.SelectOption(label="pydis.com", emoji="🌐"),
+            discord.SelectOption(label="pydis.org", emoji="🌐")
+        ]
 
-    @commands.group(name="zones", invoke_without_command=True)
-    async def zones(self, ctx: commands.Context) -> None:
-        """Commands for working with Cloudflare zones."""
-        await ctx.send_help(ctx.command)
+        super().__init__(
+            placeholder="Select the zone which should be purged...",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
 
-    @zones.command(name="purge")
-    async def purge(
-        self, ctx: commands.Context, zone_name: Optional[str] = "pythondiscord.com"
-    ) -> None:
-        """Command to clear the Cloudflare cache of the specified zone."""
+    async def callback(self, interaction: discord.Interaction):
+        zone_name = self.values[0]
         pydis_zones = await zones.list_zones(zone_name)
         required_id = pydis_zones[zone_name]
         purge_attempt_response = await zones.purge_zone(required_id)
@@ -38,7 +42,32 @@ class Zones(commands.Cog):
                     description_content += f"`{error['code']}`: {error['message']}\n"
             message = generate_error_message(description=description_content, emote=":x:")
 
-        await ctx.send(message)
+        await interaction.response.send(message)
+
+
+class ZonesView(discord.ui.View):
+
+    def __init__(self):
+        super().__init__()
+        self.add_item(ZonesDropdown())
+
+
+class Zones(commands.Cog):
+    """Commands for working with Cloudflare zones."""
+
+    def __init__(self, bot: KingArthur) -> None:
+        self.bot = bot
+
+    @commands.group(name="zones", invoke_without_command=True)
+    async def zones(self, ctx: commands.Context) -> None:
+        """Commands for working with Cloudflare zones."""
+        await ctx.send_help(ctx.command)
+
+    @zones.command(name="purge")
+    async def purge(self, ctx: commands.Context) -> None:
+        """Command to clear the Cloudflare cache of the specified zone."""
+        view = ZonesView()
+        await ctx.send("Pick which zone's cache to purge:", view=view)
 
 
 def setup(bot: KingArthur) -> None:
