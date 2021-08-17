@@ -53,8 +53,8 @@ class ZonesView(discord.ui.View):
             purge_attempt_response = await zones.purge_zone(required_id)
             if purge_attempt_response["success"]:
                 message = ":white_check_mark:"
-                message += f" **Cache cleared!** "
-                message += "The Cloudflare cache for `{zone_name}` was cleared."
+                message += " **Cache cleared!** "
+                message += f"The Cloudflare cache for `{zone_name}` was cleared."
             else:
                 description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
                 if errors := purge_attempt_response["errors"]:
