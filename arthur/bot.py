@@ -1,7 +1,8 @@
 """Module containing the core bot base for King Arthur."""
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
+from discord import Interaction
 from discord.ext import commands
 from discord.ext.commands import Bot
 from kubernetes_asyncio import config
@@ -27,8 +28,11 @@ class KingArthur(Bot):
         self.add_check(self._is_devops)
 
     @staticmethod
-    async def _is_devops(ctx: commands.Context) -> bool:
+    def _is_devops(ctx: Union[commands.Context, Interaction]) -> bool:
         """Check all commands are executed by authorised personnel."""
+        if isinstance(ctx, Interaction):
+            return CONFIG.devops_role in [r.id for r in ctx.author.roles]
+
         if ctx.command.name == "ed":
             return True
 

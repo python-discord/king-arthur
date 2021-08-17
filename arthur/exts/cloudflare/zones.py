@@ -9,47 +9,41 @@ from arthur.bot import KingArthur
 from arthur.utils import generate_error_message
 
 
-class ZonesDropdown(discord.ui.Select):
-
-    def __init__(self):
-        options = [
-            discord.SelectOption(label="pythondiscord.com", emoji="🌐", default=True),
-            discord.SelectOption(label="pythondiscord.org", emoji="🌐"),
-            discord.SelectOption(label="pydis.com", emoji="🌐"),
-            discord.SelectOption(label="pydis.org", emoji="🌐")
-        ]
-
-        super().__init__(
-            placeholder="Select the zone which should be purged...",
-            min_values=1,
-            max_values=1,
-            options=options
-        )
-
-    async def callback(self, interaction: discord.Interaction):
-        zone_name = self.values[0]
-        pydis_zones = await zones.list_zones(zone_name)
-        required_id = pydis_zones[zone_name]
-        purge_attempt_response = await zones.purge_zone(required_id)
-
-        if purge_attempt_response["success"]:
-            message = ":white_check_mark:"
-            message += f" **Cache cleared!** The Cloudflare cache for `{zone_name}` was cleared."
-        else:
-            description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
-            if errors := purge_attempt_response["errors"]:
-                for error in errors:
-                    description_content += f"`{error['code']}`: {error['message']}\n"
-            message = generate_error_message(description=description_content, emote=":x:")
-
-        await interaction.response.send(message)
-
-
 class ZonesView(discord.ui.View):
+
+    OPTIONS = [
+        discord.SelectOption(label="pythondiscord.com", emoji="🌐"),
+        discord.SelectOption(label="pythondiscord.org", emoji="🌐"),
+        discord.SelectOption(label="pydis.com", emoji="🌐"),
+        discord.SelectOption(label="pydis.org", emoji="🌐")
+    ]
 
     def __init__(self):
         super().__init__()
-        self.add_item(ZonesDropdown())
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return KingArthur._is_devops(interaction)
+
+    @discord.ui.select(placeholder="The zone(s) which should be purged...", min_values=1, max_values=4, options=OPTIONS, custom_id="select")
+    async def select_zones(self, dropdown: discord.ui.Select, interaction: discord.Interaction) -> None:
+        pass
+
+    @discord.ui.button(label="Purge zones!", style=discord.ButtonStyle.primary)
+    async def purge_zones(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+        for zone_name in [child for child in self.children if child._provided_custom_id][0].values:
+            pydis_zones = await zones.list_zones(zone_name)
+            required_id = pydis_zones[zone_name]
+            purge_attempt_response = await zones.purge_zone(required_id)
+            if purge_attempt_response["success"]:
+                message = ":white_check_mark:"
+                message += f" **Cache cleared!** The Cloudflare cache for `{zone_name}` was cleared."
+            else:
+                description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
+                if errors := purge_attempt_response["errors"]:
+                    for error in errors:
+                        description_content += f"`{error['code']}`: {error['message']}\n"
+                message = generate_error_message(description=description_content, emote=":x:")
+            await interaction.response.send(message)
 
 
 class Zones(commands.Cog):
@@ -67,7 +61,7 @@ class Zones(commands.Cog):
     async def purge(self, ctx: commands.Context) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
         view = ZonesView()
-        await ctx.send("Pick which zone's cache to purge:", view=view)
+        await ctx.send("Pick which zone(s) that should have their cache purged :cloud_lightning:", view=view)
 
 
 def setup(bot: KingArthur) -> None:
