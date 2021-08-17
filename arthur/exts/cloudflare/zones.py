@@ -80,7 +80,7 @@ class Zones(commands.Cog):
         """Command to clear the Cloudflare cache of the specified zone."""
         view = ZonesView()
         await ctx.send(
-            "Pick which zone(s) that should have their cache purged :cloud_lightning:",
+            ":cloud: Pick which zone(s) that should have their cache purged",
             view=view
         )
 
