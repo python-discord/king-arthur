@@ -1,6 +1,4 @@
 """The zones cog helps with managing Cloudflare zones."""
-from typing import Optional
-
 import discord
 from discord.ext import commands
 
@@ -10,7 +8,7 @@ from arthur.utils import generate_error_message
 
 
 class ZonesView(discord.ui.View):
-
+    """This view allows users to select and purge the zones specified."""
     OPTIONS = [
         discord.SelectOption(label="pythondiscord.com", emoji="🌐"),
         discord.SelectOption(label="pythondiscord.org", emoji="🌐"),
@@ -18,18 +16,31 @@ class ZonesView(discord.ui.View):
         discord.SelectOption(label="pydis.org", emoji="🌐")
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return KingArthur._is_devops(interaction)
 
-    @discord.ui.select(placeholder="The zone(s) which should be purged...", min_values=1, max_values=4, options=OPTIONS, custom_id="select")
-    async def select_zones(self, dropdown: discord.ui.Select, interaction: discord.Interaction) -> None:
+    @discord.ui.select(
+        placeholder="The zone(s) which should be purged...",
+        min_values=1,
+        max_values=4,
+        options=OPTIONS,
+        # This is needed in order to identify the drop down later on
+        # because discord.Item.type is NotImplemented
+        custom_id="select"
+    )
+    async def select_zones(
+        self, dropdown: discord.ui.Select,
+        interaction: discord.Interaction
+    ) -> None:
+        """The drop down menu containing the list of zones."""
         pass
 
     @discord.ui.button(label="Purge zones!", style=discord.ButtonStyle.primary)
     async def purge_zones(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+        """The button that actually purges the zones."""
         for zone_name in [child for child in self.children if child._provided_custom_id][0].values:
             pydis_zones = await zones.list_zones(zone_name)
             required_id = pydis_zones[zone_name]
@@ -61,7 +72,10 @@ class Zones(commands.Cog):
     async def purge(self, ctx: commands.Context) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
         view = ZonesView()
-        await ctx.send("Pick which zone(s) that should have their cache purged :cloud_lightning:", view=view)
+        await ctx.send(
+            "Pick which zone(s) that should have their cache purged :cloud_lightning:",
+            view=view
+        )
 
 
 def setup(bot: KingArthur) -> None:
