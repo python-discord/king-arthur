@@ -19,6 +19,10 @@ class ZonesView(discord.ui.View):
         for domain, zone_id in self.domains.items():
             self.children[0].add_option(label=domain, value=domain, description=zone_id, emoji="🌐")
 
+    def disable_select(self):
+        """Disable the select button."""
+        self.children[0].disabled = True
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Ensure the user has the DevOps role."""
         return CONFIG.devops_role in [r.id for r in interaction.user.roles]
@@ -45,6 +49,10 @@ class ZonesView(discord.ui.View):
                     description_content += f"`{error['code']}`: {error['message']}\n"
             message = generate_error_message(description=description_content, emote=":x:")
 
+
+        self.disable_select()
+
+        await interaction.edit_original_message(view=self)
         await interaction.response.send_message(message)
 
 
