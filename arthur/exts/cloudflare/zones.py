@@ -19,7 +19,7 @@ class ZonesView(discord.ui.View):
         for domain, zone_id in self.domains.items():
             self.children[0].add_option(label=domain, value=domain, description=zone_id, emoji="🌐")
 
-    def disable_select(self):
+    def disable_select(self) -> None:
         """Disable the select button."""
         self.children[0].disabled = True
 
@@ -48,7 +48,6 @@ class ZonesView(discord.ui.View):
                 for error in errors:
                     description_content += f"`{error['code']}`: {error['message']}\n"
             message = generate_error_message(description=description_content, emote=":x:")
-
 
         self.disable_select()
 
