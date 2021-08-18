@@ -51,7 +51,7 @@ class ZonesView(discord.ui.View):
 
         self.disable_select()
 
-        await interaction.edit_original_message(view=self)
+        await interaction.message.edit(view=self)
         await interaction.response.send_message(message)
 
 
