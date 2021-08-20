@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from kubernetes_asyncio import client
 from kubernetes_asyncio.client.api_client import ApiClient
-from kubernetes_asyncio.client.models import V1beta1CronJobList, V1beta1CronJob, V1Job
+from kubernetes_asyncio.client.models import V1beta1CronJob, V1beta1CronJobList, V1Job
 
 
 async def list_cronjobs(namespace: Optional[str] = None) -> V1beta1CronJobList:
