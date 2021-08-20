@@ -75,6 +75,7 @@ class KingArthur(Bot):
         logger.info("Loaded <red>jishaku</red>")
 
     async def is_owner(self, user: Union[User, Member]) -> bool:
+        """Check if the invoker is a bot owner."""
         if not user.guild_id:
             return False
 
