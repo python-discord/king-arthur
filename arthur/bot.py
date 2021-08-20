@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Any, Union
 
-from discord import Interaction
+from discord import Interaction, Member, User
 from discord.ext import commands
 from discord.ext.commands import Bot
 from kubernetes_asyncio import config
@@ -69,3 +69,13 @@ class KingArthur(Bot):
                 logger.info(
                     f"Loaded extension <magenta>{path.stem}</> " f"from <magenta>{path.parent}</>"
                 )
+
+        logger.info("Loading <red>jishaku</red>")
+        self.load_extension("jishaku")
+        logger.info("Loaded <red>jishaku</red>")
+
+    async def is_owner(self, user: Union[User, Member]) -> bool:
+        if not user.guild_id:
+            return False
+
+        return CONFIG.devops_role in [r.id for r in user.roles]
