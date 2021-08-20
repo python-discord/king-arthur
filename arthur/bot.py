@@ -76,7 +76,7 @@ class KingArthur(Bot):
 
     async def is_owner(self, user: Union[User, Member]) -> bool:
         """Check if the invoker is a bot owner."""
-        if not user.guild_id:
+        if not user.guild:
             return False
 
         return CONFIG.devops_role in [r.id for r in user.roles]
