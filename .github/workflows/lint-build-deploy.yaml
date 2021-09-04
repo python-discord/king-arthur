@@ -150,6 +150,6 @@ jobs:
         uses: Azure/k8s-deploy@v1
         with:
           manifests: |
-              king-arthur/deployment.yaml
+              namespaces/default/king-arthur/deployment.yaml
           images: 'ghcr.io/python-discord/king-arthur:${{ steps.sha_tag.outputs.tag }}'
           kubectl-version: 'latest'
