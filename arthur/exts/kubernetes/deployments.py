@@ -61,16 +61,16 @@ class ConfirmDeployment(ui.View):
                 f"`{self.deployment}` in namespace `{self.namespace}`."
             )
 
-            await interaction.response.send_message(content=description, ephemeral=False)
+            await interaction.message.edit(content=description, view=None)
 
         self.stop()
 
     @ui.button(label="Cancel", style=ButtonStyle.grey, row=0)
     async def cancel(self, _button: ui.Button, interaction: Interaction) -> None:
         """Logic for if the deployment is not approved."""
-        await interaction.response.send_message(
+        await interaction.message.edit(
             content=":x: Redeployment aborted",
-            ephemeral=False,
+            view=None,
         )
         self.stop()
 
