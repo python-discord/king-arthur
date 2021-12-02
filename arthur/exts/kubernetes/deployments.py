@@ -42,18 +42,18 @@ class ConfirmDeployment(ui.View):
             await deployments.restart_deployment(self.deployment, self.namespace)
         except ApiException as e:
             if e.status == 404:
-                return await interaction.response.send_message(
+                return await interaction.message.edit(
                     content=generate_error_message(
                         description="Could not find deployment, check the namespace.",
                     ),
-                    ephemeral=False,
+                    view=None,
                 )
 
-            await interaction.response.send_message(
+            await interaction.message.edit(
                 content=generate_error_message(
                     description=f"Unexpected error occurred, error code {e.status}"
                 ),
-                ephemeral=False,
+                view=None,
             )
         else:
             description = (
