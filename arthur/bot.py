@@ -1,10 +1,10 @@
 """Module containing the core bot base for King Arthur."""
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
+from discord import Interaction, Member, User
 from discord.ext import commands
 from discord.ext.commands import Bot
-from discord_components import DiscordComponents
 from kubernetes_asyncio import config
 
 from arthur import logger
@@ -28,8 +28,11 @@ class KingArthur(Bot):
         self.add_check(self._is_devops)
 
     @staticmethod
-    async def _is_devops(ctx: commands.Context) -> bool:
+    def _is_devops(ctx: Union[commands.Context, Interaction]) -> bool:
         """Check all commands are executed by authorised personnel."""
+        if isinstance(ctx, Interaction):
+            return CONFIG.devops_role in [r.id for r in ctx.author.roles]
+
         if ctx.command.name == "ed":
             return True
 
@@ -40,9 +43,6 @@ class KingArthur(Bot):
 
     async def on_ready(self) -> None:
         """Initialise bot once connected and authorised with Discord."""
-        # Initialise components (e.g. buttons, selections)
-        DiscordComponents(self)
-
         # Authenticate with Kubernetes
         if (Path.home() / ".kube/config").exists():
             await config.load_kube_config()
@@ -69,3 +69,14 @@ class KingArthur(Bot):
                 logger.info(
                     f"Loaded extension <magenta>{path.stem}</> " f"from <magenta>{path.parent}</>"
                 )
+
+        logger.info("Loading <red>jishaku</red>")
+        self.load_extension("jishaku")
+        logger.info("Loaded <red>jishaku</red>")
+
+    async def is_owner(self, user: Union[User, Member]) -> bool:
+        """Check if the invoker is a bot owner."""
+        if not user.guild:
+            return False
+
+        return CONFIG.devops_role in [r.id for r in user.roles]
