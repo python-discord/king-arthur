@@ -17,7 +17,7 @@ class KingArthur(Bot):
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
         config = {
-            "command_prefix": commands.when_mentioned_or(CONFIG.prefix),
+            "command_prefix": commands.when_mentioned_or(*CONFIG.prefixes),
             "case_insensitive": True,
         }
 

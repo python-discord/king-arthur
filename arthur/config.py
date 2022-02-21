@@ -9,7 +9,7 @@ class Config(BaseSettings):
     token: str
 
     # Discord bot prefix
-    prefix: str = "arthur "
+    prefixes: list[str] = ["arthur ", "M-x"]
 
     # Authorised role ID for usage
     devops_role: int = 409416496733880320
