@@ -173,6 +173,6 @@ class Deployments(commands.Cog):
             )
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    bot.add_cog(Deployments(bot))
+    await bot.add_cog(Deployments(bot))

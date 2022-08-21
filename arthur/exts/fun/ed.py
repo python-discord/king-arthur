@@ -17,6 +17,6 @@ class Ed(Cog):
         await ctx.send("?")
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
-    bot.add_cog(Ed(bot))
+    await bot.add_cog(Ed(bot))

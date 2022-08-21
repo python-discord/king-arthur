@@ -55,6 +55,6 @@ class ErrorHandler(Cog):
             )
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
-    bot.add_cog(ErrorHandler(bot))
+    await bot.add_cog(ErrorHandler(bot))

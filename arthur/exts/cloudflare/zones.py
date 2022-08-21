@@ -75,6 +75,6 @@ class Zones(commands.Cog):
         await ctx.send(":cloud: Pick which zone(s) that should have their cache purged", view=view)
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    bot.add_cog(Zones(bot))
+    await bot.add_cog(Zones(bot))
