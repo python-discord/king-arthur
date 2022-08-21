@@ -17,6 +17,9 @@ class Config(BaseSettings):
     # Token for authorising with the Cloudflare API
     cloudflare_token: str
 
+    # Guild id
+    guild_id: int = 267624335836053506
+
     class Config:  # noqa: D106
         env_file = ".env"
         env_prefix = "KING_ARTHUR_"

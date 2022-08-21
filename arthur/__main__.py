@@ -1,16 +1,37 @@
 """Entrypoint for King Arthur."""
-from arthur import logger
+import asyncio
+
+import aiohttp
+import discord
+from discord.ext import commands
+
+import arthur
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
 
 
-@logger.catch()
-def start() -> None:
-    """Entrypoint for King Arthur."""
-    arthur = KingArthur()
+async def main() -> None:
+    """Entry async method for starting the bot."""
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.dm_typing = False
+    intents.dm_reactions = False
+    intents.invites = False
+    intents.webhooks = False
+    intents.integrations = False
 
-    arthur.run(CONFIG.token)
+    async with aiohttp.ClientSession() as session:
+        arthur.instance = KingArthur(
+            guild_id=CONFIG.guild_id,
+            http_session=session,
+            command_prefix=commands.when_mentioned_or(*CONFIG.prefixes),
+            allowed_roles=(CONFIG.devops_role,),
+            case_insensitive=True,
+            intents=intents,
+        )
+        async with arthur.instance as bot:
+            await bot.start(CONFIG.token)
 
 
-if __name__ == "__main__":
-    start()
+with arthur.logger.catch():
+    asyncio.run(main())
