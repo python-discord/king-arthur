@@ -31,7 +31,7 @@ class ZonesView(discord.ui.View):
         placeholder="Select a zone to purge...",
     )
     async def select_zones(
-        self, dropdown: discord.ui.Select, interaction: discord.Interaction
+        self, interaction: discord.Interaction, dropdown: discord.ui.Select
     ) -> None:
         """Drop down menu contains the list of zones."""
         zone_name = dropdown.values[0]

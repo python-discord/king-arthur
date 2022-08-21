@@ -36,7 +36,7 @@ class ConfirmDeployment(ui.View):
         return False
 
     @ui.button(label="Confirm", style=ButtonStyle.green, row=0)
-    async def confirm(self, _button: ui.Button, interaction: Interaction) -> None:
+    async def confirm(self, interaction: Interaction, _button: ui.Button) -> None:
         """Redeploy the specified service."""
         try:
             await deployments.restart_deployment(self.deployment, self.namespace)
@@ -66,7 +66,7 @@ class ConfirmDeployment(ui.View):
         self.stop()
 
     @ui.button(label="Cancel", style=ButtonStyle.grey, row=0)
-    async def cancel(self, _button: ui.Button, interaction: Interaction) -> None:
+    async def cancel(self, interaction: Interaction, _button: ui.Button) -> None:
         """Logic for if the deployment is not approved."""
         await interaction.message.edit(
             content=":x: Redeployment aborted",
