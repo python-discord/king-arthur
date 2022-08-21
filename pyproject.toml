@@ -18,7 +18,7 @@ tabulate = {extras = ["widechars"], version = "0.8.10"}
 jishaku = "2.5.1"
 
 [tool.poetry.dev-dependencies]
-flake8 = "5.0.3"
+flake8 = "5.0.4"
 flake8-annotations = "2.9.1"
 # flake8-bandit is broken at the moment with flake8 v5: https://github.com/tylerwince/flake8-bandit/pull/35
 # flake8-bandit = "3.0.0"
