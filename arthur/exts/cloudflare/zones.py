@@ -1,4 +1,5 @@
 """The zones cog helps with managing Cloudflare zones."""
+import aiohttp
 import discord
 from discord.ext import commands
 
@@ -11,10 +12,11 @@ from arthur.utils import generate_error_message
 class ZonesView(discord.ui.View):
     """This view allows users to select and purge the zones specified."""
 
-    def __init__(self, domains: dict[str, str]) -> None:
+    def __init__(self, domains: dict[str, str], session: aiohttp.ClientSession) -> None:
         super().__init__()
 
         self.domains = domains
+        self.session = session
 
         for domain, zone_id in self.domains.items():
             self.children[0].add_option(label=domain, value=domain, description=zone_id, emoji="🌐")
@@ -31,13 +33,13 @@ class ZonesView(discord.ui.View):
         placeholder="Select a zone to purge...",
     )
     async def select_zones(
-        self, dropdown: discord.ui.Select, interaction: discord.Interaction
+        self, interaction: discord.Interaction, dropdown: discord.ui.Select
     ) -> None:
         """Drop down menu contains the list of zones."""
         zone_name = dropdown.values[0]
 
         required_id = self.domains[zone_name]
-        purge_attempt_response = await zones.purge_zone(required_id)
+        purge_attempt_response = await zones.purge_zone(self.session, required_id)
         if purge_attempt_response["success"]:
             message = ":white_check_mark:"
             message += " **Cache cleared!** "
@@ -69,12 +71,12 @@ class Zones(commands.Cog):
     @zones.command(name="purge")
     async def purge(self, ctx: commands.Context) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
-        cf_zones = await zones.list_zones()
+        cf_zones = await zones.list_zones(self.bot.http_session)
 
-        view = ZonesView(cf_zones)
+        view = ZonesView(cf_zones, self.bot.http_session)
         await ctx.send(":cloud: Pick which zone(s) that should have their cache purged", view=view)
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    bot.add_cog(Zones(bot))
+    await bot.add_cog(Zones(bot))

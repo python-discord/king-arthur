@@ -2,27 +2,20 @@
 from pathlib import Path
 from typing import Any, Union
 
+from botcore import BotBase
+from botcore.utils import scheduling
 from discord import Interaction, Member, User
 from discord.ext import commands
-from discord.ext.commands import Bot
 from kubernetes_asyncio import config
 
-from arthur import logger
+from arthur import exts, logger
 from arthur.config import CONFIG
-from arthur.extensions import find_extensions
 
 
-class KingArthur(Bot):
+class KingArthur(BotBase):
     """Base bot class for King Arthur."""
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
-        config = {
-            "command_prefix": commands.when_mentioned_or(*CONFIG.prefixes),
-            "case_insensitive": True,
-        }
-
-        kwargs.update(config)
-
         super().__init__(*args, **kwargs)
 
         self.add_check(self._is_devops)
@@ -31,7 +24,10 @@ class KingArthur(Bot):
     def _is_devops(ctx: Union[commands.Context, Interaction]) -> bool:
         """Check all commands are executed by authorised personnel."""
         if isinstance(ctx, Interaction):
-            return CONFIG.devops_role in [r.id for r in ctx.author.roles]
+            if isinstance(ctx.user, Member):
+                return CONFIG.devops_role in [r.id for r in ctx.user.roles]
+            else:
+                return False
 
         if ctx.command.name == "ed":
             return True
@@ -41,37 +37,23 @@ class KingArthur(Bot):
 
         return CONFIG.devops_role in [r.id for r in ctx.author.roles]
 
-    async def on_ready(self) -> None:
-        """Initialise bot once connected and authorised with Discord."""
+    async def setup_hook(self) -> None:
+        """Async initialisation method for discord.py."""
+        await super().setup_hook()
+
         # Authenticate with Kubernetes
         if (Path.home() / ".kube/config").exists():
             await config.load_kube_config()
         else:
             config.load_incluster_config()
-
         logger.info(f"Logged in <red>{self.user}</>")
 
-        # Start extension loading
-
-        for path, extension in find_extensions():
-            logger.info(
-                f"Loading extension <magenta>{path.stem}</> " f"from <magenta>{path.parent}</>"
-            )
-
-            try:
-                self.load_extension(extension)
-            except:  # noqa: E722
-                logger.exception(
-                    f"Failed to load extension <magenta>{path.stem}</> "
-                    f"from <magenta>{path.parent}</>",
-                )
-            else:
-                logger.info(
-                    f"Loaded extension <magenta>{path.stem}</> " f"from <magenta>{path.parent}</>"
-                )
+        # This is not awaited to avoid a deadlock with any cogs that have
+        # wait_until_guild_available in their cog_load method.
+        scheduling.create_task(self.load_extensions(exts))
 
         logger.info("Loading <red>jishaku</red>")
-        self.load_extension("jishaku")
+        await self.load_extension("jishaku")
         logger.info("Loaded <red>jishaku</red>")
 
     async def is_owner(self, user: Union[User, Member]) -> bool:

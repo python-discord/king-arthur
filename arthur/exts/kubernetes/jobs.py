@@ -37,7 +37,7 @@ class CronJobView(discord.ui.View):
         placeholder="Select a CronJob to trigger...",
     )
     async def select_job(
-        self, dropdown: discord.ui.Select, interaction: discord.Interaction
+        self, interaction: discord.Interaction, dropdown: discord.ui.Select
     ) -> None:
         """Drop down menu contains the list of cronjobsb."""
         cronjob_namespace, cronjob_name = dropdown.values[0].split("/")
@@ -76,6 +76,6 @@ class Jobs(commands.Cog):
         await ctx.send(":tools: Pick a CronJob to trigger", view=view)
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    bot.add_cog(Jobs(bot))
+    await bot.add_cog(Jobs(bot))

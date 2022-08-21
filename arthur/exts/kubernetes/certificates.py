@@ -52,6 +52,6 @@ class Certificates(commands.Cog):
         await ctx.send(return_message.format(namespace, table))
 
 
-def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    bot.add_cog(Certificates(bot))
+    await bot.add_cog(Certificates(bot))
