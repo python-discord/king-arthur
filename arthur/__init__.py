@@ -5,12 +5,15 @@ from functools import partial
 from typing import TYPE_CHECKING
 
 import loguru
+from botcore.utils import apply_monkey_patches
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthur
 
 logger = loguru.logger.opt(colors=True)
 logger.opt = partial(logger.opt, colors=True)
+
+apply_monkey_patches()
 
 # On Windows, the selector event loop is required for aiodns.
 if os.name == "nt":
