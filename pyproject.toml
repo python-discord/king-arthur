@@ -13,7 +13,7 @@ bot-core = { url = "https://github.com/python-discord/bot-core/archive/refs/tags
 
 pydantic = {extras = ["dotenv"], version = "1.9.2"}
 loguru = "0.6.0"
-kubernetes_asyncio = "24.2.1"
+kubernetes_asyncio = "24.2.2"
 tabulate = {extras = ["widechars"], version = "0.8.10"}
 jishaku = "2.5.1"
 
