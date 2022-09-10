@@ -14,37 +14,16 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    env:
-      # Configure pip and poetry to cache dependencies and do an unattended venv install
-      PIP_NO_CACHE_DIR: 1
-      PIP_DISABLE_PIP_VERSION_CHECK: true
-      POETRY_VIRTUALENVS_IN_PROJECT: true
-      POETRY_NO_INTERACTION: true
-
-      # Specify explicit paths for python dependencies and the pre-commit
-      # environment so we know which directories to cache
-      POETRY_CACHE_DIR: ${{ github.workspace }}/.cache/py-user-base
-      PYTHONUSERBASE: ${{ github.workspace }}/.cache/py-user-base
-      PRE_COMMIT_HOME: ${{ github.workspace }}/.cache/pre-commit-cache
-
-      # See https://github.com/pre-commit/pre-commit/issues/2178#issuecomment-1002163763
-      # for why we set this.
-      SETUPTOOLS_USE_DISTUTILS: stdlib
-
     steps:
-      - name: Add custom PYTHONUSERBASE to PATH
-        run: echo '${{ env.PYTHONUSERBASE }}/bin/' >> $GITHUB_PATH
-
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Install Python Dependencies
-        uses: HassanAbouelela/actions/setup-python@setup-python_v1.3.0
+        uses: HassanAbouelela/actions/setup-python@setup-python_v1.3.1
         with:
           # Set dev=true to install flake8 extensions, which are dev dependencies
           dev: true
           python_version: '3.10'
-          poetry_version: 'poetry==1.2.0'
 
       # Run flake8 and have it format the linting errors in the format of
       # the GitHub Workflow command to register error annotations. This
