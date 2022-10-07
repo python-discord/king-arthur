@@ -75,7 +75,15 @@ class Rules(Cog):
     @command(name="rules", aliases=("rule",))
     async def get_rules(self, ctx: Context, rules: Greedy[int]) -> None:
         """List the requested rule(s), or all of them if not defined."""
-        output_rules = set(rules) or self.rules.keys()
+        if rules:
+            output_rules = set(rules) & set(self.rules.keys())
+        else:
+            output_rules = self.rules.keys()
+
+        if not output_rules:
+            await ctx.send(f":x: Rule{'s'[:len(rules)^1]} not found.")
+            return
+
         output = "\n".join(
             f"{key}: {value}"
             for key, value in self.rules.items()
