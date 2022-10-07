@@ -20,6 +20,9 @@ class Config(BaseSettings):
     # Guild id
     guild_id: int = 267624335836053506
 
+    # Token for authorising with the Notion API
+    notion_api_token: str
+
     class Config:  # noqa: D106
         env_file = ".env"
         env_prefix = "KING_ARTHUR_"
