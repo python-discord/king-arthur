@@ -5,7 +5,7 @@ from typing import TypedDict
 import discord
 from discord.ext.commands import Cog, Context, Greedy, command
 
-from arthur.bot import KingArthur
+from arthur.bot import KingArthur, logger
 from arthur.config import CONFIG
 
 NOTION_API_BASE_URL = "https://api.notion.com/v1"
@@ -91,4 +91,10 @@ class Rules(Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
+    if not CONFIG.notion_api_token:
+        logger.info(
+            f"Not loading {__name__} as env var "
+            f"{CONFIG.Config.env_prefix}NOTION_API_TOKEN is not set."
+        )
+        return
     await bot.add_cog(Rules(bot))
