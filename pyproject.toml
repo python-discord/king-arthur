@@ -23,7 +23,7 @@ flake8-annotations = "2.9.1"
 # flake8-bandit is broken at the moment with flake8 v5: https://github.com/tylerwince/flake8-bandit/pull/35
 # flake8-bandit = "3.0.0"
 flake8-docstrings = "1.6.0"
-flake8-isort = "4.2.0"
+flake8-isort = "5.0.3"
 
 black = "22.6.0"
 taskipy = "1.10.2"
