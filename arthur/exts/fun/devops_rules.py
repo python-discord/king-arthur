@@ -85,16 +85,16 @@ class Rules(Cog):
             return
 
         output = "\n".join(
-            f"{key}: {value}"
-            for key, value in self.rules.items()
-            if key in output_rules
+            f"{key}: {value}" for key, value in self.rules.items() if key in output_rules
         )
-        await ctx.send(embed=discord.Embed(
-            title=f"Rule{'s'[:len(output_rules)^1]}",
-            description=output,
-            colour=discord.Colour.og_blurple(),
-            url="https://www.notion.so/pythondiscord/Rules-149bc48f6f7947afadd8036f11d4e9a7",
-        ))
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Rule{'s'[:len(output_rules)^1]}",
+                description=output,
+                colour=discord.Colour.og_blurple(),
+                url="https://www.notion.so/pythondiscord/Rules-149bc48f6f7947afadd8036f11d4e9a7",
+            )
+        )
 
     @rules_group.command(name="refresh", aliases=("fetch", "update"))
     async def update_rules(self, ctx: Context) -> None:
