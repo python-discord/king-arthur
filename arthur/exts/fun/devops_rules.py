@@ -3,7 +3,7 @@
 from typing import TypedDict
 
 import discord
-from discord.ext.commands import Cog, Context, Greedy, command
+from discord.ext.commands import Cog, Context, Greedy, group
 
 from arthur.bot import KingArthur, logger
 from arthur.config import CONFIG
@@ -72,8 +72,8 @@ class Rules(Cog):
             if block.get("type") == "numbered_list_item"
         }
 
-    @command(name="rules", aliases=("rule",))
-    async def get_rules(self, ctx: Context, rules: Greedy[int]) -> None:
+    @group(name="rules", aliases=("rule",))
+    async def rules_group(self, ctx: Context, rules: Greedy[int]) -> None:
         """List the requested rule(s), or all of them if not defined."""
         if rules:
             output_rules = set(rules) & set(self.rules.keys())
@@ -85,16 +85,21 @@ class Rules(Cog):
             return
 
         output = "\n".join(
-            f"{key}: {value}"
-            for key, value in self.rules.items()
-            if key in output_rules
+            f"{key}: {value}" for key, value in self.rules.items() if key in output_rules
         )
-        await ctx.send(embed=discord.Embed(
-            title=f"Rule{'s'[:len(output_rules)^1]}",
-            description=output,
-            colour=discord.Colour.og_blurple(),
-            url="https://www.notion.so/pythondiscord/Rules-149bc48f6f7947afadd8036f11d4e9a7",
-        ))
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"Rule{'s'[:len(output_rules)^1]}",
+                description=output,
+                colour=discord.Colour.og_blurple(),
+                url="https://www.notion.so/pythondiscord/Rules-149bc48f6f7947afadd8036f11d4e9a7",
+            )
+        )
+
+    @rules_group.command(name="refresh", aliases=("fetch", "update"))
+    async def update_rules(self, ctx: Context) -> None:
+        """Re-fetch the list of rules from notion."""
+        await self.cog_load()
 
 
 async def setup(bot: KingArthur) -> None:
