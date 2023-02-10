@@ -5,7 +5,7 @@ from functools import partial
 from typing import TYPE_CHECKING
 
 import loguru
-from botcore.utils import apply_monkey_patches
+from pydis_core.utils import apply_monkey_patches
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthur

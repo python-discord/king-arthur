@@ -2,11 +2,11 @@
 from pathlib import Path
 from typing import Any, Union
 
-from botcore import BotBase
-from botcore.utils import scheduling
 from discord import Interaction, Member, User
 from discord.ext import commands
 from kubernetes_asyncio import config
+from pydis_core import BotBase
+from pydis_core.utils import scheduling
 
 from arthur import exts, logger
 from arthur.config import CONFIG
