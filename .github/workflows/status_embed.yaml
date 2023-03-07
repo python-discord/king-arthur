@@ -13,7 +13,6 @@ jobs:
   status_embed:
     name:  Send Status Embed to Discord
     runs-on: ubuntu-latest
-
     steps:
       # A workflow_run event does not contain all the information
       # we need for a PR embed. That's why we upload an artifact

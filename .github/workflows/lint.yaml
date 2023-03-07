@@ -1,0 +1,58 @@
+name: Lint
+
+on:
+  workflow_call
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Python Dependencies
+        uses: HassanAbouelela/actions/setup-python@setup-python_v1.4.0
+        with:
+          python_version: '3.10'
+
+      # Run flake8 and have it format the linting errors in the format of
+      # the GitHub Workflow command to register error annotations. This
+      # means that our flake8 output is automatically added as an error
+      # annotation to both the run result and in the "Files" tab of a
+      # pull request.
+      #
+      # Format used:
+      # ::error file={filename},line={line},col={col}::{message}
+      - name: Run flake8
+        run: "flake8 \
+        --format='::error file=%(path)s,line=%(row)d,col=%(col)d::\
+        [flake8] %(code)s: %(text)s'"
+
+  artifact:
+    name: Generate & Upload Pull request Artifacts
+    if: always() && github.event_name == 'pull_request'
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      # Prepare the Pull Request Payload artifact. If this fails, we
+      # we fail silently using the `continue-on-error` option. It's
+      # nice if this succeeds, but if it fails for any reason, it
+      # does not mean that our lint-test checks failed.
+      - name: Prepare Pull Request Payload artifact
+        id: prepare-artifact
+        if: always() && github.event_name == 'pull_request'
+        continue-on-error: true
+        run: cat $GITHUB_EVENT_PATH | jq '.pull_request' > pull_request_payload.json
+
+      # This only makes sense if the previous step succeeded. To
+      # get the original outcome of the previous step before the
+      # `continue-on-error` conclusion is applied, we use the
+      # `.outcome` value. This step also fails silently.
+      - name: Upload a Build Artifact
+        if: always() && steps.prepare-artifact.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@v3
+        with:
+          name: pull-request-payload
+          path: pull_request_payload.json
