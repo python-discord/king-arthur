@@ -28,7 +28,7 @@ jobs:
       # Run `ruff` using github formatting to enable automatic inline annotations.
       - name: Run ruff
         run: "ruff check --format=github ."
-  
+
   build:
     if: github.ref == 'refs/heads/main'
     name: Build & Push
