@@ -6,7 +6,6 @@ from discord import Interaction, Member, User
 from discord.ext import commands
 from kubernetes_asyncio import config
 from pydis_core import BotBase
-from pydis_core.utils import scheduling
 
 from arthur import exts, logger
 from arthur.config import CONFIG
@@ -48,9 +47,7 @@ class KingArthur(BotBase):
             config.load_incluster_config()
         logger.info(f"Logged in <red>{self.user}</>")
 
-        # This is not awaited to avoid a deadlock with any cogs that have
-        # wait_until_guild_available in their cog_load method.
-        scheduling.create_task(self.load_extensions(exts))
+        await self.load_extensions(exts, sync_app_commands=False)
 
         logger.info("Loading <red>jishaku</red>")
         await self.load_extension("jishaku")
