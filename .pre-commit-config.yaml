@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        description: Run ruff linting
+        entry: poetry run ruff check --force-exclude
+        language: system
+        'types_or': [python, pyi]
+        require_serial: true
+        args: [--fix, --exit-non-zero-on-fix]
+
+      - id: black
+        name: Black
+        description: Run black
+        entry: poetry run black
+        language: system
+        'types_or': [python, pyi]
+        require_serial: true
