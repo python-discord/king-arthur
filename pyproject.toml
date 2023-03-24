@@ -25,7 +25,7 @@ flake8-docstrings = "1.7.0"
 flake8-isort = "6.0.0"
 
 black = "23.1.0"
-taskipy = "1.10.3"
+taskipy = "1.10.4"
 isort = "5.12.0"
 
 
