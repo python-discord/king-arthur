@@ -1,6 +1,6 @@
 """Module containing the core bot base for King Arthur."""
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from discord import Interaction, Member, User
 from discord.ext import commands
@@ -20,13 +20,12 @@ class KingArthur(BotBase):
         self.add_check(self._is_devops)
 
     @staticmethod
-    def _is_devops(ctx: Union[commands.Context, Interaction]) -> bool:
+    def _is_devops(ctx: commands.Context | Interaction) -> bool:
         """Check all commands are executed by authorised personnel."""
         if isinstance(ctx, Interaction):
             if isinstance(ctx.user, Member):
                 return CONFIG.devops_role in [r.id for r in ctx.user.roles]
-            else:
-                return False
+            return False
 
         if ctx.command.name == "ed":
             return True
@@ -53,7 +52,7 @@ class KingArthur(BotBase):
         await self.load_extension("jishaku")
         logger.info("Loaded <red>jishaku</red>")
 
-    async def is_owner(self, user: Union[User, Member]) -> bool:
+    async def is_owner(self, user: User | Member) -> bool:
         """Check if the invoker is a bot owner."""
         if not user.guild:
             return False

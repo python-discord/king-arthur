@@ -1,5 +1,4 @@
 """APIs for managing Cloudflare zones."""
-from typing import Optional
 
 import aiohttp
 
@@ -10,7 +9,7 @@ AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.cloudflare_token}"}
 
 async def list_zones(
     session: aiohttp.ClientSession,
-    zone_name: Optional[str] = None,
+    zone_name: str | None = None,
 ) -> dict[str, str]:
     """List all Cloudflare zones."""
     endpoint = "https://api.cloudflare.com/client/v4/zones"

@@ -1,5 +1,5 @@
 """APIs for working with Kubernetes deployments."""
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from kubernetes_asyncio import client
 from kubernetes_asyncio.client.api_client import ApiClient
@@ -18,9 +18,7 @@ async def restart_deployment(deployment: str, namespace: str) -> None:
                     "template": {
                         "metadata": {
                             "annotations": {
-                                "king-arthur.pydis.com/restartedAt": datetime.now(
-                                    timezone.utc
-                                ).isoformat()
+                                "king-arthur.pydis.com/restartedAt": datetime.now(UTC).isoformat()
                             }
                         }
                     }
