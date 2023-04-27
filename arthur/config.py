@@ -1,5 +1,4 @@
 """Utilities for interacting with the config for King Arthur."""
-from typing import Optional
 
 from pydantic import BaseSettings
 
@@ -23,7 +22,7 @@ class Config(BaseSettings):
     guild_id: int = 267624335836053506
 
     # Token for authorising with the Notion API
-    notion_api_token: Optional[str] = None
+    notion_api_token: str | None = None
 
     class Config:  # noqa: D106
         env_file = ".env"

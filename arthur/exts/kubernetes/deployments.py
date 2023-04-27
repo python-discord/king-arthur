@@ -64,6 +64,7 @@ class ConfirmDeployment(ui.View):
             await interaction.message.edit(content=description, view=None)
 
         self.stop()
+        return None
 
     @ui.button(label="Cancel", style=ButtonStyle.grey, row=0)
     async def cancel(self, interaction: Interaction, _button: ui.Button) -> None:
@@ -79,10 +80,9 @@ def deployment_to_emote(deployment: V1Deployment) -> str:
     """Convert a deployment to an emote based on it's replica status."""
     if deployment.status.available_replicas == deployment.spec.replicas:
         return "\N{LARGE GREEN CIRCLE}"
-    elif deployment.status.available_replicas == 0 or not deployment.status.available_replicas:
+    if deployment.status.available_replicas == 0 or not deployment.status.available_replicas:
         return "\N{LARGE RED CIRCLE}"
-    else:
-        return "\N{LARGE YELLOW CIRCLE}"
+    return "\N{LARGE YELLOW CIRCLE}"
 
 
 class Deployments(commands.Cog):
@@ -146,6 +146,7 @@ class Deployments(commands.Cog):
         )
 
         await ctx.send(return_message.format(namespace, table))
+        return None
 
     @deployments.command(name="restart", aliases=["redeploy"])
     async def deployments_restart(

@@ -21,19 +21,17 @@ class ErrorHandler(Cog):
         """Handle exceptions raised during command processing."""
         if isinstance(error, commands.CommandNotFound):
             return
-        if isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(error, commands.MissingRequiredArgument | commands.BadArgument):
             await self._add_error_reaction(ctx.message)
             await ctx.send_help(ctx.command)
-        elif isinstance(error, commands.BadArgument):
-            await self._add_error_reaction(ctx.message)
-            await ctx.send_help(ctx.command)
-        elif isinstance(error, commands.CheckFailure):
-            await self._add_error_reaction(ctx.message)
-        elif isinstance(error, commands.NoPrivateMessage):
-            await self._add_error_reaction(ctx.message)
-        elif isinstance(error, commands.CommandOnCooldown):
-            await self._add_error_reaction(ctx.message)
-        elif isinstance(error, commands.DisabledCommand):
+        elif isinstance(
+            error,
+            commands.CheckFailure
+            | commands.NoPrivateMessage
+            | commands.CommandOnCooldown
+            | commands.DisabledCommand
+            | commands.DisabledCommand,
+        ):
             await self._add_error_reaction(ctx.message)
         elif isinstance(error, commands.CommandInvokeError):
             await self._add_error_reaction(ctx.message)
@@ -49,7 +47,7 @@ class ErrorHandler(Cog):
             await ctx.send(
                 generate_error_message(
                     description=(
-                        f"Unknown exception occurred: `{error.__class__.__name__}:" f" {error}`"
+                        f"Unknown exception occurred: `{error.__class__.__name__}: {error}`"
                     )
                 )
             )
