@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   generate-sha-tag:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       sha-tag: ${{ steps.sha-tag.outputs.sha-tag }}
@@ -27,7 +26,6 @@ jobs:
     uses: ./.github/workflows/lint.yaml
 
   build-deploy:
-    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/build-deploy.yaml
     needs:
       - lint

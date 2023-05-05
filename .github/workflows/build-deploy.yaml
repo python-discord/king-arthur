@@ -12,7 +12,6 @@ jobs:
   build:
     name: Build & Push
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -39,9 +38,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: ./Dockerfile
-          push: true
+          push: ${{ github.ref == github.event.repository.default_branch }}
           cache-from: type=registry,ref=ghcr.io/python-discord/king-arthur:latest
           cache-to: type=inline
           tags: |
@@ -54,9 +51,8 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     needs: build
-
+    if: ${{ github.ref == github.event.repository.default_branch }}
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v3
         with:
