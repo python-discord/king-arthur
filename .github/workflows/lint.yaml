@@ -16,18 +16,12 @@ jobs:
         with:
           python_version: '3.10'
 
-      # Run flake8 and have it format the linting errors in the format of
-      # the GitHub Workflow command to register error annotations. This
-      # means that our flake8 output is automatically added as an error
-      # annotation to both the run result and in the "Files" tab of a
-      # pull request.
-      #
-      # Format used:
-      # ::error file={filename},line={line},col={col}::{message}
-      - name: Run flake8
-        run: "flake8 \
-        --format='::error file=%(path)s,line=%(row)d,col=%(col)d::\
-        [flake8] %(code)s: %(text)s'"
+      - name: Run pre-commit hooks
+        run: SKIP=ruff pre-commit run --all-files
+
+      # Run `ruff` using github formatting to enable automatic inline annotations.
+      - name: Run ruff
+        run: "ruff check --format=github ."
 
   artifact:
     name: Generate & Upload Pull request Artifacts
