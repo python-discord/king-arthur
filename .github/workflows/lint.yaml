@@ -11,7 +11,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Python Dependencies
+      - name: Install Python dependencies
         uses: HassanAbouelela/actions/setup-python@setup-python_v1.4.0
         with:
           python_version: '3.10'
@@ -24,16 +24,16 @@ jobs:
         run: "ruff check --format=github ."
 
   artifact:
-    name: Generate & Upload Pull request Artifacts
+    name: Generate & upload pull request artifacts
     if: always() && github.event_name == 'pull_request'
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      # Prepare the Pull Request Payload artifact. If this fails, we
+      # Prepare the pull request payload artifact. If this fails, we
       # we fail silently using the `continue-on-error` option. It's
       # nice if this succeeds, but if it fails for any reason, it
       # does not mean that our lint-test checks failed.
-      - name: Prepare Pull Request Payload artifact
+      - name: Prepare pull request payload artifact
         id: prepare-artifact
         if: always() && github.event_name == 'pull_request'
         continue-on-error: true
@@ -43,7 +43,7 @@ jobs:
       # get the original outcome of the previous step before the
       # `continue-on-error` conclusion is applied, we use the
       # `.outcome` value. This step also fails silently.
-      - name: Upload a Build Artifact
+      - name: Upload a build artifact
         if: always() && steps.prepare-artifact.outcome == 'success'
         continue-on-error: true
         uses: actions/upload-artifact@v3

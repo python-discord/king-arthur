@@ -16,7 +16,7 @@ jobs:
     outputs:
       sha-tag: ${{ steps.sha-tag.outputs.sha-tag }}
     steps:
-      - name: Create SHA Container tag
+      - name: Create short SHA to be used as a container tag
         id: sha-tag
         run: |
           tag=$(cut -c 1-7 <<< $GITHUB_SHA)
