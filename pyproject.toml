@@ -9,7 +9,7 @@ license = "MIT"
 python = "3.11.*"
 
 # See https://bot-core.pythondiscord.com/ for docs.
-pydis-core = "9.6.0"
+pydis-core = "9.9.1"
 
 pydantic = {extras = ["dotenv"], version = "1.10.9"}
 loguru = "0.7.0"
