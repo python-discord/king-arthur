@@ -21,7 +21,7 @@ jishaku = "2.5.1"
 black = "23.3.0"
 isort = "5.12.0"
 taskipy = "1.11.0"
-ruff = "0.0.270"
+ruff = "0.0.277"
 pre-commit = "3.3.2"
 
 [tool.taskipy.tasks]
