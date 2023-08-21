@@ -9,7 +9,7 @@ license = "MIT"
 python = "3.11.*"
 
 # See https://bot-core.pythondiscord.com/ for docs.
-pydis-core = "9.6.0"
+pydis-core = "10.1.0"
 
 pydantic = {extras = ["dotenv"], version = "1.10.9"}
 loguru = "0.7.0"
@@ -18,11 +18,10 @@ tabulate = {extras = ["widechars"], version = "0.9.0"}
 jishaku = "2.5.1"
 
 [tool.poetry.dev-dependencies]
-black = "23.3.0"
-isort = "5.12.0"
-taskipy = "1.11.0"
-ruff = "0.0.270"
-pre-commit = "3.3.2"
+black = "23.7.0"
+taskipy = "1.12.0"
+ruff = "0.0.285"
+pre-commit = "3.3.3"
 
 [tool.taskipy.tasks]
 start = "python -m arthur"
@@ -57,4 +56,4 @@ ignore = [
     "SIM102", "SIM108",
 ]
 line-length = 100
-select = ["ANN", "B", "C4", "D", "DTZ", "E", "F", "ISC", "INT", "N", "PGH", "PIE", "Q", "RET", "RSE", "RUF", "S", "SIM", "T20", "TID", "UP", "W"]
+select = ["ANN", "B", "C4", "D", "DTZ", "E", "F", "I", "ISC", "INT", "N", "PGH", "PIE", "Q", "RET", "RSE", "RUF", "S", "SIM", "T20", "TID", "UP", "W"]
