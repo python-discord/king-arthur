@@ -25,8 +25,5 @@ class Config(
     # Guild id
     guild_id: int = 267624335836053506
 
-    # Token for authorising with the Notion API
-    notion_api_token: str | None = None
-
 
 CONFIG = Config()
