@@ -56,7 +56,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          repository: python-discord/kubernetes
+          repository: python-discord/infra
+          path: infra
 
       - uses: azure/setup-kubectl@v3
 
@@ -70,5 +71,5 @@ jobs:
         uses: azure/k8s-deploy@v4
         with:
           manifests: |
-              namespaces/default/king-arthur/deployment.yaml
+              infra/kubernetes/namespaces/default/king-arthur/deployment.yaml
           images: 'ghcr.io/python-discord/king-arthur:${{ inputs.sha-tag }}'
