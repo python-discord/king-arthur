@@ -14,7 +14,7 @@ class Config(
     token: str
 
     # Discord bot prefix
-    prefixes: tuple[str] = ("arthur ", "M-x ")
+    prefixes: tuple[str, ...] = ("arthur ", "M-x ")
 
     # Authorised role ID for usage
     devops_role: int = 409416496733880320
