@@ -638,13 +638,13 @@ voice = ["yt-dlp (>=2022.3.8)"]
 
 [[package]]
 name = "kubernetes-asyncio"
-version = "24.2.3"
+version = "25.11.0"
 description = "Kubernetes asynchronous python client"
 optional = false
 python-versions = "*"
 files = [
-    {file = "kubernetes_asyncio-24.2.3-py3-none-any.whl", hash = "sha256:48f3bd583eeb16fbeb0767b0e190039013c1a4a7f4af5178ca3a6a904a7b6aba"},
-    {file = "kubernetes_asyncio-24.2.3.tar.gz", hash = "sha256:01b0f22dbb9e83a333dc0d3c7b00bf76483cf18071a70dd022fdeaae04b81e93"},
+    {file = "kubernetes_asyncio-25.11.0-py3-none-any.whl", hash = "sha256:2d8cea3793fa55745a4f9550cc08d702394b1ee328ef11ba9d9168eb92f323c7"},
+    {file = "kubernetes_asyncio-25.11.0.tar.gz", hash = "sha256:29975b64a278f9d6c65935faedfe86225c036b9968cec02119fcfa9406e33a89"},
 ]
 
 [package.dependencies]
@@ -1553,4 +1553,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.*"
-content-hash = "f18638431d44e1181687c6ba152baf6ea07ff4ec80b0bf33e897f9bed5631edf"
+content-hash = "ea9ecaa26d1148e23b7dac2467bbeb67f1c8d2b12270e40e34ce5f5ae8f6e7ce"
