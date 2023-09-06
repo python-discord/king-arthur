@@ -1,7 +1,7 @@
 """The zones cog helps with managing Cloudflare zones."""
 import discord
 from discord.ext import commands
-from kubernetes_asyncio.client.models import V1beta1CronJobList
+from kubernetes_asyncio.client.models import V1CronJobList
 
 from arthur.apis.kubernetes import jobs
 from arthur.bot import KingArthur
@@ -13,7 +13,7 @@ from arthur.config import CONFIG
 class CronJobView(discord.ui.View):
     """This view allows users to select and trigger a CronJob."""
 
-    def __init__(self, cron_jobs: V1beta1CronJobList) -> None:
+    def __init__(self, cron_jobs: V1CronJobList) -> None:
         super().__init__()
 
         self.cron_jobs = cron_jobs
