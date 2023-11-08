@@ -18,7 +18,7 @@ tabulate = { extras = ["widechars"], version = "0.9.0" }
 jishaku = "2.5.1"
 
 [tool.poetry.dev-dependencies]
-black = "23.9.1"
+black = "23.11.0"
 taskipy = "1.12.0"
 ruff = "0.0.291"
 pre-commit = "3.4.0"
