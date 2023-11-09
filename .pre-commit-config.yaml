@@ -11,8 +11,8 @@ repos:
 
   - repo: local
     hooks:
-      - id: ruff
-        name: ruff
+      - id: ruff-lint
+        name: ruff linting
         description: Run ruff linting
         entry: poetry run ruff check --force-exclude
         language: system
@@ -20,10 +20,10 @@ repos:
         require_serial: true
         args: [--fix, --exit-non-zero-on-fix]
 
-      - id: black
-        name: Black
-        description: Run black
-        entry: poetry run black
+      - id: ruff-format
+        name: ruff formatting
+        description: Run ruff formatting
+        entry: poetry run ruff format --force-exclude
         language: system
         'types_or': [python, pyi]
         require_serial: true

@@ -17,11 +17,11 @@ jobs:
           python_version: '3.11'
 
       - name: Run pre-commit hooks
-        run: SKIP=ruff pre-commit run --all-files
+        run: SKIP=ruff-lint pre-commit run --all-files
 
       # Run `ruff` using github formatting to enable automatic inline annotations.
       - name: Run ruff
-        run: "ruff check --format=github ."
+        run: "ruff check --output-format=github ."
 
   artifact:
     name: Generate & upload pull request artifacts
