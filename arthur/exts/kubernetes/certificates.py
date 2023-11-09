@@ -1,4 +1,5 @@
 """The Certificates cog helps with managing TLS certificates."""
+
 from textwrap import dedent
 
 from discord.ext import commands

@@ -1,4 +1,5 @@
 """Utilities for interacting with the config for King Arthur."""
+
 from pydantic_settings import BaseSettings
 
 

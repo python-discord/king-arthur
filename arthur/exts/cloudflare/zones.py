@@ -1,4 +1,5 @@
 """The zones cog helps with managing Cloudflare zones."""
+
 import aiohttp
 import discord
 from discord.ext import commands

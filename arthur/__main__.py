@@ -1,4 +1,5 @@
 """Entrypoint for King Arthur."""
+
 import asyncio
 
 import aiohttp

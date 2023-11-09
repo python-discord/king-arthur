@@ -1,4 +1,5 @@
 """The zones cog helps with managing Cloudflare zones."""
+
 import discord
 from discord.ext import commands
 from kubernetes_asyncio.client.models import V1CronJobList

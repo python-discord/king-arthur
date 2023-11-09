@@ -1,4 +1,5 @@
 """Module containing the core bot base for King Arthur."""
+
 from pathlib import Path
 from typing import Any
 

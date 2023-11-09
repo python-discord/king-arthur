@@ -1,4 +1,5 @@
 """This cog provides error handling for King Arthur."""
+
 from discord import Message
 from discord.ext import commands
 from discord.ext.commands import Cog

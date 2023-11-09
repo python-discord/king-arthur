@@ -1,4 +1,5 @@
 """The Deployments cog helps with managing Kubernetes deployments."""
+
 from textwrap import dedent
 
 from discord import ButtonStyle, Interaction, ui

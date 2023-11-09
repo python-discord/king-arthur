@@ -1,4 +1,5 @@
 """King Arthur is Python Discord's DevOps utility bot."""
+
 import asyncio
 import os
 from functools import partial

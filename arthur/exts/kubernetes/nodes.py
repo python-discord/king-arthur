@@ -1,4 +1,5 @@
 """The Nodes cog helps with managing Kubernetes nodes."""
+
 from textwrap import dedent
 
 from discord.ext import commands
