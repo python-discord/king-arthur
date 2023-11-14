@@ -11,7 +11,7 @@ python = "3.11.*"
 # See https://bot-core.pythondiscord.com/ for docs.
 pydis-core = "10.4.0"
 
-pydantic-settings = "2.0.3"
+pydantic-settings = "2.1.0"
 loguru = "0.7.2"
 kubernetes_asyncio = "28.2.0"
 tabulate = { extras = ["widechars"], version = "0.9.0" }
