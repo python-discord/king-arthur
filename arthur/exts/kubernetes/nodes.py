@@ -50,14 +50,12 @@ class Nodes(commands.Cog):
 
             node_creation = node.metadata.creation_timestamp
 
-            table_data.append(
-                [
-                    node.metadata.name,
-                    ", ".join(statuses),
-                    node.status.node_info.kubelet_version,
-                    node_creation,
-                ]
-            )
+            table_data.append([
+                node.metadata.name,
+                ", ".join(statuses),
+                node.status.node_info.kubelet_version,
+                node_creation,
+            ])
 
         table = tabulate(
             table_data, headers=["Name", "Status", "Kubernetes Version", "Created"], tablefmt="psql"

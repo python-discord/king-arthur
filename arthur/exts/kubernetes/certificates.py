@@ -28,14 +28,12 @@ class Certificates(commands.Cog):
         table_data = []
 
         for certificate in certs["items"]:
-            table_data.append(
-                [
-                    certificate["metadata"]["name"],
-                    ", ".join(certificate["spec"]["dnsNames"]),
-                    certificate["spec"]["issuerRef"]["name"],
-                    certificate["status"]["conditions"][0]["message"],
-                ]
-            )
+            table_data.append([
+                certificate["metadata"]["name"],
+                ", ".join(certificate["spec"]["dnsNames"]),
+                certificate["spec"]["issuerRef"]["name"],
+                certificate["status"]["conditions"][0]["message"],
+            ])
 
         table = tabulate(
             table_data, headers=["Name", "DNS Names", "Issuer", "Status"], tablefmt="psql"
