@@ -39,14 +39,12 @@ class Certificates(commands.Cog):
             table_data, headers=["Name", "DNS Names", "Issuer", "Status"], tablefmt="psql"
         )
 
-        return_message = dedent(
-            """
+        return_message = dedent("""
             **Certificates in namespace `{0}`**
             ```
             {1}
             ```
-            """
-        )
+            """)
 
         await ctx.send(return_message.format(namespace, table))
 

@@ -135,14 +135,12 @@ class Deployments(commands.Cog):
             colalign=("center", "left", "center"),
         )
 
-        return_message = dedent(
-            """
+        return_message = dedent("""
             **Deployments in namespace `{0}`**
             ```
             {1}
             ```
-            """
-        )
+            """)
 
         await ctx.send(return_message.format(namespace, table))
         return None

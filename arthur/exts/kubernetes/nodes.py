@@ -61,14 +61,12 @@ class Nodes(commands.Cog):
             table_data, headers=["Name", "Status", "Kubernetes Version", "Created"], tablefmt="psql"
         )
 
-        return_message = dedent(
-            """
+        return_message = dedent("""
             **Cluster nodes**
             ```
             {0}
             ```
-            """
-        )
+            """)
 
         await ctx.send(return_message.format(table))
 
