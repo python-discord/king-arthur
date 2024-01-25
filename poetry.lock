@@ -492,17 +492,17 @@ voice = ["yt-dlp (>=2022.3.8)"]
 
 [[package]]
 name = "kubernetes-asyncio"
-version = "28.2.1"
+version = "29.0.0"
 description = "Kubernetes asynchronous python client"
 optional = false
 python-versions = "*"
 files = [
-    {file = "kubernetes_asyncio-28.2.1-py3-none-any.whl", hash = "sha256:4e4d00fb015470da2b740fdd8c9b4d7000fa7b58232f6345b7f6249bcc4fc4b1"},
-    {file = "kubernetes_asyncio-28.2.1.tar.gz", hash = "sha256:2a62c4f94109a9474496d1af932025f222c9fa54e7146173d64475c9efa7a18c"},
+    {file = "kubernetes_asyncio-29.0.0-py3-none-any.whl", hash = "sha256:9dd911260e89d984479f23b1000b8713d35b68fbd92873473449b5558da1a3f4"},
+    {file = "kubernetes_asyncio-29.0.0.tar.gz", hash = "sha256:99ff1fea4df062adb7a6e48962ad2504459165ffd7542013bc3d72d9ab3817be"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.7.0,<4.0.0"
+aiohttp = ">=3.9.0,<4.0.0"
 certifi = ">=14.05.14"
 python-dateutil = ">=2.5.3"
 pyyaml = ">=3.12"
@@ -998,6 +998,7 @@ files = [
     {file = "PyYAML-6.0.1-cp311-cp311-win_amd64.whl", hash = "sha256:bf07ee2fef7014951eeb99f56f39c9bb4af143d8aa3c21b1677805985307da34"},
     {file = "PyYAML-6.0.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:855fb52b0dc35af121542a76b9a84f8d1cd886ea97c84703eaa6d88e37a2ad28"},
     {file = "PyYAML-6.0.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:40df9b996c2b73138957fe23a16a4f0ba614f4c0efce1e9406a184b6d07fa3a9"},
+    {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a08c6f0fe150303c1c6b71ebcd7213c2858041a7e01975da3a99aed1e7a378ef"},
     {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c22bec3fbe2524cde73d7ada88f6566758a8f7227bfbf93a408a9d86bcc12a0"},
     {file = "PyYAML-6.0.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8d4e9c88387b0f5c7d5f281e55304de64cf7f9c0021a3525bd3b1c542da3b0e4"},
     {file = "PyYAML-6.0.1-cp312-cp312-win32.whl", hash = "sha256:d483d2cdf104e7c9fa60c544d92981f12ad66a457afae824d146093b8c294c54"},
@@ -1333,4 +1334,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.*"
-content-hash = "b3681841d6cb984150a89823eb843ebfa729e96d595665d9e60a30469ce671d9"
+content-hash = "93ec076041829b9ac8a52fd8075e290ef1af621568e6b6d239f0e858a0232c29"
