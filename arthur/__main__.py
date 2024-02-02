@@ -31,7 +31,7 @@ async def main() -> None:
             intents=intents,
         )
         async with arthur.instance as bot:
-            await bot.start(CONFIG.token)
+            await bot.start(CONFIG.token.get_secret_value())
 
 
 with arthur.logger.catch():

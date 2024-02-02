@@ -1,5 +1,6 @@
 """Utilities for interacting with the config for King Arthur."""
 
+import pydantic
 from pydantic_settings import BaseSettings
 
 
@@ -12,7 +13,7 @@ class Config(
     """Configuration for King Arthur."""
 
     # Discord bot token
-    token: str
+    token: pydantic.SecretStr
 
     # Discord bot prefix
     prefixes: tuple[str, ...] = ("arthur ", "M-x ")
@@ -21,7 +22,7 @@ class Config(
     devops_role: int = 409416496733880320
 
     # Token for authorising with the Cloudflare API
-    cloudflare_token: str
+    cloudflare_token: pydantic.SecretStr
 
     # Guild id
     guild_id: int = 267624335836053506

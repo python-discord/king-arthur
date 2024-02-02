@@ -4,7 +4,7 @@ import aiohttp
 
 from arthur.config import CONFIG
 
-AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.cloudflare_token}"}
+AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.cloudflare_token.get_secret_value()}"}
 
 
 async def list_zones(
