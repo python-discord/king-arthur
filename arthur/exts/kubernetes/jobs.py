@@ -8,8 +8,6 @@ from arthur.apis.kubernetes import jobs
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
 
-# from arthur.utils import generate_error_message
-
 
 class CronJobView(discord.ui.View):
     """This view allows users to select and trigger a CronJob."""

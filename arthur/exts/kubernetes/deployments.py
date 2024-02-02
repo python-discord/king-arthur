@@ -1,5 +1,6 @@
 """The Deployments cog helps with managing Kubernetes deployments."""
 
+from http import HTTPStatus
 from textwrap import dedent
 
 from discord import ButtonStyle, Interaction, ui
@@ -42,7 +43,7 @@ class ConfirmDeployment(ui.View):
         try:
             await deployments.restart_deployment(self.deployment, self.namespace)
         except ApiException as e:
-            if e.status == 404:
+            if e.status == HTTPStatus.NOT_FOUND:
                 return await interaction.message.edit(
                     content=generate_error_message(
                         description="Could not find deployment, check the namespace.",

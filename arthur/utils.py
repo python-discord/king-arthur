@@ -13,6 +13,6 @@ def generate_error_message(
     return f"{emote} **{title}** {description}"
 
 
-def datetime_to_discord(time: datetime, format: str = "f") -> str:
+def datetime_to_discord(time: datetime, date_format: str = "f") -> str:
     """Convert a datetime object to a Discord timestamp."""
-    return f"<t:{int(time.timestamp())}:{format}>"
+    return f"<t:{int(time.timestamp())}:{date_format}>"

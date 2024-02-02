@@ -25,15 +25,15 @@ class Certificates(commands.Cog):
         """List TLS certificates in the selected namespace (defaults to default)."""
         certs = await certificates.list_certificates(namespace)
 
-        table_data = []
-
-        for certificate in certs["items"]:
-            table_data.append([
+        table_data = [
+            [
                 certificate["metadata"]["name"],
                 ", ".join(certificate["spec"]["dnsNames"]),
                 certificate["spec"]["issuerRef"]["name"],
                 certificate["status"]["conditions"][0]["message"],
-            ])
+            ]
+            for certificate in certs["items"]
+        ]
 
         table = tabulate(
             table_data, headers=["Name", "DNS Names", "Issuer", "Status"], tablefmt="psql"

@@ -52,7 +52,7 @@ class Rules(Cog):
         )
 
     @rules_group.command(name="refresh", aliases=("fetch", "update"))
-    async def update_rules(self, ctx: Context) -> None:
+    async def update_rules(self, _: Context) -> None:
         """Re-fetch the list of rules from notion."""
         await self.cog_load()
 

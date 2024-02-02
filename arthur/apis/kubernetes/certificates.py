@@ -8,8 +8,8 @@ from kubernetes_asyncio.client.api_client import ApiClient
 
 async def list_certificates(namespace: str) -> dict[str, Any]:
     """List certificate objects created through cert-manager."""
-    async with ApiClient() as api:
-        api = client.CustomObjectsApi(api)
+    async with ApiClient() as api_client:
+        api = client.CustomObjectsApi(api_client)
         return await api.list_namespaced_custom_object(
             "cert-manager.io", "v1", namespace, "certificates"
         )

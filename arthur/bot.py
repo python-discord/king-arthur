@@ -49,10 +49,9 @@ class KingArthur(BotBase):
 
         await self.load_extensions(exts, sync_app_commands=False)
 
-        # jishaku doesn't support 3.11 yet.
-        # logger.info("Loading <red>jishaku</red>")
-        # await self.load_extension("jishaku")
-        # logger.info("Loaded <red>jishaku</red>")
+        logger.info("Loading <red>jishaku</red>")
+        await self.load_extension("jishaku")
+        logger.info("Loaded <red>jishaku</red>")
 
     async def is_owner(self, user: User | Member) -> bool:
         """Check if the invoker is a bot owner."""

@@ -7,14 +7,14 @@ from kubernetes_asyncio.client.models import V1NodeList
 
 async def list_nodes() -> V1NodeList:
     """List Kubernetes nodes."""
-    async with ApiClient() as api:
-        api = client.CoreV1Api(api)
+    async with ApiClient() as api_client:
+        api = client.CoreV1Api(api_client)
         return await api.list_node()
 
 
-async def _change_cordon(node: str, cordon: bool) -> None:
-    async with ApiClient() as api:
-        api = client.CoreV1Api(api)
+async def _change_cordon(node: str, *, cordon: bool) -> None:
+    async with ApiClient() as api_client:
+        api = client.CoreV1Api(api_client)
         await api.patch_node(
             node,
             body={"spec": {"unschedulable": cordon}},
@@ -23,9 +23,9 @@ async def _change_cordon(node: str, cordon: bool) -> None:
 
 async def cordon_node(node: str) -> None:
     """Cordon a Kubernetes node."""
-    await _change_cordon(node, True)
+    await _change_cordon(node, cordon=True)
 
 
 async def uncordon_node(node: str) -> None:
     """Uncordon a Kubernetes node."""
-    await _change_cordon(node, False)
+    await _change_cordon(node, cordon=False)

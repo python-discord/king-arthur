@@ -46,7 +46,7 @@ class Nodes(commands.Cog):
 
             if node.spec.taints:
                 for taint in node.spec.taints:
-                    statuses.append(taint.effect)
+                    statuses.append(taint.effect)  # noqa: PERF401
 
             node_creation = node.metadata.creation_timestamp
 
