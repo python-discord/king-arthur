@@ -27,7 +27,7 @@ class Rules(Cog):
             number, rule = line.split(".", maxsplit=1)
             self.rules[int(number)] = rule.strip()
 
-    @group(name="rules", aliases=("rule",))
+    @group(name="rules", aliases=("rule",), invoke_without_command=True)
     async def rules_group(self, ctx: Context, rules: Greedy[int]) -> None:
         """List the requested rule(s), or all of them if not defined."""
         if rules:
