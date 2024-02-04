@@ -25,7 +25,7 @@ class Rules(Cog):
         self.rules = {}
         for line in parsed_content:
             number, rule = line.split(".", maxsplit=1)
-            self.rules[number] = rule.strip()
+            self.rules[int(number)] = rule.strip()
 
     @group(name="rules", aliases=("rule",))
     async def rules_group(self, ctx: Context, rules: Greedy[int]) -> None:
