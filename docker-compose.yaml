@@ -1,0 +1,11 @@
+services:
+  bot:
+    restart: "no"
+    build: .
+    volumes:
+      - .:/bot:ro
+    tty: true
+    env_file:
+      - .env
+    environment:
+      KUBECONFIG: /app/config
