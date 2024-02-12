@@ -6,6 +6,7 @@ from typing import Any
 from discord import Interaction, Member, User
 from discord.ext import commands
 from kubernetes_asyncio import config
+from kubernetes_asyncio.config.kube_config import KUBE_CONFIG_DEFAULT_LOCATION
 from pydis_core import BotBase
 
 from arthur import exts, logger
@@ -41,7 +42,7 @@ class KingArthur(BotBase):
         await super().setup_hook()
 
         # Authenticate with Kubernetes
-        if (Path.home() / ".kube/config").exists():
+        if Path(KUBE_CONFIG_DEFAULT_LOCATION).exists():
             await config.load_kube_config()
         else:
             config.load_incluster_config()
