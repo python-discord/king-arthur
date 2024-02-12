@@ -12,19 +12,16 @@ class Config(
 ):
     """Configuration for King Arthur."""
 
-    # Discord bot token
     token: pydantic.SecretStr
-
-    # Discord bot prefix
     prefixes: tuple[str, ...] = ("arthur ", "M-x ")
 
-    # Authorised role ID for usage
-    devops_role: int = 409416496733880320
-
-    # Token for authorising with the Cloudflare API
     cloudflare_token: pydantic.SecretStr
+    grafana_url: str = "https://grafana.pythondiscord.com"
+    grafana_token: pydantic.SecretStr
+    github_token: pydantic.SecretStr
+    github_org: str = "python-discord"
 
-    # Guild id
+    devops_role: int = 409416496733880320
     guild_id: int = 267624335836053506
 
 
