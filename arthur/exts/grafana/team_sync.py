@@ -4,9 +4,9 @@ import aiohttp
 import discord
 from discord.ext import commands, tasks
 
-from arthur import logger
 from arthur.apis import github, grafana
 from arthur.bot import KingArthur
+from arthur.log import logger
 
 
 @dataclass(frozen=True)

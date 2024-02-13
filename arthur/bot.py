@@ -9,8 +9,9 @@ from kubernetes_asyncio import config
 from kubernetes_asyncio.config.kube_config import KUBE_CONFIG_DEFAULT_LOCATION
 from pydis_core import BotBase
 
-from arthur import exts, logger
+from arthur import exts
 from arthur.config import CONFIG
+from arthur.log import logger
 
 
 class KingArthur(BotBase):
