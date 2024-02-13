@@ -35,6 +35,18 @@ async def add_user_to_team(
         return await response.json()
 
 
+async def remove_user_from_team(
+    user_id: int,
+    team_id: int,
+    session: aiohttp.ClientSession,
+) -> dict[str, str]:
+    """AdRemove a Grafana user from a team."""
+    endpoint = CONFIG.grafana_url + f"/api/teams/{team_id}/members/{user_id}"
+    async with session.delete(endpoint, headers=AUTH_HEADER) as response:
+        response.raise_for_status()
+        return await response.json()
+
+
 async def get_all_users(session: aiohttp.ClientSession) -> list[dict[str, str]]:
     """Get a grafana users."""
     endpoint = CONFIG.grafana_url + "/api/org/users/lookup"
