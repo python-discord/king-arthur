@@ -1,5 +1,7 @@
 """Utilities for interacting with the config for King Arthur."""
 
+from os import environ
+
 import pydantic
 from pydantic_settings import BaseSettings
 
@@ -23,6 +25,10 @@ class Config(
 
     devops_role: int = 409416496733880320
     guild_id: int = 267624335836053506
+    sentry_dsn: str = ""
+
+
+GIT_SHA = environ.get("GIT_SHA", "development")
 
 
 CONFIG = Config()
