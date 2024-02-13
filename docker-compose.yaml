@@ -3,7 +3,7 @@ services:
     restart: "no"
     build: .
     volumes:
-      - .:/bot:ro
+      - .:/app:ro
     tty: true
     env_file:
       - .env
