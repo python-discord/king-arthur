@@ -38,7 +38,11 @@ class GrafanaTeamSync(commands.Cog):
         self.sync_github_grafana_teams.start()
 
     async def _add_missing_members(
-        self, grafana_team_id: int, github_team_members: set[str], grafana_team_members: set[str]
+        self,
+        grafana_team_id: int,
+        github_team_members: set[str],
+        grafana_team_members: set[str],
+        all_grafana_users: list[dict],
     ) -> MissingMembers:
         """
         Adds members to the Grafana team if they're in the Github team and not already present.
@@ -46,9 +50,8 @@ class GrafanaTeamSync(commands.Cog):
         Returns the number of missing members, and the number of members it could actually add.
         """
         missing_members = github_team_members - grafana_team_members
-        grafana_users = await grafana.get_all_users(self.bot.http_session)
-        added_members = set()
-        for grafana_user in grafana_users:
+        added_members = 0
+        for grafana_user in all_grafana_users:
             if grafana_user["login"] not in missing_members:
                 continue
             await grafana.add_user_to_team(
@@ -56,8 +59,8 @@ class GrafanaTeamSync(commands.Cog):
                 grafana_team_id,
                 self.bot.http_session,
             )
-            added_members.add(grafana_user["login"])
-        return MissingMembers(count=len(missing_members), successfully_added=len(added_members))
+            added_members += 1
+        return MissingMembers(count=len(missing_members), successfully_added=added_members)
 
     async def _sync_teams(self, team: dict[str, str]) -> SyncFigures:
         """
@@ -75,10 +78,12 @@ class GrafanaTeamSync(commands.Cog):
             if member.get("auth_module") == "oauth_github"
         }
 
+        all_grafana_users = await grafana.get_all_users(self.bot.http_session)
         added_members = await self._add_missing_members(
             team["id"],
             github_team_members,
             grafana_team_members,
+            all_grafana_users,
         )
         removed_members = 0  # TODO Actually remove members who shouldn't be present.
 
