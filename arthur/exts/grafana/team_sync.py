@@ -123,6 +123,10 @@ class GrafanaTeamSync(commands.Cog):
     async def sync_github_grafana_teams(self, channel: discord.TextChannel | None = None) -> None:
         """Update Grafana team membership to match Github team membership."""
         grafana_teams = await grafana.list_teams(self.bot.http_session)
+        embed = discord.Embed(
+            title="Sync Stats",
+            colour=discord.Colour.blue(),
+        )
         for team in grafana_teams:
             logger.debug(f"Processing {team['name']}")
             try:
@@ -133,11 +137,19 @@ class GrafanaTeamSync(commands.Cog):
                     await channel.send(e)
                 continue
 
-            if channel:
-                await channel.send(
-                    f"Found {figures.added.count} users not in the {team['name']} Grafana team, added {figures.added.successfully_added} of them. "
-                    f"{figures.removed} members were found in the Grafana team who shouldn't be, and were removed."
-                )
+            lines = [
+                f"Missing: {figures.added.count}",
+                f"Added: {figures.added.successfully_added}",
+                f"Removed: {figures.removed}",
+            ]
+            embed.add_field(
+                name=team["name"],
+                value="\n".join(lines),
+                inline=False,
+            )
+
+        if channel:
+            await channel.send(embed=embed)
 
     @sync_github_grafana_teams.error
     async def on_task_error(self, error: Exception) -> None:
