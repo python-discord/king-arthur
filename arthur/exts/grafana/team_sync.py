@@ -62,6 +62,31 @@ class GrafanaTeamSync(commands.Cog):
             added_members += 1
         return MissingMembers(count=len(missing_members), successfully_added=added_members)
 
+    async def _remove_extra_members(
+        self,
+        grafana_team_id: int,
+        github_team_members: set[str],
+        grafana_team_members: set[str],
+        all_grafana_users: list[dict],
+    ) -> int:
+        """
+        Removes Grafana users from a team if they are not present in the Github team.
+
+        Return how many were removed.
+        """
+        extra_members = grafana_team_members - github_team_members
+        removed_members = 0
+        for grafana_user in all_grafana_users:
+            if grafana_user["login"] not in extra_members:
+                continue
+            await grafana.remove_user_from_team(
+                grafana_user["userId"],
+                grafana_team_id,
+                self.bot.http_session,
+            )
+            removed_members += 1
+        return removed_members
+
     async def _sync_teams(self, team: dict[str, str]) -> SyncFigures:
         """
         Ensure members in Github are present in Grafana teams.
@@ -85,7 +110,12 @@ class GrafanaTeamSync(commands.Cog):
             grafana_team_members,
             all_grafana_users,
         )
-        removed_members = 0  # TODO Actually remove members who shouldn't be present.
+        removed_members = await self._remove_extra_members(
+            team["id"],
+            github_team_members,
+            grafana_team_members,
+            all_grafana_users,
+        )
 
         return SyncFigures(added=added_members, removed=removed_members)
 
