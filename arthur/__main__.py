@@ -9,6 +9,7 @@ from discord.ext import commands
 import arthur
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
+from arthur.log import logger, setup_sentry
 
 
 async def main() -> None:
@@ -34,5 +35,7 @@ async def main() -> None:
             await bot.start(CONFIG.token.get_secret_value())
 
 
-with arthur.logger.catch():
+setup_sentry()
+
+with logger.catch():
     asyncio.run(main())
