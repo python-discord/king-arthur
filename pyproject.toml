@@ -21,7 +21,7 @@ sentry-sdk = "1.40.4"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "3.6.1"
-ruff = "0.2.1"
+ruff = "0.2.2"
 taskipy = "1.12.2"
 
 [tool.taskipy.tasks]
