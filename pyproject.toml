@@ -11,7 +11,7 @@ python = "3.11.*"
 # See https://bot-core.pythondiscord.com/ for docs.
 pydis-core = "10.7.0"
 
-pydantic = "2.6.1"
+pydantic = "2.6.2"
 pydantic-settings = "2.1.0"
 loguru = "0.7.2"
 kubernetes_asyncio = "29.0.0"
