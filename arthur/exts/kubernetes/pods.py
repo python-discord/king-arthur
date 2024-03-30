@@ -30,9 +30,7 @@ class Pods(commands.Cog):
 
         if len(pod_list.items) == 0:
             return await ctx.send(
-                generate_error_message(
-                    description="No pods found, check the namespace exists."
-                )
+                generate_error_message(description="No pods found, check the namespace exists.")
             )
 
         for pod in pod_list.items:
@@ -62,7 +60,7 @@ class Pods(commands.Cog):
             table_data,
             headers=["Status", "Pod", "Phase", "IP", "Node"],
             tablefmt="psql",
-            colalign=("center", "left", "center", "center", "center")
+            colalign=("center", "left", "center", "center", "center"),
         )
 
         return_message = dedent("""
