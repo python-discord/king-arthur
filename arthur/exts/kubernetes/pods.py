@@ -1,7 +1,9 @@
 """The Pods cog helps with managing Kubernetes pods."""
 
-from textwrap import dedent
+import zoneinfo
+from datetime import datetime
 
+import humanize
 from discord.ext import commands
 from tabulate import tabulate
 
@@ -9,23 +11,19 @@ from arthur.apis.kubernetes import pods
 from arthur.bot import KingArthur
 from arthur.utils import generate_error_message
 
-MAX_MESSAGE_LENGTH = 4000
+MAX_MESSAGE_LENGTH = 2000
 
 
 def tabulate_pod_data(data: list[list[str]]) -> str:
     """Tabulate the pod data to be sent to Discord."""
     table = tabulate(
         data,
-        headers=["Status", "Pod", "Phase", "IP", "Node"],
+        headers=["Status", "Pod", "Phase", "IP", "Node", "Age", "Restarts"],
         tablefmt="psql",
-        colalign=("center", "left", "center", "center", "center"),
+        colalign=("center", "left", "left", "center", "center", "left", "center"),
     )
 
-    return dedent(f"""
-        ```
-        {table}
-        ```
-        """)
+    return f"```\n{table}```"
 
 
 class Pods(commands.Cog):
@@ -66,12 +64,21 @@ class Pods(commands.Cog):
                 case _:
                     emote = "\N{BLACK QUESTION MARK ORNAMENT}"
 
+            time_human = humanize.naturaldelta(
+                datetime.now(tz=zoneinfo.ZoneInfo("UTC")) - pod.metadata.creation_timestamp
+            )
+
+            # we know that Linode formats names like "lke<cluster>-<pool>-<node>"
+            node_name = pod.spec.node_name.split("-")[2]
+
             table_data = [
                 emote,
                 pod.metadata.name,
                 pod.status.phase,
                 pod.status.pod_ip,
-                pod.spec.node_name,
+                node_name,
+                time_human,
+                pod.status.container_statuses[0].restart_count,
             ]
 
             if len(tabulate_pod_data(tables[-1] + [table_data])) > MAX_MESSAGE_LENGTH:
