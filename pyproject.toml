@@ -22,7 +22,7 @@ humanize = "^4.9.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "3.6.1"
-ruff = "0.2.1"
+ruff = "0.3.4"
 taskipy = "1.12.2"
 
 [tool.taskipy.tasks]
