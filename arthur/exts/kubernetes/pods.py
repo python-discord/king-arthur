@@ -49,7 +49,7 @@ class Pods(commands.Cog):
                 generate_error_message(description="No pods found, check the namespace exists.")
             )
 
-        tables = []
+        tables = [[]]
 
         for pod in pod_list.items:
             match pod.status.phase:
