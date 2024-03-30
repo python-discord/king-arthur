@@ -9,6 +9,24 @@ from arthur.apis.kubernetes import pods
 from arthur.bot import KingArthur
 from arthur.utils import generate_error_message
 
+MAX_MESSAGE_LENGTH = 4000
+
+
+def tabulate_pod_data(data: list[list[str]]) -> str:
+    """Tabulate the pod data to be sent to Discord."""
+    table = tabulate(
+        data,
+        headers=["Status", "Pod", "Phase", "IP", "Node"],
+        tablefmt="psql",
+        colalign=("center", "left", "center", "center", "center"),
+    )
+
+    return dedent(f"""
+        ```
+        {table}
+        ```
+        """)
+
 
 class Pods(commands.Cog):
     """Commands for working with Kubernetes Pods."""
@@ -26,51 +44,47 @@ class Pods(commands.Cog):
         """List pods in the selected namespace (defaults to default)."""
         pod_list = await pods.list_pods(namespace)
 
-        table_data = []
-
         if len(pod_list.items) == 0:
             return await ctx.send(
                 generate_error_message(description="No pods found, check the namespace exists.")
             )
 
+        tables = []
+
         for pod in pod_list.items:
             match pod.status.phase:
                 case "Running":
-                    emote = ":green_circle:"
+                    emote = "\N{LARGE GREEN CIRCLE}"
                 case "Pending":
-                    emote = ":yellow_circle:"
+                    emote = "\N{LARGE YELLOW CIRCLE}"
                 case "Succeeded":
-                    emote = ":white_check_mark:"
+                    emote = "\N{WHITE HEAVY CHECK MARK}"
                 case "Failed":
-                    emote = ":x:"
+                    emote = "\N{CROSS MARK}"
                 case "Unknown":
-                    emote = ":question:"
+                    emote = "\N{WHITE QUESTION MARK ORNAMENT}"
                 case _:
-                    emote = ":grey_question:"
+                    emote = "\N{BLACK QUESTION MARK ORNAMENT}"
 
-            table_data.append([
+            table_data = [
                 emote,
                 pod.metadata.name,
                 pod.status.phase,
                 pod.status.pod_ip,
                 pod.spec.node_name,
-            ])
+            ]
 
-        table = tabulate(
-            table_data,
-            headers=["Status", "Pod", "Phase", "IP", "Node"],
-            tablefmt="psql",
-            colalign=("center", "left", "center", "center", "center"),
-        )
+            if len(tabulate_pod_data(tables[-1] + [table_data])) > MAX_MESSAGE_LENGTH:
+                tables.append([])
+                tables[-1].append(table_data)
+            else:
+                tables[-1].append(table_data)
 
-        return_message = dedent("""
-            **Pods in namespace `{0}`**
-            ```
-            {1}
-            ```
-            """)
+        await ctx.send(f"**Pods in namespace `{namespace}`**")
 
-        await ctx.send(return_message.format(namespace, table))
+        for table in tables:
+            await ctx.send(tabulate_pod_data(table))
+
         return None
 
 
