@@ -109,7 +109,7 @@ class Pods(commands.Cog):
             pod_names = await pods.get_pod_names_from_deployment(
                 namespace, pod_name.removeprefix("deploy/")
             )
-            logger.debug(f"Resolved deployment pod name to {pod_name}")
+            logger.debug(f"Resolved deployment pod name to {pod_names}")
         else:
             pod_names = [pod_name]
 
