@@ -5,6 +5,8 @@ from datetime import datetime
 
 import humanize
 from discord.ext import commands
+from kubernetes_asyncio.client.rest import ApiException
+from loguru import logger
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import pods
@@ -91,6 +93,46 @@ class Pods(commands.Cog):
 
         for table in tables:
             await ctx.send(tabulate_pod_data(table))
+
+        return None
+
+    @pods_cmd.command(name="logs", aliases=["log", "tail"])
+    async def pods_logs(
+        self, ctx: commands.Context, pod_name: str, namespace: str = "default", lines: int = 15
+    ) -> None:
+        """
+        Tail the logs of a pod in the selected namespace (defaults to default).
+
+        We also support the syntax of `deploy/<deployment-name>` to get the logs of the first pod associated with the deployment.
+        """
+        if pod_name.startswith("deploy/"):
+            pod_names = await pods.get_pod_names_from_deployment(
+                namespace, pod_name.removeprefix("deploy/")
+            )
+            logger.debug(f"Resolved deployment pod name to {pod_name}")
+        else:
+            pod_names = [pod_name]
+
+        if pod_names is None:
+            return await ctx.send(
+                generate_error_message(description="No pods found for the provided deployment.")
+            )
+
+        for pod in pod_names:
+            try:
+                logs = await pods.tail_pod(namespace, pod, lines=lines)
+            except ApiException as e:
+                return await ctx.send(generate_error_message(description=str(e)))
+
+            if len(logs) == 0:
+                return await ctx.send(
+                    generate_error_message(description="No logs found for the pod.")
+                )
+
+            if len(logs) > MAX_MESSAGE_LENGTH - 100:
+                logs = logs[-MAX_MESSAGE_LENGTH:]
+
+            await ctx.send(f"**Logs for pod `{pod}` in namespace `{namespace}`**\n```\n{logs}```")
 
         return None
 
