@@ -122,6 +122,12 @@ class Pods(commands.Cog):
             try:
                 logs = await pods.tail_pod(namespace, pod, lines=lines)
             except ApiException as e:
+                if e.status == 404:  # noqa: PLR2004, 404 is a known error
+                    return await ctx.send(
+                        generate_error_message(
+                            description="Pod or namespace not found, check the name."
+                        )
+                    )
                 return await ctx.send(generate_error_message(description=str(e)))
 
             if len(logs) == 0:
