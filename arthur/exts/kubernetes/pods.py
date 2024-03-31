@@ -135,10 +135,23 @@ class Pods(commands.Cog):
                     generate_error_message(description="No logs found for the pod.")
                 )
 
-            if len(logs) > MAX_MESSAGE_LENGTH - 100:
-                logs = logs[-MAX_MESSAGE_LENGTH:]
+            truncated = False
 
-            await ctx.send(f"**Logs for pod `{pod}` in namespace `{namespace}`**\n```\n{logs}```")
+            if len(logs) > MAX_MESSAGE_LENGTH - 100:
+                truncated = True
+                while len(logs) > MAX_MESSAGE_LENGTH - 100:
+                    logs = logs[: logs.rfind("\n")]
+
+            message = f"**Logs for pod `{pod}` in namespace `{namespace}`**\n"
+
+            if truncated:
+                message += "`[Logs truncated]`\n"
+
+            message += "```"
+            message += logs
+            message += "```"
+
+            await ctx.send(message)
 
         return None
 
