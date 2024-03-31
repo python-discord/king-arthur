@@ -25,6 +25,7 @@ class Config(
 
     devops_role: int = 409416496733880320
     guild_id: int = 267624335836053506
+    devops_channel_id: int = 675756741417369640
     sentry_dsn: str = ""
 
 

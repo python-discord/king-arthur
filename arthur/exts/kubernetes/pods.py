@@ -11,6 +11,7 @@ from tabulate import tabulate
 
 from arthur.apis.kubernetes import pods
 from arthur.bot import KingArthur
+from arthur.config import CONFIG
 from arthur.utils import generate_error_message
 
 MAX_MESSAGE_LENGTH = 2000
@@ -97,6 +98,7 @@ class Pods(commands.Cog):
         return None
 
     @pods_cmd.command(name="logs", aliases=["log", "tail"])
+    @commands.check(lambda ctx: ctx.channel.id == CONFIG.devops_channel_id)
     async def pods_logs(
         self, ctx: commands.Context, pod_name: str, namespace: str = "default", lines: int = 15
     ) -> None:
