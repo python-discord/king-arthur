@@ -931,23 +931,25 @@ python-dotenv = ">=0.21.0"
 
 [[package]]
 name = "pydis-core"
-version = "10.7.0"
+version = "11.1.0"
 description = "PyDis core provides core functionality and utility to the bots of the Python Discord community."
 optional = false
-python-versions = ">=3.10.dev0,<3.12.dev0"
+python-versions = "<3.13.dev0,>=3.11.dev0"
 files = [
-    {file = "pydis_core-10.7.0-py3-none-any.whl", hash = "sha256:bd53daf83d4a073177d92591f3747884e5b9abd67d34fdf49766d5a9ebfd63f4"},
-    {file = "pydis_core-10.7.0.tar.gz", hash = "sha256:e48d2ea429427229ee5d5bc9fc303688957f431a444db0609bb31eb46c8168dd"},
+    {file = "pydis_core-11.1.0-py3-none-any.whl", hash = "sha256:e64b7e6adf9cf6bcd3d5faebf0d829654bd7e921cdb5bced1d92fea854d7a04e"},
+    {file = "pydis_core-11.1.0.tar.gz", hash = "sha256:21de861ca458c4d1bddb49ff1d7f21a3d0071486489fb8fc8b9593b0c1e3e842"},
 ]
 
 [package.dependencies]
 aiodns = ">=3.1,<4.0"
 "discord.py" = ">=2.3.2,<2.4.0"
-pydantic = ">=1.7.4,<3.0.0"
+pydantic = ">=2.6,<3.0"
 statsd = ">=4.0,<5.0"
 
 [package.extras]
-async-rediscache = ["async-rediscache[fakeredis] (==1.0.0rc2)"]
+all = ["async-rediscache (==1.0.0rc2)", "fakeredis[lua] (>=2.0,<3.0)"]
+async-rediscache = ["async-rediscache (==1.0.0rc2)"]
+fakeredis = ["fakeredis[lua] (>=2.0,<3.0)"]
 
 [[package]]
 name = "python-dateutil"
@@ -1386,4 +1388,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.*"
-content-hash = "78b71ac7a589c3ae7303e4cecca0e81cfd207e0ced3e634944d26834df3e224c"
+content-hash = "d56332defea313c96e4c8660bd36a2ad47950724638351788dae0ef2c4f9f364"

@@ -9,7 +9,7 @@ license = "MIT"
 python = "3.11.*"
 
 # See https://bot-core.pythondiscord.com/ for docs.
-pydis-core = "10.7.0"
+pydis-core = "11.1.0"
 
 pydantic = "2.6.1"
 pydantic-settings = "2.1.0"
