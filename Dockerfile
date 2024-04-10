@@ -1,9 +1,9 @@
-FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:3.11-slim
+FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:3.12-slim
 
 # Install project dependencies
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --without dev
+RUN poetry install --without dev --no-root
 
 # Set Git SHA environment variable for Sentry
 ARG git_sha="development"
