@@ -5,6 +5,10 @@ description = "King Arthur is a helper for the Python Discord DevOps team."
 authors = ["Joe Banks <joe@jb3.dev>", "Chris Lovering <chris@jb3.dev>"]
 license = "MIT"
 
+packages = [
+    {include = "arthur"}
+]
+
 [tool.poetry.dependencies]
 python = "3.12.*"
 
