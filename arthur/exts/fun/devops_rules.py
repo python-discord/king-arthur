@@ -5,7 +5,7 @@ from discord.ext.commands import Cog, Context, Greedy, group
 
 from arthur.bot import KingArthur
 
-RULES_URL = "https://raw.githubusercontent.com/python-discord/infra/main/docs/onboarding/rules.md"
+RULES_URL = "https://raw.githubusercontent.com/python-discord/infra/main/docs/content/docs/onboarding/rules.md"
 
 
 class Rules(Cog):
@@ -47,7 +47,7 @@ class Rules(Cog):
                 title=f"Rule{'s'[: len(output_rules) ^ 1]}",
                 description=output,
                 colour=discord.Colour.og_blurple(),
-                url="https://www.notion.so/pythondiscord/Rules-149bc48f6f7947afadd8036f11d4e9a7",
+                url="https://python-discord.github.io/infra/docs/onboarding/rules/",
             )
         )
 
