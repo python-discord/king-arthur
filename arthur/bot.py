@@ -8,7 +8,7 @@ from discord.ext import commands
 from kubernetes_asyncio import config
 from kubernetes_asyncio.config.kube_config import KUBE_CONFIG_DEFAULT_LOCATION
 from pydis_core import BotBase
-from sentry_sdk import push_scope
+from sentry_sdk import new_scope
 
 from arthur import exts
 from arthur.config import CONFIG
@@ -65,7 +65,7 @@ class KingArthur(BotBase):
 
     async def on_error(self, event_name: str, *args: Any, **kwargs: Any) -> None:
         """Log errors raised in event listeners."""
-        with push_scope() as scope:
+        with new_scope() as scope:
             scope.set_tag("event", event_name)
             scope.set_extra("args", args)
             scope.set_extra("kwargs", kwargs)
