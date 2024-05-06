@@ -20,8 +20,10 @@ class Rules(Cog):
         async with self.bot.http_session.get(RULES_URL) as resp:
             resp.raise_for_status()
             raw_content = await resp.text()
-        parsed_content = raw_content.split("---")[-1].strip().split("\n")
-
+        # Ignore markdown frontmatter
+        parsed_content = raw_content.split("---")[-1].strip()
+        # Ignore first 4 lines, as they are not the rules
+        parsed_content = parsed_content.split("\n")[4:]
         self.rules = {}
         for line in parsed_content:
             number, rule = line.split(".", maxsplit=1)
