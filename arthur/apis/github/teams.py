@@ -16,7 +16,7 @@ class GithubTeamNotFoundError(aiohttp.ClientResponseError):
 
 async def list_team_members(team_slug: str, session: aiohttp.ClientSession) -> list[dict[str, str]]:
     """List all Github teams."""
-    endpoint = BASE_URL + f"/orgs/{CONFIG.github_org}/teams/{team_slug}/members"
+    endpoint = BASE_URL + f"/orgs/{CONFIG.github_org}/teams/{team_slug}/members?per_page=500"
     async with session.get(endpoint, headers=HEADERS) as response:
         response.raise_for_status()
         return await response.json()
