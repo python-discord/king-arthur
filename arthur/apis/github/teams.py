@@ -1,6 +1,7 @@
 import aiohttp
 
 from arthur.config import CONFIG
+from arthur.log import logger
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
@@ -21,4 +22,11 @@ async def list_team_members(team_slug: str, session: aiohttp.ClientSession) -> l
     params = {"per_page": MEMBERS_PER_PAGE}
     async with session.get(endpoint, headers=HEADERS, params=params) as response:
         response.raise_for_status()
-        return await response.json()
+        teams_resp = await response.json()
+        if len(teams_resp) == MEMBERS_PER_PAGE:
+            logger.warning(
+                "Max number (%d) of members returned when fetching members of %s. Some members may have been missed.",
+                MEMBERS_PER_PAGE,
+                team_slug,
+            )
+        return teams_resp
