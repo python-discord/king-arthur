@@ -8,6 +8,7 @@ HEADERS = {
     "Authorization": f"Bearer {CONFIG.github_token.get_secret_value()}",
 }
 BASE_URL = "https://api.github.com"
+MEMBERS_PER_PAGE = 100
 
 
 class GithubTeamNotFoundError(aiohttp.ClientResponseError):
@@ -16,7 +17,8 @@ class GithubTeamNotFoundError(aiohttp.ClientResponseError):
 
 async def list_team_members(team_slug: str, session: aiohttp.ClientSession) -> list[dict[str, str]]:
     """List all Github teams."""
-    endpoint = BASE_URL + f"/orgs/{CONFIG.github_org}/teams/{team_slug}/members?per_page=500"
-    async with session.get(endpoint, headers=HEADERS) as response:
+    endpoint = f"{BASE_URL}/orgs/{CONFIG.github_org}/teams/{team_slug}/members"
+    params = {"per_page": MEMBERS_PER_PAGE}
+    async with session.get(endpoint, headers=HEADERS, params=params) as response:
         response.raise_for_status()
         return await response.json()
