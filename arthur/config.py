@@ -18,7 +18,7 @@ class Config(
     prefixes: tuple[str, ...] = ("arthur ", "M-x ")
 
     cloudflare_token: pydantic.SecretStr
-    grafana_url: str = "https://grafana.pythondiscord.com"
+    grafana_url: str = "https://grafana.pydis.wtf"
     grafana_token: pydantic.SecretStr
     github_token: pydantic.SecretStr
     github_org: str = "python-discord"
