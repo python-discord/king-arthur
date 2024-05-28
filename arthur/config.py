@@ -27,6 +27,7 @@ class Config(
     guild_id: int = 267624335836053506
     devops_channel_id: int = 675756741417369640
     sentry_dsn: str = ""
+    trashcan: str = "<:trashcan:637136429717389331>"
 
 
 GIT_SHA = environ.get("GIT_SHA", "development")

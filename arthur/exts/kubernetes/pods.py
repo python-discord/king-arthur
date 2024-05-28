@@ -3,6 +3,7 @@
 import zoneinfo
 from datetime import datetime
 
+import discord
 import humanize
 from discord.ext import commands
 from kubernetes_asyncio.client.rest import ApiException
@@ -12,6 +13,7 @@ from tabulate import tabulate
 from arthur.apis.kubernetes import pods
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
+from arthur.pagination import LinePaginator
 from arthur.utils import generate_error_message
 
 MAX_MESSAGE_LENGTH = 2000
@@ -46,9 +48,10 @@ class Pods(commands.Cog):
         pod_list = await pods.list_pods(namespace)
 
         if len(pod_list.items) == 0:
-            return await ctx.send(
+            await ctx.send(
                 generate_error_message(description="No pods found, check the namespace exists.")
             )
+            return
 
         tables = [[]]
 
@@ -95,7 +98,7 @@ class Pods(commands.Cog):
         for table in tables:
             await ctx.send(tabulate_pod_data(table))
 
-        return None
+        return
 
     @pods_cmd.command(name="logs", aliases=["log", "tail"])
     @commands.check(lambda ctx: ctx.channel.id == CONFIG.devops_channel_id)
@@ -116,46 +119,46 @@ class Pods(commands.Cog):
             pod_names = [pod_name]
 
         if pod_names is None:
-            return await ctx.send(
+            await ctx.send(
                 generate_error_message(description="No pods found for the provided deployment.")
             )
+            return
 
         for pod in pod_names:
             try:
                 logs = await pods.tail_pod(namespace, pod, lines=lines)
             except ApiException as e:
                 if e.status == 404:  # noqa: PLR2004, 404 is a known error
-                    return await ctx.send(
+                    await ctx.send(
                         generate_error_message(
                             description="Pod or namespace not found, check the name."
                         )
                     )
-                return await ctx.send(generate_error_message(description=str(e)))
+                    return
+                await ctx.send(generate_error_message(description=str(e)))
+                return
 
             if len(logs) == 0:
-                return await ctx.send(
-                    generate_error_message(description="No logs found for the pod.")
-                )
+                await ctx.send(generate_error_message(description="No logs found for the pod."))
+                return
 
-            truncated = False
+            logs = logs.splitlines()
 
-            if len(logs) > MAX_MESSAGE_LENGTH - 100:
-                truncated = True
-                while len(logs) > MAX_MESSAGE_LENGTH - 100:
-                    logs = logs[: logs.rfind("\n")]
+            logs_embed = discord.Embed(
+                title=f"**Logs for pod `{pod}` in namespace `{namespace}`**",
+                colour=discord.Colour.blue(),
+            )
+            await LinePaginator.paginate(
+                lines=logs,
+                ctx=ctx,
+                max_size=MAX_MESSAGE_LENGTH,
+                empty=False,
+                embed=logs_embed,
+                prefix="```\n",
+                suffix="```",
+            )
 
-            message = f"**Logs for pod `{pod}` in namespace `{namespace}`**\n"
-
-            if truncated:
-                message += "`[Logs truncated]`\n"
-
-            message += "```"
-            message += logs
-            message += "```"
-
-            await ctx.send(message)
-
-        return None
+        return
 
 
 async def setup(bot: KingArthur) -> None:
