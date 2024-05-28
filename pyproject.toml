@@ -67,6 +67,11 @@ ignore = [
     "COM812", "D206", "E111", "E114", "E117", "E501", "ISC001", "Q000", "Q001", "Q002", "Q003", "W191",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# McCabe is not supported on Linux systems
+"arthur/apis/systems/*.py" = ["C901", "PLR0912", "PERF401", "PLR2004"]
+
+
 [tool.ruff.lint.isort]
 order-by-type = false
 case-sensitive = true
