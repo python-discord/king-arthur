@@ -4,8 +4,6 @@ import discord
 from discord.ext.commands import Context
 from pydis_core.utils.pagination import LinePaginator as _LinePaginator, PaginationEmojis
 
-from arthur.config import CONFIG
-
 
 class LinePaginator(_LinePaginator):
     """
@@ -43,7 +41,7 @@ class LinePaginator(_LinePaginator):
         Consult the super class's `paginate` method for detailed information.
         """
         return await super().paginate(
-            pagination_emojis=PaginationEmojis(delete=CONFIG.trashcan),
+            pagination_emojis=PaginationEmojis(delete="\N{WASTEBASKET}"),
             lines=lines,
             ctx=ctx,
             embed=embed,
