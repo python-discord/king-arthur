@@ -16,6 +16,12 @@ BLOGCOM = "https://git.9front.org/plan9front/plan9front/HEAD/lib/blogcom/raw"
 THRESHOLD = 0.01
 MIN_MINUTES = 30
 BLOG_ABOUT_IT_THRESHOLD = 1000
+CORPORATE_FRIENDLY_SMILEYS = (
+    ":smile:",
+    ":slight_smile:",
+    ":grin:",
+    ":blush:",
+)
 
 
 class SystemInformation(Cog):
@@ -70,7 +76,7 @@ class SystemInformation(Cog):
 
             comment = lib9front.generate_blog_comment(blogcom).strip()
 
-            await msg.reply(f"{comment} :smile:")
+            await msg.reply(f"{comment} {random.choice(CORPORATE_FRIENDLY_SMILEYS)}")
 
             self.last_sent = datetime.utcnow()
 
