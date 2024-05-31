@@ -5,14 +5,16 @@ from datetime import datetime
 
 import aiohttp
 from discord import Message
-from discord.ext.commands import Cog
+from discord.ext.commands import Cog, Context, command
 from loguru import logger
 
 from arthur.apis.systems import lib9front
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
 
-BLOGCOM = "https://git.9front.org/plan9front/plan9front/HEAD/lib/blogcom/raw"
+BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
+BLOGCOM = BASE_RESOURCE.format("lib/blogcom")
+BULLSHIT = BASE_RESOURCE.format("lib/bullshit")
 THRESHOLD = 0.01
 MIN_MINUTES = 30
 BLOG_ABOUT_IT_THRESHOLD = 1000
@@ -29,16 +31,25 @@ class SystemInformation(Cog):
 
     def __init__(self, bot: KingArthur) -> None:
         self.bot = bot
-        self.cached_data = None
+        self.cached_blogcom = None
+        self.cached_bullshit = None
         self.last_sent = None
 
     async def fetch_blogcom(self) -> str:
         """Fetch the blogcom file from the upstream location, or return the cached copy."""
-        if not self.cached_data:
+        if not self.cached_blogcom:
             async with aiohttp.ClientSession() as session, session.get(BLOGCOM) as resp:
-                self.cached_data = await resp.text()
+                self.cached_blogcom = await resp.text()
 
-        return self.cached_data
+        return self.cached_blogcom
+
+    async def fetch_bullshit(self) -> str:
+        """Fetch the bullshit file from the upstream location, or return the cached copy."""
+        if not self.cached_bullshit:
+            async with aiohttp.ClientSession() as session, session.get(BULLSHIT) as resp:
+                self.cached_bullshit = await resp.text()
+
+        return self.cached_bullshit
 
     @Cog.listener()
     async def on_message(self, msg: Message) -> None:
@@ -79,6 +90,13 @@ class SystemInformation(Cog):
             await msg.reply(f"{comment} {random.choice(CORPORATE_FRIENDLY_SMILEYS)}")
 
             self.last_sent = datetime.utcnow()
+
+    @command(name="software")
+    async def software(self, ctx: Context) -> None:
+        """Return information on installed and available software."""
+        bullshit = await self.fetch_bullshit()
+        program = lib9front.generate_buzzwords(bullshit)
+        await ctx.reply(program)
 
 
 async def setup(bot: KingArthur) -> None:
