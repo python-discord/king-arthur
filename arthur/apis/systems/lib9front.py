@@ -16,6 +16,7 @@ def generate_blog_comment(blogcom: str) -> str:
     words, for our purposes, this function matches or even exceeds Python
     Discord's security requirements.
     """
+    fragment = random.choice(blogcom.split("|\n"))
     # Complete output buffer
     out = []
     # Options of the current branch, of which one will be selected at random
@@ -25,7 +26,7 @@ def generate_blog_comment(blogcom: str) -> str:
     # Whether we are in a {block|of|options} at the moment
     in_block = False
 
-    for char in blogcom:
+    for char in fragment:
         if char == "{":
             in_block = True
         elif in_block and char == "|":
