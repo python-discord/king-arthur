@@ -50,7 +50,7 @@ class SystemInformation(Cog):
             return
 
         if self.last_sent:
-            if (datetime.utcnow() - self.last_sent).minutes < MIN_MINUTES:
+            if (datetime.utcnow() - self.last_sent).seconds // 60 < MIN_MINUTES:
                 logger.trace("Ignoring message as within cooldown")
                 return
 
