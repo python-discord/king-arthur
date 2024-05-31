@@ -62,6 +62,7 @@ ignore = [
     "SIM102", "SIM108",
     "PD",
     "PLR0913", "PLR0917", "PLR6301",
+    "DTZ003",
 
     # Rules suggested to be ignored when using ruff format
     "COM812", "D206", "E111", "E114", "E117", "E501", "ISC001", "Q000", "Q001", "Q002", "Q003", "W191",
