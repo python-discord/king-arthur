@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 import aiohttp
-from discord import Message
+from discord import Member, Message
 from discord.ext.commands import Cog, Context, command
 from loguru import logger
 
@@ -73,9 +73,10 @@ class SystemInformation(Cog):
 
         msg_thresh = THRESHOLD
 
-        if CONFIG.devops_role not in (r.id for r in msg.author.roles):
-            logger.trace("Upping threshold due to non-DevOps member")
-            msg_thresh *= 10
+        if isinstance(msg.author, Member):
+            if CONFIG.devops_role not in (r.id for r in msg.author.roles):
+                logger.trace("Upping threshold due to non-DevOps member")
+                msg_thresh *= 10
 
         if len(msg.content) > BLOG_ABOUT_IT_THRESHOLD:
             msg_thresh += 0.10
