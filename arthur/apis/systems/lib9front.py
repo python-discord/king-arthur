@@ -50,6 +50,8 @@ def generate_blog_comment(blogcom: str) -> str:
         .replace("blog", "message")
         .replace("post", "message")
         .replace("article", "message")
+        .replace("web site", "message")
+        .replace("site", "message")
     )
 
 
