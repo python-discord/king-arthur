@@ -1,5 +1,6 @@
 """Return system information on our production 9front infrastructure."""
 
+import asyncio
 import random
 from datetime import datetime
 
@@ -83,14 +84,14 @@ class SystemInformation(Cog):
 
         if random.random() < msg_thresh:
             logger.trace("Criteria hit, generating comment.")
-
             blogcom = await self.fetch_blogcom()
 
             comment = lib9front.generate_blog_comment(blogcom).strip()
 
-            await msg.reply(f"{comment} {random.choice(CORPORATE_FRIENDLY_SMILEYS)}")
-
             self.last_sent = datetime.utcnow()
+            async with msg.channel.typing():
+                await asyncio.sleep(3)
+                await msg.reply(f"{comment} {random.choice(CORPORATE_FRIENDLY_SMILEYS)}")
 
     @command(name="software")
     async def software(self, ctx: Context) -> None:
