@@ -2,7 +2,7 @@
 
 import asyncio
 import random
-from datetime import datetime
+from datetime import UTC, datetime
 
 import aiohttp
 from discord import Member, Message
@@ -68,7 +68,7 @@ class SystemInformation(Cog):
             return
 
         if self.last_sent:
-            if (datetime.utcnow() - self.last_sent).seconds // 60 < MIN_MINUTES:
+            if (datetime.now(tz=UTC) - self.last_sent).seconds // 60 < MIN_MINUTES:
                 logger.trace("Ignoring message as within cooldown")
                 return
 
@@ -88,7 +88,7 @@ class SystemInformation(Cog):
 
             comment = lib9front.generate_blog_comment(blogcom).strip()
 
-            self.last_sent = datetime.utcnow()
+            self.last_sent = datetime.now(tz=UTC)
             async with msg.channel.typing():
                 await asyncio.sleep(3)
                 await msg.reply(f"{comment} {random.choice(CORPORATE_FRIENDLY_SMILEYS)}")
