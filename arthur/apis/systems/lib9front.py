@@ -43,7 +43,14 @@ def generate_blog_comment(blogcom: str) -> str:
         else:
             out.append(char)
 
-    return "".join(out)
+    return (
+        "".join(out)
+        .replace("website", "message")
+        .replace("blog post", "message")
+        .replace("blog", "message")
+        .replace("post", "message")
+        .replace("article", "message")
+    )
 
 
 def generate_buzzwords(bullshit: str) -> str:
