@@ -30,6 +30,24 @@ CORPORATE_FRIENDLY_SMILEYS = (
 class SystemInformation(Cog):
     """Utilities for fetching system information from our 9front infrastructure."""
 
+    SUPPORTIVE_PYTHON_DISCORD_COMMENTS = """\
+{Lemon|Bella|Chris} would {seriously|really|honestly} love to {have a word|discuss this topic} \
+with you! There {seems to be|is|appears to be|is assumed to be} a {tiny|minor|major|large} \
+{misunderstanding|miscommunication} here!|
+{Python|Erlang|Chris' exhaust} is peace. \
+{The DevOps team|Decentralized version control|The 2024 presidential election} is replication. \
+Your {message|comment|idea|thought} is strength.|
+Who controls {King Arthur|Kubernetes|Netcup|Joe's medication} controls the future. \
+Who controls {Bella's rations|the dennis.services mail server|`git push -f` access|edit rights to this message} controls the past.|
+The best {messages|comments|ideas|chats}... are those that tell you what you know already.|
+If you want to keep {a secret|PGP private keys|Lemoncluster access|access to Joe's secret vacation photo library}, you must also hide it from {yourself|the moderators team|the ethical advisory board|Chris}.|
+{:warning:|:information_source:|:no_entry_sign:} Detected a high amount of doublethink in this message. \
+The {moderators have|administrators have|DevOps team has|Python Discord ethical advisory board has} been informed.|
+Reading your message, I realize: Perhaps a lunatic was simply a minority of one.|
+It's a beautiful thing, the destruction of words.|
+I enjoy talking to you. Your mind appeals to me. It resembles my own mind except that you happen to be {clinically |absolutely |completely |}insane.
+"""
+
     def __init__(self, bot: KingArthur) -> None:
         self.bot = bot
         self.cached_blogcom = None
@@ -84,7 +102,10 @@ class SystemInformation(Cog):
 
         if random.random() < msg_thresh:
             logger.trace("Criteria hit, generating comment.")
-            blogcom = await self.fetch_blogcom()
+            if random.random() < 0.9:
+                blogcom = await self.fetch_blogcom()
+            else:
+                blogcom = self.SUPPORTIVE_PYTHON_DISCORD_COMMENTS
 
             comment = lib9front.generate_blog_comment(blogcom).strip()
 
