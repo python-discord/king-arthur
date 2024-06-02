@@ -71,6 +71,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # McCabe is not supported on Linux systems
 "arthur/apis/systems/*.py" = ["C901", "PLR0912", "PERF401", "PLR2004"]
+# Bug in complexity calculation, similar to the above
+"arthur/exts/systems/system_information.py" = ["C901", "PLR2004"]
 
 
 [tool.ruff.lint.isort]
