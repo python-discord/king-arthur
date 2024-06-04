@@ -1,13 +1,16 @@
 """Return system information on our production 9front infrastructure."""
 
 import asyncio
+import io
 import random
 from datetime import UTC, datetime
+from urllib import parse
 
 import aiohttp
-from discord import Member, Message
-from discord.ext.commands import Cog, Context, command
+from discord import File, Member, Message
+from discord.ext.commands import Cog, Context, Converter, command
 from loguru import logger
+from wand.image import Image
 
 from arthur.apis.systems import lib9front
 from arthur.bot import KingArthur
@@ -25,6 +28,20 @@ CORPORATE_FRIENDLY_SMILEYS = (
     ":grin:",
     ":blush:",
 )
+
+
+class URLConverter(Converter):
+    """Validate a passed argument is a URL, for use in optional converters that are looking for URLs."""
+
+    async def convert(self, _ctx: Context, argument: str) -> str | None:
+        """Attempt to convert a string to a URL, return the argument if it is a URL, else return None."""
+        try:
+            parsed = parse.urlparse(argument)
+
+            if parsed.scheme in {"http", "https"}:
+                return argument
+        except ValueError:
+            return None
 
 
 class SystemInformation(Cog):
@@ -120,6 +137,51 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         bullshit = await self.fetch_bullshit()
         program = lib9front.generate_buzzwords(bullshit)
         await ctx.reply(program)
+
+    @command(name="face")
+    async def face(
+        self, ctx: Context, resolution: int | None = 60, *, image_url: URLConverter | None = None
+    ) -> None:
+        """
+        Generate a system-compatible face for the given file.
+
+        If specified, resolution is the integer width and height to use for the generated image, defaulting to 60 (for a 60x60 image).
+
+        The image can be passed in as a URL or attached to the command invocation message.
+        """
+        image_bytes = io.BytesIO()
+
+        if not image_url:
+            if len(ctx.message.attachments) == 0:
+                await ctx.reply(":x: Must upload an image or specify image URL")
+                return
+
+            await ctx.message.attachments[0].save(image_bytes)
+        else:
+            async with aiohttp.ClientSession() as session, session.get(image_url) as resp:
+                if resp.ok:
+                    image_bytes.write(await resp.read())
+                    image_bytes.seek(0)
+                else:
+                    await ctx.reply(
+                        f":x: Could not read remote resource, check it exists. (status `{resp.status}`)"
+                    )
+                    return
+
+        out_bytes = io.BytesIO()
+
+        with Image(file=image_bytes) as img:
+            img.resize(resolution, resolution)
+            img.type = "grayscale"
+            img.kmeans(number_colors=2)
+
+            img.format = "png"
+
+            img.save(file=out_bytes)
+
+        out_bytes.seek(0)
+
+        await ctx.reply(file=File(out_bytes, filename="face.png"))
 
 
 async def setup(bot: KingArthur) -> None:
