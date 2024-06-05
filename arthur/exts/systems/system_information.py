@@ -172,9 +172,10 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
 
         with Image(file=image_bytes) as img:
             img.resize(resolution, resolution)
-            img.type = "grayscale"
-            img.kmeans(number_colors=2)
 
+            img.quantize(number_colors=2, treedepth=8, dither=True)
+
+            img.type = "grayscale"
             img.format = "png"
 
             img.save(file=out_bytes)
