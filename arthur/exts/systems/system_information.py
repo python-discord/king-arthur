@@ -4,6 +4,7 @@ import asyncio
 import io
 import random
 from datetime import UTC, datetime
+from typing import Literal
 from urllib import parse
 
 import aiohttp
@@ -174,6 +175,25 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         out_bytes.seek(0)
 
         await ctx.reply(file=File(out_bytes, filename="face.png"))
+
+    @command(name="wisdom")
+    async def wisdom(
+        self, ctx: Context, by: Literal["ken", "rob", "rsc", "theo", "uriel"] | None = None
+    ) -> None:
+        """Retrieve some software engineering wisdom."""
+        if by is None:
+            by = random.choice(("ken", "rob", "rsc", "theo", "uriel"))
+
+        contents = await self.fetch_resource(f"lib/{by}")
+        result = random.choice(contents.splitlines())
+        await ctx.reply(result)
+
+    @command(name="troll")
+    async def troll(self, ctx: Context) -> None:
+        """Utter statements of utmost importance."""
+        contents = await self.fetch_resource("lib/troll")
+        result = random.choice(contents.splitlines())
+        await ctx.reply(result)
 
 
 async def setup(bot: KingArthur) -> None:
