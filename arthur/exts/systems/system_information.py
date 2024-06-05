@@ -17,8 +17,6 @@ from arthur.bot import KingArthur
 from arthur.config import CONFIG
 
 BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
-BLOGCOM = BASE_RESOURCE.format("lib/blogcom")
-BULLSHIT = BASE_RESOURCE.format("lib/bullshit")
 THRESHOLD = 0.01
 MIN_MINUTES = 30
 BLOG_ABOUT_IT_THRESHOLD = 1000
@@ -67,25 +65,18 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
 
     def __init__(self, bot: KingArthur) -> None:
         self.bot = bot
+        self.cached_resources = {}
         self.cached_blogcom = None
         self.cached_bullshit = None
         self.last_sent = None
 
-    async def fetch_blogcom(self) -> str:
-        """Fetch the blogcom file from the upstream location, or return the cached copy."""
-        if not self.cached_blogcom:
-            async with aiohttp.ClientSession() as session, session.get(BLOGCOM) as resp:
-                self.cached_blogcom = await resp.text()
-
-        return self.cached_blogcom
-
-    async def fetch_bullshit(self) -> str:
-        """Fetch the bullshit file from the upstream location, or return the cached copy."""
-        if not self.cached_bullshit:
-            async with aiohttp.ClientSession() as session, session.get(BULLSHIT) as resp:
-                self.cached_bullshit = await resp.text()
-
-        return self.cached_bullshit
+    async def fetch_resource(self, name: str) -> str:
+        """Fetch the file contents of the given filename, starting from ``/``."""
+        if name not in self.cached_resources:
+            url = BASE_RESOURCE.format(name)
+            async with aiohttp.ClientSession() as session, session.get(url) as resp:
+                self.cached_resources[name] = await resp.text()
+        return self.cached_resources[name]
 
     @Cog.listener()
     async def on_message(self, msg: Message) -> None:
@@ -120,7 +111,7 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         if random.random() < msg_thresh:
             logger.trace("Criteria hit, generating comment.")
             if random.random() < 0.9:
-                blogcom = await self.fetch_blogcom()
+                blogcom = await self.fetch_resource("lib/blogcom")
             else:
                 blogcom = self.SUPPORTIVE_PYTHON_DISCORD_COMMENTS
 
@@ -134,7 +125,7 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
     @command(name="software")
     async def software(self, ctx: Context) -> None:
         """Return information on installed and available software."""
-        bullshit = await self.fetch_bullshit()
+        bullshit = await self.fetch_resource("lib/bullshit")
         program = lib9front.generate_buzzwords(bullshit)
         await ctx.reply(program)
 
