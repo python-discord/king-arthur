@@ -16,7 +16,7 @@ python = "3.12.*"
 pydis-core = "11.1.0"
 
 pydantic = "2.7.2"
-pydantic-settings = "2.2.1"
+pydantic-settings = "2.3.4"
 loguru = "0.7.2"
 kubernetes_asyncio = "29.0.0"
 tabulate = { extras = ["widechars"], version = "0.9.0" }
