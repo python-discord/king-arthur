@@ -36,7 +36,7 @@ jobs:
       # Repository. The container will be tagged as "latest"
       # and with the short SHA of the commit.
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: ${{ github.ref == 'refs/heads/main' }}
           cache-from: type=registry,ref=ghcr.io/python-discord/king-arthur:latest
