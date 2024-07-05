@@ -4,10 +4,7 @@ version = "1.0.0"
 description = "King Arthur is a helper for the Python Discord DevOps team."
 authors = ["Joe Banks <joe@jb3.dev>", "Chris Lovering <chris@jb3.dev>"]
 license = "MIT"
-
-packages = [
-    {include = "arthur"}
-]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "3.12.*"
