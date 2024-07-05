@@ -11,7 +11,7 @@ from arthur.config import CONFIG
 
 MOTIVATION_IMAGE_RE = re.compile(r"data-image=\"(https://assets\.amuniversal\.com/.+?)\"")
 THE_CAT = "https://avatar.amuniversal.com/feature_avatars/ubadge_images/features/ga/mid_u-201701251612.png"
-BASE_URL = "https://www.gocomics.com/garfield/"
+GARF_URL = "https://www.gocomics.com/garfield/"
 
 
 class Motivation(commands.Cog):
@@ -28,17 +28,17 @@ class Motivation(commands.Cog):
         today_date = datetime.now(UTC).date().isoformat()
         today_date_url_friendly = today_date.replace("-", "/")
 
-        async with self.bot.http_session.get(BASE_URL + today_date_url_friendly) as resp:
+        async with self.bot.http_session.get(GARF_URL + today_date_url_friendly) as resp:
             resp.raise_for_status()
             raw_content = await resp.text()
         image = MOTIVATION_IMAGE_RE.search(raw_content).group(1)
 
         embed = discord.Embed(
             title=f"Garfield: {today_date}",
-            url=BASE_URL + today_date_url_friendly,
+            url=GARF_URL + today_date_url_friendly,
             colour=discord.Colour.orange(),
         )
-        embed.set_author(name="GoComics.com", icon_url=THE_CAT, url=BASE_URL)
+        embed.set_author(name="GoComics.com", icon_url=THE_CAT, url=GARF_URL)
         embed.set_image(url=image)
         await self.devops_channel.send(embed=embed)
 
