@@ -33,7 +33,7 @@ class Motivation(commands.Cog):
             "channelId": "UC4CoHBR01SHu6fMy2EaeWcg",
             "key": CONFIG.youtube_api_key.get_secret_value(),
             "order": "date",
-            "maxResults": "2",
+            "maxResults": "5",
         }
         async with self.bot.http_session.get(
             "https://www.googleapis.com/youtube/v3/search",
