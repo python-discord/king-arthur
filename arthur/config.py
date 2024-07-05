@@ -18,6 +18,7 @@ class Config(
     prefixes: tuple[str, ...] = ("arthur ", "M-x ")
 
     cloudflare_token: pydantic.SecretStr
+    youtube_api_key: pydantic.SecretStr | None = None
     grafana_url: str = "https://grafana.pydis.wtf"
     grafana_token: pydantic.SecretStr
     github_token: pydantic.SecretStr
