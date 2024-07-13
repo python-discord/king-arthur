@@ -3,6 +3,7 @@
 import asyncio
 
 import aiohttp
+import aiohttp.http
 import discord
 from discord.ext import commands
 
@@ -22,8 +23,9 @@ async def main() -> None:
     intents.invites = False
     intents.webhooks = False
     intents.integrations = False
+    user_agent = f"github.com/python-discord/king-arthur ({aiohttp.http.SERVER_SOFTWARE})"
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers={"User-Agent": user_agent}) as session:
         arthur.instance = KingArthur(
             guild_id=CONFIG.guild_id,
             http_session=session,
