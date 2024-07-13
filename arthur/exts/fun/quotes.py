@@ -5,7 +5,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-from arthur import KingArthur
+from arthur.bot import KingArthur
 from arthur.log import logger
 
 
