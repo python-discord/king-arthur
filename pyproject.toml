@@ -20,7 +20,7 @@ kubernetes_asyncio = "30.1.1"
 tabulate = { extras = ["widechars"], version = "0.9.0" }
 jishaku = "2.5.2"
 sentry-sdk = "2.7.1"
-humanize = "4.9.0"
+humanize = "4.10.0"
 wand = "0.6.13"
 
 [tool.poetry.dev-dependencies]
