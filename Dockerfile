@@ -1,7 +1,7 @@
 FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:3.12-slim
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y libmagickwand-dev && apt autoclean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y libmagickwand-dev && apt autoclean && rm -rf /var/lib/apt/lists/*
 
 # Install project dependencies
 WORKDIR /app
