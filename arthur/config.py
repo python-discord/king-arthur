@@ -27,7 +27,26 @@ class Config(
     devops_role: int = 409416496733880320
     guild_id: int = 267624335836053506
     devops_channel_id: int = 675756741417369640
+    ldap_bootstrap_channel_id: int = 1266358923875586160
     sentry_dsn: str = ""
+
+    # LDAP & Directory
+    #
+    # FreeIPA accesses are generated off this information
+
+    ldap_host: pydantic.AnyUrl
+    ldap_bind_user: str = "uid=kingarthur,cn=users,cn=accounts,dc=box,dc=pydis,dc=wtf"
+    ldap_bind_password: pydantic.SecretStr
+    ldap_base_dn: str = "dc=box,dc=pydis,dc=wtf"
+
+    ldap_certificate_location: pydantic.FilePath
+
+    # Keycloak
+
+    keycloak_address: pydantic.AnyUrl
+    keycloak_username: str = "kingarthur"
+    keycloak_password: pydantic.SecretStr
+    keycloak_user_realm: str = "pydis"
 
 
 GIT_SHA = environ.get("GIT_SHA", "development")
