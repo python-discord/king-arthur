@@ -423,4 +423,10 @@ class LDAP(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    await bot.add_cog(LDAP(bot))
+    if ldap.BONSAI_AVAILABLE and freeipa.BONSAI_AVAILABLE and CONFIG.enable_ldap:
+        await bot.add_cog(LDAP(bot))
+    else:
+        logger.warning(
+            "Not loading LDAP sync utilities as LDAP dependencies are not available "
+            "or LDAP is disabled by config, see README.md for more."
+        )

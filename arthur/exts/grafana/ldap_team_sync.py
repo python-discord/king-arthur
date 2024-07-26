@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from arthur.apis import grafana
 from arthur.apis.directory import ldap
 from arthur.bot import KingArthur
+from arthur.config import CONFIG
 from arthur.log import logger
 
 from . import MissingMembers, SyncFigures
@@ -166,4 +167,11 @@ class GrafanaLDAPTeamSync(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
-    await bot.add_cog(GrafanaLDAPTeamSync(bot))
+    if ldap.BONSAI_AVAILABLE and CONFIG.enable_ldap:
+        await bot.add_cog(GrafanaLDAPTeamSync(bot))
+    else:
+        logger.warning(
+            "Not loading Grafana LDAP team sync as LDAP dependencies "
+            "LDAP dependencies are not installed or LDAP is disabled,"
+            " see README.md for more"
+        )
