@@ -34,6 +34,8 @@ class Config(
     #
     # FreeIPA accesses are generated off this information
 
+    enable_ldap: bool = False
+
     ldap_host: pydantic.AnyUrl
     ldap_bind_user: str = "uid=kingarthur,cn=users,cn=accounts,dc=box,dc=pydis,dc=wtf"
     ldap_bind_password: pydantic.SecretStr
