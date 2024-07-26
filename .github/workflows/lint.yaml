@@ -1,7 +1,6 @@
 name: Lint
 
-on:
-  workflow_call
+on: workflow_call
 
 jobs:
   lint:
@@ -11,10 +10,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install -y libldap2-dev libsasl2-dev
+
       - name: Install Python dependencies
         uses: HassanAbouelela/actions/setup-python@setup-python_v1.6.0
         with:
-          python_version: '3.12'
+          python_version: "3.12"
 
       - name: Run pre-commit hooks
         run: SKIP=ruff-lint pre-commit run --all-files
