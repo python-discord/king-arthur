@@ -3,7 +3,12 @@
 from dataclasses import dataclass
 from functools import cache
 
-from bonsai import LDAPClient, LDAPDN, LDAPSearchScope
+try:
+    from bonsai import LDAPClient, LDAPDN, LDAPSearchScope
+
+    BONSAI_AVAILABLE = True
+except ImportError:
+    BONSAI_AVAILABLE = False
 
 from arthur.config import CONFIG
 from arthur.constants import LDAP_ROLE_MAPPING
@@ -32,7 +37,7 @@ def get_cn(dn: str) -> str:
 
 
 @cache
-def create_client() -> LDAPClient:
+def create_client() -> "LDAPClient":
     """Create an LDAP client with the configured settings."""
     client = LDAPClient(str(CONFIG.ldap_host), tls=True)
 

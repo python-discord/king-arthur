@@ -3,7 +3,13 @@
 from functools import cache
 from secrets import token_urlsafe
 
-from bonsai import LDAPDN
+try:
+    from bonsai import LDAPDN
+
+    BONSAI_AVAILABLE = True
+except ImportError:
+    BONSAI_AVAILABLE = False
+
 from python_freeipa import ClientMeta
 
 from arthur.config import CONFIG
