@@ -1,6 +1,7 @@
 """API utilities for fetching data from the LDAP directory."""
 
 from dataclasses import dataclass
+from functools import cache
 
 from bonsai import LDAPClient, LDAPDN, LDAPSearchScope
 
@@ -30,6 +31,7 @@ def get_cn(dn: str) -> str:
     return parsed.rdns[0][0][1]
 
 
+@cache
 def create_client() -> LDAPClient:
     """Create an LDAP client with the configured settings."""
     client = LDAPClient(str(CONFIG.ldap_host), tls=True)

@@ -1,10 +1,13 @@
 """Utilities for interacting with the Keycloak REST API."""
 
+from functools import cache
+
 from keycloak import KeycloakAdmin
 
 from arthur.config import CONFIG
 
 
+@cache
 def create_client() -> KeycloakAdmin:
     """Create a new client for the Keycloak API."""
     return KeycloakAdmin(
