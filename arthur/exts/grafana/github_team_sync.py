@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import aiohttp
 import discord
 from discord.ext import commands, tasks
@@ -8,24 +6,10 @@ from arthur.apis import github, grafana
 from arthur.bot import KingArthur
 from arthur.log import logger
 
-
-@dataclass(frozen=True)
-class MissingMembers:
-    """Number of members that were missing from the Grafana team, and how many could be added."""
-
-    count: int
-    successfully_added: int
+from . import MissingMembers, SyncFigures
 
 
-@dataclass(frozen=True)
-class SyncFigures:
-    """Figures related to a single sync members task run."""
-
-    added: MissingMembers
-    removed: int
-
-
-class GrafanaTeamSync(commands.Cog):
+class GrafanaGitHubTeamSync(commands.Cog):
     """
     Update Grafana team membership to match Github team membership.
 
@@ -54,6 +38,9 @@ class GrafanaTeamSync(commands.Cog):
         for grafana_user in all_grafana_users:
             if grafana_user["login"] not in missing_members:
                 continue
+            if grafana_user.get("auth_module") != "oauth_github":
+                continue
+
             await grafana.add_user_to_team(
                 grafana_user["userId"],
                 grafana_team_id,
@@ -156,7 +143,7 @@ class GrafanaTeamSync(commands.Cog):
         """Ensure task errors are output."""
         logger.error(error)
 
-    @commands.group(name="grafana", aliases=("graf",), invoke_without_command=True)
+    @commands.group(name="grafana_github", invoke_without_command=True)
     async def grafana_group(self, ctx: commands.Context) -> None:
         """Commands for working with grafana API."""
         await ctx.send_help(ctx.command)
@@ -169,4 +156,4 @@ class GrafanaTeamSync(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
-    await bot.add_cog(GrafanaTeamSync(bot))
+    await bot.add_cog(GrafanaGitHubTeamSync(bot))
