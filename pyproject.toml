@@ -30,6 +30,8 @@ pre-commit = "3.7.1"
 ruff = "0.5.4"
 taskipy = "1.13.0"
 
+[tool.poetry.group.ldap]
+optional = true
 [tool.poetry.group.ldap.dependencies]
 bonsai = "^1.5.3"
 

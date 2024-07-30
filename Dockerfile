@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y libmagickwand-d
 WORKDIR /app
 COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --without dev --no-root
+RUN poetry install --without dev --with ldap --no-root
 
 # Set Git SHA environment variable for Sentry
 ARG git_sha="development"
