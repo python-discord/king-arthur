@@ -47,7 +47,7 @@ class GrafanaLDAPTeamSync(commands.Cog):
         for grafana_user in all_grafana_users:
             if grafana_user["login"] not in missing_members:
                 continue
-            if grafana_user.get("auth_module") != "ldap":
+            if "LDAP" not in grafana_user.get("authLabels", []):
                 continue
 
             await grafana.add_user_to_team(
