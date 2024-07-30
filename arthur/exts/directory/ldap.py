@@ -127,8 +127,10 @@ class BootstrapView(ui.View):
 
         if bootstrap_type == BootstrapType.CREATION:
             title = "Account Creation"
+            logger.info(f"Created account for {user}")
         else:
             title = "Password Reset"
+            logger.info(f"Reset password for {user}")
 
         content = CREDENTIALS_SECTION.format(title=title, username=user.name, password=password)
 
