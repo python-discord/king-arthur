@@ -13,7 +13,10 @@ such as OpenLDAP.
 > to true, to avoid developers having to attempt to set
 > up local emulations of the LDAP directory.
 
-You can ensure you have the prerequisites [here](https://bonsai.readthedocs.io/en/latest/).
+### Running on host
+This section is not applicable if running in Docker.
+
+Ensure you have the prerequisites for your host OS listed [here](https://bonsai.readthedocs.io/en/latest/install.html).
 
 Once you have met these requirements, use the following to install all project
 dependencies as well as the LDAP dependencies.
