@@ -10,5 +10,5 @@ LDAP_ROLE_MAPPING = {
     "devops": 409416496733880320,
     "administrators": 267628507062992896,
     "moderators": 267629731250176001,
-    "coredevs": 587606783669829632
+    "coredevs": 587606783669829632,
 }

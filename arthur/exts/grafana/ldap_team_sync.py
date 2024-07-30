@@ -14,7 +14,7 @@ GRAFANA_TO_LDAP_NAME_MAPPING = {
     "devops": "devops",
     "admins": "administrators",
     "moderators": "moderators",
-    "core-developers": "coredevs"
+    "core-developers": "coredevs",
 }
 
 
