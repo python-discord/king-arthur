@@ -123,16 +123,18 @@ class BootstrapView(ui.View):
             )
             return
 
-        bootstrap_type, password = await self.cog.bootstrap(user)
+        bootstrap_type, password, uid = await self.cog.bootstrap(user)
 
         if bootstrap_type == BootstrapType.CREATION:
             title = "Account Creation"
             logger.info(f"Created account for {user}")
         else:
             title = "Password Reset"
-            logger.info(f"Reset password for {user}")
+            logger.info(f"Reset password for {user} with LDAP user ID: {uid}")
 
-        content = CREDENTIALS_SECTION.format(title=title, username=user.name, password=password)
+        content = CREDENTIALS_SECTION.format(
+            title=title, username=uid or user.name, password=password
+        )
 
         await interaction.response.send_message(content, ephemeral=True)
 
@@ -221,14 +223,14 @@ class LDAP(commands.Cog):
         if LDAP_BASE_STAFF_ROLE in before_roles or LDAP_BASE_STAFF_ROLE in after_roles:
             self.sync_users()
 
-    async def bootstrap(self, user: discord.Member) -> tuple[BootstrapType, str]:
+    async def bootstrap(self, user: discord.Member) -> tuple[BootstrapType, str, str | None]:
         """Bootstrap a user into the LDAP directory, either creating or resetting the password."""
         if ldap_user := await ldap.find_by_discord_id(user.id):
             password = secrets.token_urlsafe(20)
 
             keycloak.force_password_reset(ldap_user.uid, password)
 
-            return BootstrapType.RESET, password
+            return BootstrapType.RESET, password, ldap_user.uid
 
         generated_pw = freeipa.create_user(
             user.name,
@@ -239,7 +241,7 @@ class LDAP(commands.Cog):
 
         await self.cleanup_bootstrap(user)
 
-        return BootstrapType.CREATION, generated_pw
+        return BootstrapType.CREATION, generated_pw, None
 
     async def cog_load(self) -> None:  # noqa: C901, PLR0912
         """Verify the bootstrap channel is setup as intended."""
