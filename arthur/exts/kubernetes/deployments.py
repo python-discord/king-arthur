@@ -150,7 +150,16 @@ class Deployments(commands.Cog):
     async def deployments_restart(
         self, ctx: commands.Context, deployment: str, namespace: str = "default"
     ) -> None:
-        """Restart the specified deployment in the selected namespace (defaults to default)."""
+        """
+        Restart the specified deployment in the selected namespace (defaults to default).
+
+        It is also possible to use the more natural `kubectl` notation, that
+        is, specifying `rollout restart tooling/ff-bot` to restart the
+        deployment `ff-bot` in the namespace `tooling`.
+        """
+        if "/" in deployment and namespace == "default":
+            deployment, namespace = deployment.split("/")
+
         confirmation = ConfirmDeployment(ctx.author.id, [namespace, deployment])
 
         msg = await ctx.send(
@@ -163,9 +172,9 @@ class Deployments(commands.Cog):
         if timed_out:
             await msg.edit(
                 content=generate_error_message(
-                    title="What is the airspeed velocity of an unladen swallow?",
+                    title="What is the airspeed velocity of Bella?",
                     description=(
-                        "Whatever the answer may be, it's certainly "
+                        "Whatever the answer may be, he is certainly "
                         "faster than you could select a confirmation option."
                     ),
                 )
