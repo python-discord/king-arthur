@@ -26,7 +26,7 @@ python-freeipa = "^1.0.8"
 python-keycloak = "^4.2.3"
 
 [tool.poetry.dev-dependencies]
-pre-commit = "3.7.1"
+pre-commit = "3.8.0"
 ruff = "0.5.4"
 taskipy = "1.13.0"
 
