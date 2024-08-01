@@ -1335,13 +1335,13 @@ tests = ["responses"]
 
 [[package]]
 name = "python-keycloak"
-version = "4.2.3"
+version = "4.3.0"
 description = "python-keycloak is a Python package providing access to the Keycloak API."
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "python_keycloak-4.2.3-py3-none-any.whl", hash = "sha256:b70c2422270ae3519fc89e62592ea771e7bc8f4c0269d7e97bb38231df251bfa"},
-    {file = "python_keycloak-4.2.3.tar.gz", hash = "sha256:8177682931a91b18ddcc725a91fb7574d9cf25a3b7c5d0aa5b8b56ddace28842"},
+    {file = "python_keycloak-4.3.0-py3-none-any.whl", hash = "sha256:6dc1e89c38346a90bb4386850381d84fedb489a7dea19d561aaad5882ceeed72"},
+    {file = "python_keycloak-4.3.0.tar.gz", hash = "sha256:c187ceee7d79f0d76d9c2ed26e3d10ce35e42a407896bf5ec15b8fb24fc0c9ce"},
 ]
 
 [package.dependencies]
