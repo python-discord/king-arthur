@@ -16,7 +16,7 @@ beautifulsoup4 = "4.12.3"
 pydantic = "2.8.2"
 pydantic-settings = "2.4.0"
 loguru = "0.7.2"
-kubernetes_asyncio = "30.1.1"
+kubernetes_asyncio = "30.3.0"
 tabulate = { extras = ["widechars"], version = "0.9.0" }
 jishaku = "2.5.2"
 sentry-sdk = "2.11.0"
