@@ -12,5 +12,5 @@ LDAP_ROLE_MAPPING = {
     "moderators": 267629731250176001,
     "coredevs": 587606783669829632,
     "events": 778361735739998228,
-    "directors": 267627879762755584
+    "directors": 267627879762755584,
 }
