@@ -28,7 +28,7 @@ You can login to your account at <https://id.pydis.wtf/realms/pydis/account>.
 """
 
 BOOTSTRAP_MESSAGE = """
-# Python Discord LDAP enrollment
+# Python Discord LDAP
 Hello! :wave:
 
 You have been added to the Python Discord LDAP directory. You can now log in to Python Discord managed services using a newly created `@pydis.wtf` account.
@@ -45,19 +45,22 @@ If you have any questions or need help, feel free to ask in the <#{devops_channe
 ## Why `pydis.wtf`?
 `pydis.wtf` is our internal tooling and systems domain, which is the primary address for our managed services.
 
-Over time, forwarding will be configured to accept email to `username@pythondiscord.com` and `username@pydis.com` addresses as well.
+Your primary alias is `username@pydis.wtf`, but you will also receive mail to `username@pydis.com` and `username@pythondiscord.com`.
+
+Please note, all addresses are solely forwarding addresses to your configured mailbox (e.g. GMail, Outlook).
 
 These addresses are by design not public or intended for public usage, and should be used only for Python Discord managed services.
 ## Important Information
-- Your username will be set to your Discord account name. If you would like to change this, please let DevOps know.
-- Once you have logged into the account console, you can add a forwarding email allowing you to receive email to `@pydis.wtf` addresses.
+- Your username will be set to your Discord account name. Please let DevOps know if you would prefer something else.
+- Once you have logged into the account console, you can update your forwarding address.
 ## Supported Services
-For now, on most of the below, old login methods will continue to work, but we encourage you to switch to the new system.
+
 - [Grafana](https://grafana.pydis.wtf/)
 - [Metabase](https://metabase.pydis.wtf/)
 - [PyDis ID Self-Service](<https://id.pydis.wtf/>)
 - [ModMail](https://modmail.pydis.wtf/)
 - Anti-Spam Message Deletions
+
 If you require data from the old system, please let us know and we can assist you in migrating it over.
 """
 
