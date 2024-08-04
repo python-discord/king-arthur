@@ -17,7 +17,7 @@ from arthur.log import logger
 
 PASSWORD_RESET_LENGTH = 16
 
-NOTIFICATIONS_ENABLED = False
+NOTIFICATIONS_ENABLED = True
 
 BOOTSTRAP_CHANNEL_TOPIC = """
 This channel is used for Python Discord LDAP enrollment. If you have been added to the LDAP directory, you will receive a message here with instructions on how to create your login credentials.
