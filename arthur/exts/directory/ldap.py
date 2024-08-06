@@ -269,7 +269,7 @@ class LDAP(commands.Cog):
         async for message in channel.history(limit=None, oldest_first=True):
             if (
                 message.author == self.bot.user
-                and "Python Discord LDAP enrollment" in message.content
+                and "Python Discord LDAP" in message.content
             ):
                 found_message = message
 
