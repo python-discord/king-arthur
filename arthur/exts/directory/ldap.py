@@ -267,10 +267,7 @@ class LDAP(commands.Cog):
         other_messages = []
 
         async for message in channel.history(limit=None, oldest_first=True):
-            if (
-                message.author == self.bot.user
-                and "Python Discord LDAP" in message.content
-            ):
+            if message.author == self.bot.user and "Python Discord LDAP" in message.content:
                 found_message = message
 
             if message.author == self.bot.user and len(message.mentions) > 0:
