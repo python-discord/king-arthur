@@ -21,7 +21,7 @@ class Config(
     youtube_api_key: pydantic.SecretStr | None = None
     grafana_url: str = "https://grafana.pydis.wtf"
     grafana_token: pydantic.SecretStr | None = None
-    github_token: pydantic.SecretStr
+    github_token: pydantic.SecretStr | None = None
     github_org: str = "python-discord"
 
     devops_role: int = 409416496733880320
