@@ -5,7 +5,9 @@ from discord.ext.commands import Cog, Context, Greedy, group
 
 from arthur.bot import KingArthur
 
-RULES_URL = "https://raw.githubusercontent.com/python-discord/infra/main/docs/onboarding/rules.rst"
+RULES_URL = (
+    "https://raw.githubusercontent.com/python-discord/infra/main/docs/docs/onboarding/rules.md"
+)
 
 
 class Rules(Cog):
@@ -21,18 +23,12 @@ class Rules(Cog):
             resp.raise_for_status()
             raw_content = await resp.text()
         # Ignore markdown frontmatter
-        parsed_content = raw_content.split("=====")[-1].strip()
-        # Ignore first 3 lines, as they are not the rules
-        parsed_content = parsed_content.split("\n", maxsplit=2)[2]
-        # Split on periods to get each rule, and hope we never use periods in our rules.
-        parsed_content = parsed_content.split(".")[1:]
+        parsed_content = raw_content.split("---")[-1].strip()
+        # Ignore first 4 lines, as they are not the rules
+        parsed_content = parsed_content.split("\n")[4:]
         self.rules = {}
-        for number, raw_rule in enumerate(parsed_content, 1):
-            # Drop extra newlines, backslashes that were added for sphinx
-            rule = raw_rule.replace("\n", "").replace(r"\ ", "")
-            if rule[-1].isdecimal():
-                # Drop the last character, if it is the index of the next rule.
-                rule = rule[:-1]
+        for line in parsed_content:
+            number, rule = line.split(".", maxsplit=1)
             self.rules[int(number)] = rule.strip()
 
     @group(name="rules", aliases=("rule",), invoke_without_command=True)
