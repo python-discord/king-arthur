@@ -168,11 +168,11 @@ class GrafanaLDAPTeamSync(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
-    if ldap.BONSAI_AVAILABLE and CONFIG.enable_ldap:
+    if ldap.BONSAI_AVAILABLE and CONFIG.enable_ldap and CONFIG.grafana_token:
         await bot.add_cog(GrafanaLDAPTeamSync(bot))
     else:
         logger.warning(
             "Not loading Grafana LDAP team sync as LDAP dependencies "
-            "LDAP dependencies are not installed or LDAP is disabled,"
-            " see README.md for more"
+            "LDAP dependencies are not installed, LDAP is disabled,"
+            " or grafana_token not set. See README.md for more"
         )

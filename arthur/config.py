@@ -20,7 +20,7 @@ class Config(
     cloudflare_token: pydantic.SecretStr | None = None
     youtube_api_key: pydantic.SecretStr | None = None
     grafana_url: str = "https://grafana.pydis.wtf"
-    grafana_token: pydantic.SecretStr
+    grafana_token: pydantic.SecretStr | None = None
     github_token: pydantic.SecretStr
     github_org: str = "python-discord"
 

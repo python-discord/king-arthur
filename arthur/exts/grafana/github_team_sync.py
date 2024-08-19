@@ -4,6 +4,7 @@ from discord.ext import commands, tasks
 
 from arthur.apis import github, grafana
 from arthur.bot import KingArthur
+from arthur.config import CONFIG
 from arthur.log import logger
 
 from . import MissingMembers, SyncFigures
@@ -156,4 +157,9 @@ class GrafanaGitHubTeamSync(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add cog to bot."""
+    if CONFIG.grafana_token:
+        await bot.add_cog(GrafanaGitHubTeamSync(bot))
+    else:
+        logger.warning("Not loading Grafana Github team sync grafana_token not set")
+
     await bot.add_cog(GrafanaGitHubTeamSync(bot))
