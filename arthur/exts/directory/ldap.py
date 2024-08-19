@@ -427,19 +427,19 @@ class LDAP(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
-    if not all(ldap.BONSAI_AVAILABLE, freeipa.BONSAI_AVAILABLE, CONFIG.enable_ldap):
+    if not all((ldap.BONSAI_AVAILABLE, freeipa.BONSAI_AVAILABLE, CONFIG.enable_ldap)):
         logger.warning(
             "Not loading LDAP sync utilities as LDAP dependencies are not available "
             "or LDAP is disabled by config, see README.md for more."
         )
         return
-    if not all(
+    if not all((
         CONFIG.ldap_host,
         CONFIG.ldap_bind_password,
         CONFIG.ldap_certificate_location,
         CONFIG.keycloak_address,
         CONFIG.keycloak_password,
-    ):
+    )):
         logger.warning(
             "Not loading LDAP sync utilities as one or more LDAP environment variables"
             "are not set, see README.md for more."
