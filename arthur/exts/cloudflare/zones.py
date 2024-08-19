@@ -7,6 +7,7 @@ from discord.ext import commands
 from arthur.apis.cloudflare import zones
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
+from arthur.log import logger
 from arthur.utils import generate_error_message
 
 
@@ -80,4 +81,7 @@ class Zones(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add the extension to the bot."""
+    if not CONFIG.cloudflare_token:
+        logger.warning("Not loading Cloudflare Zone cog as cloudflare_token env var is not set.")
+        return
     await bot.add_cog(Zones(bot))
