@@ -51,7 +51,7 @@ class Rules(Cog):
                 title=f"Rule{"s"[: len(output_rules) ^ 1]}",
                 description=output,
                 colour=discord.Colour.og_blurple(),
-                url="https://python-discord.github.io/infra/docs/onboarding/rules/",
+                url="https://docs.pydis.wtf/onboarding/rules.html",
             )
         )
 
