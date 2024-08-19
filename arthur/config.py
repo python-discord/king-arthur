@@ -36,18 +36,18 @@ class Config(
 
     enable_ldap: bool = False
 
-    ldap_host: pydantic.AnyUrl
+    ldap_host: pydantic.AnyUrl | None = None
     ldap_bind_user: str = "uid=kingarthur,cn=users,cn=accounts,dc=box,dc=pydis,dc=wtf"
-    ldap_bind_password: pydantic.SecretStr
+    ldap_bind_password: pydantic.SecretStr | None = None
     ldap_base_dn: str = "dc=box,dc=pydis,dc=wtf"
 
-    ldap_certificate_location: pydantic.FilePath
+    ldap_certificate_location: pydantic.FilePath | None = None
 
     # Keycloak
 
-    keycloak_address: pydantic.AnyUrl
+    keycloak_address: pydantic.AnyUrl | None = None
     keycloak_username: str = "kingarthur"
-    keycloak_password: pydantic.SecretStr
+    keycloak_password: pydantic.SecretStr | None = None
     keycloak_user_realm: str = "pydis"
 
 
