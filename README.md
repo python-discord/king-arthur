@@ -44,6 +44,10 @@ The environment variables are required to work with the LDAP/FreeIPA system.
 | KING_ARTHUR_KEYCLOAK_USERNAME         | The username of the keycloak user to make requests with    | kingarthur                                                 |
 | KING_ARTHUR_KEYCLOAK_PASSWORD         | The password of the keycloak user to make requests with    | Required                                                   |
 | KING_ARTHUR_KEYCLOAK_USER_REALM       | The keycloak realm to make requests to                     | pydis                                                      |
+| KING_ARTHUR_EMAIL_HOST                | The e-mail relay to send e-mails via                       |                                                            |
+| KING_ARTHUR_EMAIL_FROM                | The "From:" address to set in e-mails sent by King Arthur  |                                                            |
+| KING_ARTHUR_EMAIL_USERNAME            | The username to authenticate to the mail relay with        |                                                            |
+| KING_ARTHUR_EMAIL_PASSWORD            | The password to authenticate to the mail relay with        |                                                            |
 
 ## A note on LDAP
 
