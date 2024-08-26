@@ -24,7 +24,7 @@ class LinePaginator(_LinePaginator):
         max_size: int = 500,
         scale_to_size: int = 4000,
         restrict_to_user: discord.User | None = None,
-        timeout: int = 300,
+        timeout: int = 300,  # noqa: ASYNC109
         footer_text: str | None = None,
         url: str | None = None,
         allowed_roles: Sequence[int] | None = None,
