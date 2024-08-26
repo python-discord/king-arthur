@@ -50,7 +50,6 @@ target-version = "py312"
 extend-exclude = [".cache"]
 line-length = 100
 unsafe-fixes = true
-preview = true
 output-format = "concise"
 
 [tool.ruff.lint]
