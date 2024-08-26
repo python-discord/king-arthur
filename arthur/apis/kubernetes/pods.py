@@ -35,9 +35,9 @@ async def get_pod_names_from_deployment(namespace: str, deployment_name: str) ->
 
         pod = await core_api.list_namespaced_pod(
             namespace=namespace,
-            label_selector=",".join([
-                f"{k}={v}" for k, v in deployment.spec.selector.match_labels.items()
-            ]),
+            label_selector=",".join(
+                [f"{k}={v}" for k, v in deployment.spec.selector.match_labels.items()]
+            ),
         )
 
         if not pod.items:

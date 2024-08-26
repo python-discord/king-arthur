@@ -157,12 +157,14 @@ class GrafanaGitHubTeamSync(commands.Cog):
 
 async def setup(bot: KingArthur) -> None:
     """Add GrafanaGitHubTeamSync cog to bot."""
-    if not all((
-        CONFIG.github_org,
-        CONFIG.github_token,
-        CONFIG.grafana_url,
-        CONFIG.grafana_token,
-    )):
+    if not all(
+        (
+            CONFIG.github_org,
+            CONFIG.github_token,
+            CONFIG.grafana_url,
+            CONFIG.grafana_token,
+        )
+    ):
         logger.warning(
             "Not loading GrafanaGitHubTeamSync team as a required config entry is missing. See README"
         )

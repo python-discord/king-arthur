@@ -123,11 +123,13 @@ class Deployments(commands.Cog):
             else:
                 emote = "\N{LARGE YELLOW CIRCLE}"
 
-            table_data.append([
-                emote,
-                deployment.metadata.name,
-                f"{deployment.status.available_replicas or 0}/{deployment.spec.replicas}",
-            ])
+            table_data.append(
+                [
+                    emote,
+                    deployment.metadata.name,
+                    f"{deployment.status.available_replicas or 0}/{deployment.spec.replicas}",
+                ]
+            )
 
         table = tabulate(
             table_data,

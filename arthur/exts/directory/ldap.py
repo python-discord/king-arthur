@@ -433,13 +433,15 @@ async def setup(bot: KingArthur) -> None:
             "or LDAP is disabled by config, see README.md for more."
         )
         return
-    if not all((
-        CONFIG.ldap_host,
-        CONFIG.ldap_bind_password,
-        CONFIG.ldap_certificate_location,
-        CONFIG.keycloak_address,
-        CONFIG.keycloak_password,
-    )):
+    if not all(
+        (
+            CONFIG.ldap_host,
+            CONFIG.ldap_bind_password,
+            CONFIG.ldap_certificate_location,
+            CONFIG.keycloak_address,
+            CONFIG.keycloak_password,
+        )
+    ):
         logger.warning(
             "Not loading LDAP sync utilities as one or more LDAP environment variables"
             "are not set, see README.md for more."
