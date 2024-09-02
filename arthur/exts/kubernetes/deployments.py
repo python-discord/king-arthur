@@ -160,7 +160,7 @@ class Deployments(commands.Cog):
         deployment `ff-bot` in the namespace `tooling`.
         """
         if "/" in deployment and namespace == "default":
-            deployment, namespace = deployment.split("/")
+            namespace, deployment = deployment.split("/")
 
         confirmation = ConfirmDeployment(ctx.author.id, [namespace, deployment])
 
