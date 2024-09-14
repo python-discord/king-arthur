@@ -27,7 +27,7 @@ python-keycloak = "^4.3.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "3.8.0"
-ruff = "0.6.4"
+ruff = "0.6.5"
 taskipy = "1.13.0"
 
 [tool.poetry.group.ldap]
