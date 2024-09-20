@@ -33,6 +33,7 @@ async def main() -> None:
             allowed_roles=(CONFIG.devops_role,),
             case_insensitive=True,
             intents=intents,
+            max_messages=100,
         )
         async with arthur.instance as bot:
             await bot.start(CONFIG.token.get_secret_value())
