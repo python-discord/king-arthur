@@ -10,25 +10,25 @@ package-mode = false
 python = "3.12.*"
 
 # See https://bot-core.pythondiscord.com/ for docs.
-pydis-core = "11.3.1"
+pydis-core = "11.5.1"
 
 beautifulsoup4 = "4.12.3"
-pydantic = "2.9.1"
-pydantic-settings = "2.5.2"
-loguru = "0.7.2"
-kubernetes_asyncio = "30.3.1"
+pydantic = "2.10.4"
+pydantic-settings = "2.7.0"
+loguru = "0.7.3"
+kubernetes_asyncio = "32.0.0"
 tabulate = { extras = ["widechars"], version = "0.9.0" }
-jishaku = "2.5.2"
-sentry-sdk = "2.14.0"
-humanize = "4.10.0"
+jishaku = "2.6.0"
+sentry-sdk = "2.19.2"
+humanize = "4.11.0"
 wand = "0.6.13"
 python-freeipa = "^1.0.8"
-python-keycloak = "^4.3.0"
+python-keycloak = "5.1.1"
 
 [tool.poetry.dev-dependencies]
-pre-commit = "3.8.0"
-ruff = "0.6.5"
-taskipy = "1.13.0"
+pre-commit = "4.0.1"
+ruff = "0.8.4"
+taskipy = "1.14.1"
 
 [tool.poetry.group.ldap]
 optional = true
