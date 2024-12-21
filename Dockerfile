@@ -1,4 +1,4 @@
-ARG python_version=3.12-slim
+ARG python_version=3.13-slim
 
 FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version AS wheel-builder
 
