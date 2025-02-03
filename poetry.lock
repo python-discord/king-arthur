@@ -15,6 +15,17 @@ files = [
 pycares = ">=4.0.0"
 
 [[package]]
+name = "aiofiles"
+version = "24.1.0"
+description = "File support for asyncio."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "aiofiles-24.1.0-py3-none-any.whl", hash = "sha256:b4ec55f4195e3eb5d7abd1bf7e061763e864dd4954231fb8539a0ef8bb8260e5"},
+    {file = "aiofiles-24.1.0.tar.gz", hash = "sha256:22a075c9e5a3810f0c2e48f3008c94d68c65d763b9b03857924c99e57355166c"},
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.4.4"
 description = "Happy Eyeballs for asyncio"
@@ -1509,16 +1520,17 @@ tests = ["responses"]
 
 [[package]]
 name = "python-keycloak"
-version = "5.1.1"
+version = "5.3.1"
 description = "python-keycloak is a Python package providing access to the Keycloak API."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "python_keycloak-5.1.1-py3-none-any.whl", hash = "sha256:0df2ae75c80cc0646dc2a57f353f284edcbde3ca77e15526f403e3b38dfcffca"},
-    {file = "python_keycloak-5.1.1.tar.gz", hash = "sha256:406c5ad621c0fc911aacb8665b4eec0aebca7e88546ca6d313ebbe966080604b"},
+    {file = "python_keycloak-5.3.1-py3-none-any.whl", hash = "sha256:d3167d788add29d6cb3fda0629ee0f453fac9f6ee35241938488dbf9ac0635bb"},
+    {file = "python_keycloak-5.3.1.tar.gz", hash = "sha256:e4bbdbdddc480d64c6211095d633bea025028eb895aa83ccdc44f90ab70eff28"},
 ]
 
 [package.dependencies]
+aiofiles = ">=24.1.0"
 async-property = ">=0.2.2"
 deprecation = ">=2.1.0"
 httpx = ">=0.23.2"
@@ -2010,4 +2022,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.*"
-content-hash = "052bef1f2334a96df132eed9f1754743a6a11621108af1ccfb888f59b9d7662b"
+content-hash = "f14535e4fd3885e1ffb767dd87abb837fd9e3e401d12c53c1be6ffc7e56c6473"
