@@ -19,7 +19,7 @@ loguru = "0.7.3"
 kubernetes_asyncio = "32.0.0"
 tabulate = { extras = ["widechars"], version = "0.9.0" }
 jishaku = "2.6.0"
-sentry-sdk = "2.19.2"
+sentry-sdk = "2.21.0"
 humanize = "4.11.0"
 wand = "0.6.13"
 python-freeipa = "1.0.8"  # 1.0.9 adds gssapi which currently can't be built in our image
