@@ -3,23 +3,27 @@ ARG python_version=3.13-slim
 FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version AS wheel-builder
 
 # Install build dependencies
-RUN apt-get update && apt-get install --no-install-recommends -y libldap2-dev libsasl2-dev gcc && apt autoclean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    libldap2-dev \
+    libsasl2-dev \
+    gcc \
+    heimdal-dev \
+    && apt autoclean && rm -rf /var/lib/apt/lists/*
 
+# Install project dependencies with build tools available
 COPY pyproject.toml poetry.lock ./
+RUN poetry install --without dev --with ldap --no-root
 
-# Only the LDAP group has deps that requires gcc, so only build that for now
-RUN poetry install --only ldap --no-root
+# -------------------------------------------------------------------------------
 
 FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version
+COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
 
 RUN apt-get update && apt-get install --no-install-recommends -y libmagickwand-dev && rm -rf /var/lib/apt/lists/*
 
+# Install dependencies from build cache
 WORKDIR /app
-
-# Copy the pre-built LDAP group from the build stage that required gcc
-COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
-
-# Install the rest of the dependencies
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --without dev --with ldap --no-root
 
