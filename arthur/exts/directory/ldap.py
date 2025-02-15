@@ -409,7 +409,7 @@ class LDAP(commands.Cog):
         for user in diff_sorted:
             prefix = prefixes[user.action]
             diff_message += f"{prefix}  {self._format_user(user.discord_user, user.ldap_user)}"
-            diff_message += f" ({", ".join(user.groups)})\n"
+            diff_message += f" ({', '.join(user.groups)})\n"
 
         diff_message += "```\n"
 

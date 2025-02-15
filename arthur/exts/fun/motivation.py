@@ -51,7 +51,7 @@ class Motivation(commands.Cog):
                 continue
 
             await self.devops_channel.send(
-                f"[Today's mission](https://www.youtube.com/shorts/{video["id"]["videoId"]})"
+                f"[Today's mission](https://www.youtube.com/shorts/{video['id']['videoId']})"
             )
             break
         else:

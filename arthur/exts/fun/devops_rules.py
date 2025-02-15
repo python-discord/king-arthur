@@ -40,7 +40,7 @@ class Rules(Cog):
             output_rules = self.rules.keys()
 
         if not output_rules:
-            await ctx.send(f":x: Rule{"s"[: len(rules) ^ 1]} not found.")
+            await ctx.send(f":x: Rule{'s'[: len(rules) ^ 1]} not found.")
             return
 
         output = "\n".join(
@@ -48,7 +48,7 @@ class Rules(Cog):
         )
         await ctx.send(
             embed=discord.Embed(
-                title=f"Rule{"s"[: len(output_rules) ^ 1]}",
+                title=f"Rule{'s'[: len(output_rules) ^ 1]}",
                 description=output,
                 colour=discord.Colour.og_blurple(),
                 url="https://docs.pydis.wtf/onboarding/rules.html",

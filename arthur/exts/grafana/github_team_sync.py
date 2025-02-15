@@ -116,7 +116,7 @@ class GrafanaGitHubTeamSync(commands.Cog):
             colour=discord.Colour.blue(),
         )
         for team in grafana_teams:
-            logger.debug(f"Processing {team["name"]}")
+            logger.debug(f"Processing {team['name']}")
             try:
                 figures = await self._sync_teams(team)
             except aiohttp.ClientResponseError as e:

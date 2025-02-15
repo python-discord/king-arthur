@@ -50,7 +50,7 @@ class ZonesView(discord.ui.View):
             description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
             if errors := purge_attempt_response["errors"]:
                 for error in errors:
-                    description_content += f"`{error["code"]}`: {error["message"]}\n"
+                    description_content += f"`{error['code']}`: {error['message']}\n"
             message = generate_error_message(description=description_content, emote=":x:")
 
         self.disable_select()

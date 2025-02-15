@@ -127,11 +127,11 @@ class GrafanaLDAPTeamSync(commands.Cog):
             colour=discord.Colour.blue(),
         )
         for team in grafana_teams:
-            logger.debug(f"Processing {team["name"]}")
+            logger.debug(f"Processing {team['name']}")
             try:
                 figures = await self._sync_teams(team)
             except aiohttp.ClientResponseError as e:
-                logger.opt(exception=e).error(f"Error whilst procesing Grafana team {team["name"]}")
+                logger.opt(exception=e).error(f"Error whilst procesing Grafana team {team['name']}")
                 if channel:
                     await channel.send(e)
                 continue
