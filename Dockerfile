@@ -13,7 +13,7 @@ RUN apt-get update \
 
 # Install project dependencies with build tools available
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-root --without dev --with ldap
+RUN poetry install --compile --no-root --without dev --with ldap
 
 # -------------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
-RUN poetry install --no-root --without dev --with ldap
+RUN poetry install --compile --no-root --without dev --with ldap
 
 # Set Git SHA environment variable for Sentry
 ARG git_sha="development"
