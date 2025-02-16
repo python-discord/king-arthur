@@ -19,7 +19,11 @@ RUN poetry install --no-root --without dev --with ldap
 
 FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version
 
-RUN apt-get update && apt-get install --no-install-recommends -y libmagickwand-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    libmagickwand-dev \
+    libldap2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies from build cache
 WORKDIR /app
