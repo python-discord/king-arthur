@@ -13,19 +13,19 @@ RUN apt-get update \
 
 # Install project dependencies with build tools available
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --without dev --with ldap --no-root
+RUN poetry install --no-root --without dev --with ldap
 
 # -------------------------------------------------------------------------------
 
 FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version
-COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
 
 RUN apt-get update && apt-get install --no-install-recommends -y libmagickwand-dev && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies from build cache
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
-RUN poetry install --without dev --with ldap --no-root
+COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
+RUN poetry install --no-root --without dev --with ldap
 
 # Set Git SHA environment variable for Sentry
 ARG git_sha="development"
