@@ -1,6 +1,6 @@
-# King Arthur
+# King Arthur The Terrible
 
-King Arthur is the DevOps helper bot for Python Discord.
+King Arthur The Terrible is the DevOps helper bot for Python Discord.
 
 ## Environment variables
 
