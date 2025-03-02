@@ -1,6 +1,10 @@
 ARG python_version=3.13-slim
 
-FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version AS wheel-builder
+FROM python:$python_version AS builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+  UV_LINK_MODE=copy
 
 # Install build dependencies
 RUN apt-get update \
@@ -12,12 +16,19 @@ RUN apt-get update \
     && apt autoclean && rm -rf /var/lib/apt/lists/*
 
 # Install project dependencies with build tools available
-COPY pyproject.toml poetry.lock ./
-RUN poetry install --compile --no-root --without dev --with ldap
+WORKDIR /opt/king-arthur
+RUN --mount=type=cache,target=/root/.cache/uv \
+  --mount=type=bind,source=uv.lock,target=uv.lock \
+  --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+  uv sync --frozen --no-install-project --extra ldap --no-group dev
 
 # -------------------------------------------------------------------------------
 
-FROM --platform=linux/amd64 ghcr.io/owl-corp/python-poetry-base:$python_version
+FROM python:$python_version
+
+# Set Git SHA environment variable for Sentry
+ARG git_sha="development"
+ENV GIT_SHA=$git_sha
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -27,16 +38,11 @@ RUN apt-get update \
 
 # Install dependencies from build cache
 WORKDIR /app
-COPY pyproject.toml poetry.lock ./
-COPY --from=wheel-builder /opt/poetry/cache /opt/poetry/cache
-RUN poetry install --compile --no-root --without dev --with ldap
-
-# Set Git SHA environment variable for Sentry
-ARG git_sha="development"
-ENV GIT_SHA=$git_sha
+COPY --from=builder /opt/king-arthur/.venv /opt/king-arthur/.venv
 
 # Copy the source code in last to optimize rebuilding the image
 COPY . .
+ENV PATH="/opt/king-arthur/.venv/bin:$PATH"
 
-ENTRYPOINT ["poetry", "run", "python"]
+ENTRYPOINT ["python"]
 CMD ["-m", "arthur"]
