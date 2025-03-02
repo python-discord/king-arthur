@@ -10,7 +10,7 @@ package-mode = false
 python = "~=3.13.0"
 
 # See https://bot-core.pythondiscord.com/ for docs.
-pydis-core = "11.5.1"
+pydis-core = "11.6.0"
 
 audioop-lts = "0.2.1"
 beautifulsoup4 = "4.13.3"
