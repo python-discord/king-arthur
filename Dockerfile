@@ -37,10 +37,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies from build cache
-WORKDIR /app
+# .venv not put in /app so that it doesn't conflict with the dev
+# volume we use to avoid rebuilding image every code change locally
 COPY --from=builder /opt/king-arthur/.venv /opt/king-arthur/.venv
 
 # Copy the source code in last to optimize rebuilding the image
+WORKDIR /app
 COPY . .
 ENV PATH="/opt/king-arthur/.venv/bin:$PATH"
 
