@@ -38,6 +38,10 @@ ldap = [
 ]
 
 [tool.taskipy.tasks]
+all = "task lock && task precommit"
+lock = "task justlock && task install"
+justlock = "uv lock --upgrade"
+install = "uv sync --frozen --all-groups"
 start = "python -m arthur"
 lint = "pre-commit run --all-files"
 format = "ruff format arthur"
