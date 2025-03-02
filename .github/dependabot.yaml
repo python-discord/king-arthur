@@ -1,0 +1,17 @@
+version: 2
+enable-beta-ecosystems: true
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    ignore:
+      update-types:
+        - sem-ver:patch
+        - sem-ver:minor
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - "python-discord/devops"

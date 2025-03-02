@@ -11,10 +11,19 @@ repos:
 
   - repo: local
     hooks:
+      - id: uv-check
+        name: uv lock check
+        description: Checks the validity of the uv.lock file.
+        entry: uv lock --check
+        language: system
+        files: pyproject.toml
+        pass_filenames: false
+        require_serial: true
+
       - id: ruff-lint
         name: ruff linting
         description: Run ruff linting
-        entry: poetry run ruff check --force-exclude
+        entry: uv run ruff check --force-exclude
         language: system
         'types_or': [python, pyi]
         require_serial: true
@@ -23,7 +32,7 @@ repos:
       - id: ruff-format
         name: ruff formatting
         description: Run ruff formatting
-        entry: poetry run ruff format --force-exclude
+        entry: uv run ruff format --force-exclude
         language: system
         'types_or': [python, pyi]
         require_serial: true

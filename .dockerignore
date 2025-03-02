@@ -1,0 +1,7 @@
+# Ignore everything
+**
+
+# Except what we need
+!arthur
+!pyproject.toml
+!uv.lock
