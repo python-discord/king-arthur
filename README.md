@@ -2,6 +2,8 @@
 
 King Arthur The Terrible is the DevOps helper bot for Python Discord.
 
+This project uses [uv](https://docs.astral.sh/uv/getting-started/) to manage dependencies. Install `uv`, then run `uv venv` followed by `make` to setup the project's dependencies locally.
+
 ## Environment variables
 
 ### Core
@@ -69,5 +71,5 @@ Once you have met these requirements, use the following to install all project
 dependencies as well as the LDAP dependencies.
 
 ``` sh
-$ poetry install --with ldap
+$ uv install --extra ldap
 ```
