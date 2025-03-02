@@ -29,19 +29,12 @@ description = "King Arthur is a helper for the Python Discord DevOps team."
 dev = [
     "pre-commit==4.1.0",
     "ruff==0.9.6",
-    "taskipy==1.14.1",
 ]
 
 [project.optional-dependencies]
 ldap = [
     "bonsai<2.0.0,>=1.5.3",
 ]
-
-[tool.taskipy.tasks]
-start = "python -m arthur"
-lint = "pre-commit run --all-files"
-format = "ruff format arthur"
-precommit = "pre-commit install"
 
 [tool.ruff]
 target-version = "py313"
