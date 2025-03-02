@@ -1,50 +1,47 @@
-[tool.poetry]
+[project]
+authors = [
+    {name = "Joe Banks", email = "joe@jb3.dev"},
+    {name = "Chris Lovering", email = "chris@jb3.dev"},
+]
+license = {text = "MIT"}
+requires-python = "~=3.13.0"
+dependencies = [
+    "pydis-core==11.6.0",
+    "audioop-lts==0.2.1",
+    "beautifulsoup4==4.13.3",
+    "humanize==4.12.1",
+    "jishaku==2.6.0",
+    "kubernetes-asyncio==32.0.0",
+    "loguru==0.7.3",
+    "pydantic==2.10.6",
+    "pydantic-settings==2.8.0",
+    "python-freeipa==1.0.9",
+    "python-keycloak==5.3.1",
+    "sentry-sdk==2.22.0",
+    "tabulate[widechars]==0.9.0",
+    "wand==0.6.13",
+]
 name = "king-arthur"
 version = "1.0.0"
 description = "King Arthur is a helper for the Python Discord DevOps team."
-authors = ["Joe Banks <joe@jb3.dev>", "Chris Lovering <chris@jb3.dev>"]
-license = "MIT"
-package-mode = false
 
-[tool.poetry.dependencies]
-python = "~=3.13.0"
+[dependency-groups]
+dev = [
+    "pre-commit==4.1.0",
+    "ruff==0.9.6",
+    "taskipy==1.14.1",
+]
 
-# See https://bot-core.pythondiscord.com/ for docs.
-pydis-core = "11.6.0"
-
-audioop-lts = "0.2.1"
-beautifulsoup4 = "4.13.3"
-humanize = "4.12.1"
-jishaku = "2.6.0"
-kubernetes_asyncio = "32.0.0"
-loguru = "0.7.3"
-pydantic = "2.10.6"
-pydantic-settings = "2.8.0"
-python-freeipa = "1.0.9"
-python-keycloak = "5.3.1"
-sentry-sdk = "2.22.0"
-tabulate = { extras = ["widechars"], version = "0.9.0" }
-wand = "0.6.13"
-
-[tool.poetry.dev-dependencies]
-pre-commit = "4.1.0"
-ruff = "0.9.6"
-taskipy = "1.14.1"
-
-[tool.poetry.group.ldap]
-optional = true
-[tool.poetry.group.ldap.dependencies]
-bonsai = "^1.5.3"
+[project.optional-dependencies]
+ldap = [
+    "bonsai<2.0.0,>=1.5.3",
+]
 
 [tool.taskipy.tasks]
 start = "python -m arthur"
 lint = "pre-commit run --all-files"
 format = "ruff format arthur"
 precommit = "pre-commit install"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 target-version = "py313"
