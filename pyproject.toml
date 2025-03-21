@@ -28,7 +28,7 @@ wand = "0.6.13"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "4.1.0"
-ruff = "0.9.6"
+ruff = "0.11.2"
 taskipy = "1.14.1"
 
 [tool.poetry.group.ldap]
