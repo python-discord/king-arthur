@@ -7,8 +7,8 @@ updates:
       interval: "daily"
     ignore:
       update-types:
-        - sem-ver:patch
-        - sem-ver:minor
+        - version-update:semver-patch
+        - version-update:semver-minor
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
