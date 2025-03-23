@@ -2,6 +2,7 @@
 authors = [
     {name = "Joe Banks", email = "joe@jb3.dev"},
     {name = "Chris Lovering", email = "chris@jb3.dev"},
+    {name = "Fredrick L.", email = "fredrick@pydis.wtf"},
 ]
 license = {text = "MIT"}
 requires-python = "~=3.13.0"
