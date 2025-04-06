@@ -33,6 +33,9 @@ class Numbers(commands.GroupCog):
 
         If channel is not provided, the bot will join the voice channel of the user who invoked the command.
         """
+        if not ctx.guild:
+            return
+
         if not channel and isinstance(ctx.author, discord.Member) and (vs := ctx.author.voice):
             channel = vs.channel
 
@@ -40,15 +43,11 @@ class Numbers(commands.GroupCog):
             await ctx.send(":x: Join a voice channel first!")
             return
 
-        try:
-            await self._join_and_play_numbers(channel)
-        except discord.ClientException:
-            # Already connected to a voice channel
-            emoji = "🔇"
-        else:
-            emoji = "🔊"
+        if vc := ctx.guild.voice_client:
+            await vc.disconnect(force=True)
 
-        await ctx.message.add_reaction(emoji)
+        await self._join_and_play_numbers(channel)
+        await ctx.message.add_reaction("🔊")
 
     @numbers.command()
     async def stop(self, ctx: commands.Context) -> None:
