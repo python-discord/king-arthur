@@ -27,8 +27,10 @@ class Config(
     devops_role: int = 409416496733880320
     guild_id: int = 267624335836053506
     devops_channel_id: int = 675756741417369640
+    devops_vc_id: int = 881573757536329758
     ldap_bootstrap_channel_id: int = 1266358923875586160
     sentry_dsn: str = ""
+    numbers_url: str = "https://pydis.wtf/numbers"
 
     # LDAP & Directory
     #
