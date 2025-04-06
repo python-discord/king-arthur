@@ -10,15 +10,15 @@ dependencies = [
     "pydis-core==11.6.0",
     "audioop-lts==0.2.1",
     "beautifulsoup4==4.13.3",
-    "humanize==4.12.1",
+    "humanize==4.12.2",
     "jishaku==2.6.0",
-    "kubernetes-asyncio==32.0.0",
+    "kubernetes-asyncio==32.3.0",
     "loguru==0.7.3",
-    "pydantic==2.10.6",
+    "pydantic==2.11.2",
     "pydantic-settings==2.8.1",
     "python-freeipa==1.0.9",
     "python-keycloak==5.3.1",
-    "sentry-sdk==2.24.0",
+    "sentry-sdk==2.25.1",
     "tabulate[widechars]==0.9.0",
     "wand==0.6.13",
 ]
@@ -29,7 +29,7 @@ description = "King Arthur is a helper for the Python Discord DevOps team."
 [dependency-groups]
 dev = [
     "pre-commit==4.2.0",
-    "ruff==0.9.6",
+    "ruff==0.11.4",
     "taskipy==1.14.1",
 ]
 
