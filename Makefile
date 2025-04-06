@@ -1,10 +1,16 @@
-.PHONY: all lock lint precommit start format
+.PHONY: all install lock lint precommit start format
 
-all: lock precommit
+all: install precommit
+
+install:
+	uv sync --frozen --all-groups
 
 lock:
 	uv lock --upgrade
 	uv sync --frozen --all-groups
+
+outdated:
+	uv tree --outdated
 
 lint:
 	uv run pre-commit run --all-files

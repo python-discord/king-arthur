@@ -16,6 +16,7 @@ These environment variables are required to start the bot
 | KING_ARTHUR_DEVOPS_ROLE               | The Discord role that is allowed to run King Arthur commands | 409416496733880320        |
 | KING_ARTHUR_GUILD_ID                  | The guild the bot should interact with                       | 267624335836053506        |
 | KING_ARTHUR_DEVOPS_CHANNEL_ID         | The devops Discord channel                                   | 675756741417369640        |
+| KING_ARTHUR_DEVOPS_VC_ID              | The devops Discord voice channel                             | 881573757536329758        |
 | KING_ARTHUR_SENTRY_DSN                | Where to send sentry alerts                                  | ""                        |
 
 ### API integrations

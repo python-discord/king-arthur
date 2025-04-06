@@ -20,7 +20,7 @@ WORKDIR /opt/king-arthur
 RUN --mount=type=cache,target=/root/.cache/uv \
   --mount=type=bind,source=uv.lock,target=uv.lock \
   --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-  uv sync --frozen --no-install-project --extra ldap --no-group dev
+  uv sync --frozen --no-install-project --extra ldap --extra voice --no-group dev
 
 # -------------------------------------------------------------------------------
 
@@ -34,6 +34,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     libmagickwand-dev \
     libldap2-dev \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies from build cache
