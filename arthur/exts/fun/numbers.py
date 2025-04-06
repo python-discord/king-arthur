@@ -9,14 +9,22 @@ class Numbers(commands.GroupCog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.devops_vc: discord.VoiceChannel | discord.StageChannel | None = None
 
     async def cog_load(self) -> None:
         """Join devops channel on cog load."""
         devops_vc = self.bot.get_channel(CONFIG.devops_vc_id)
         if not isinstance(devops_vc, (discord.VoiceChannel, discord.StageChannel)):
             return
+
+        self.devops_vc = devops_vc
         vc = await devops_vc.connect(self_deaf=True, self_mute=False)
         vc.play(discord.FFmpegOpusAudio(CONFIG.numbers_url))
+
+    async def cog_unload(self) -> None:
+        """Disconnect from devops channel on cog unload."""
+        if self.devops_vc and (vc := self.devops_vc.guild.voice_client):
+            await vc.disconnect(force=True)
 
     @commands.group(invoke_without_command=True)
     async def numbers(
