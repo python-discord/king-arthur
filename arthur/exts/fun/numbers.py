@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+from arthur.apis.netcup.ssh import rce_as_a_service
 from arthur.config import CONFIG
 
 
@@ -59,8 +60,24 @@ class Numbers(commands.GroupCog):
         await ctx.message.add_reaction("🔊")
 
     @numbers.command()
+    async def tts(self, ctx: commands.Context, *, text: str) -> None:
+        """Have KA read out a message in the current VC."""
+        if not ctx.guild or not ctx.guild.voice_client:
+            return
+
+        if not ctx.bot.is_owner(ctx.author):
+            await ctx.message.add_reaction("❌")
+            return
+
+        await rce_as_a_service(
+            f"echo '{text}' > /opt/messages/tts_message.txt && "
+            "touch -a -m -t 197501010001 /opt/messages/tts_message.txt && "
+            "sudo /opt/numbers-code-generator.sh"
+        )
+
+    @numbers.command()
     async def stop(self, ctx: commands.Context) -> None:
-        """Stop playing URN in the servers voice channel."""
+        """Stop relaying numbers in the voice channel."""
         if ctx.guild and (vc := ctx.guild.voice_client):
             await vc.disconnect(force=True)
             await ctx.message.add_reaction("🔇")
