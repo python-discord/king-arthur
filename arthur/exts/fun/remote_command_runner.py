@@ -27,8 +27,8 @@ class RemoteCommands(Cog):
 
         await ctx.send(
             f"{response.returncode = }\n"
-            "stderr:```{response.stderr}```\n"
-            "stdout:```{response.stdout}```"
+            f"stderr:```{response.stderr}```\n"
+            f"stdout:```{response.stdout}```"
         )
 
 
