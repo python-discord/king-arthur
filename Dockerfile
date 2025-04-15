@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:$python_version
 
 # Create user 1000 so that the runAsUser has a username
-RUN useradd kingarthur -u 1000
+RUN useradd kingarthur -u 1000 -m
 
 # Set Git SHA environment variable for Sentry
 ARG git_sha="development"
