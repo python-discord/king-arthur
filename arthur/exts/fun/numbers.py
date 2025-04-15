@@ -65,7 +65,7 @@ class Numbers(commands.GroupCog):
         if not ctx.guild or not ctx.guild.voice_client:
             return
 
-        if not ctx.bot.is_owner(ctx.author):
+        if not await ctx.bot.is_owner(ctx.author):
             await ctx.message.add_reaction("❌")
             return
 

@@ -15,7 +15,7 @@ class RemoteCommands(Cog):
         """Ed is the standard text editor."""
         if not ctx.guild:
             return
-        if not ctx.bot.is_owner(ctx.author):
+        if not await ctx.bot.is_owner(ctx.author):
             await ctx.message.add_reaction("❌")
             return
 
