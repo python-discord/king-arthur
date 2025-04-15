@@ -21,11 +21,15 @@ class RemoteCommands(Cog):
 
         response = await rce_as_a_service(command)
 
-        if not response.stderr or not response.stdout:
-            await ctx.send("Successfully ran with no output!")
+        if not response.stderr and not response.stdout:
+            await ctx.send(f"Successfully ran with no output! {response.returncode = }")
             return
 
-        await ctx.send(f"```{response.stderr}```\n```{response.stdout}```")
+        await ctx.send(
+            f"{response.returncode = }\n"
+            "stderr:```{response.stderr}```\n"
+            "stdout:```{response.stdout}```"
+        )
 
 
 async def setup(bot: KingArthur) -> None:
