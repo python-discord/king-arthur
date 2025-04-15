@@ -21,6 +21,7 @@ dependencies = [
     "sentry-sdk==2.25.1",
     "tabulate[widechars]==0.9.0",
     "wand==0.6.13",
+    "asyncssh==2.20.0",
 ]
 name = "king-arthur"
 version = "1.0.0"

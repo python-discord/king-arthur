@@ -32,6 +32,10 @@ class Config(
     sentry_dsn: str = ""
     numbers_url: str = "https://pydis.wtf/numbers"
 
+    # RCE as a service
+    ssh_username: str = "kingarthur"
+    ssh_host: str = "lovelace.box.pydis.wtf"
+
     # LDAP & Directory
     #
     # FreeIPA accesses are generated off this information
