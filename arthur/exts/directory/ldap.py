@@ -224,7 +224,7 @@ class LDAP(commands.Cog):
         after_roles = {role.id for role in after.roles}
 
         if LDAP_BASE_STAFF_ROLE in before_roles or LDAP_BASE_STAFF_ROLE in after_roles:
-            self.sync_users()
+            await self.sync_users()
 
     async def bootstrap(self, user: discord.Member) -> tuple[BootstrapType, str, str | None]:
         """Bootstrap a user into the LDAP directory, either creating or resetting the password."""
