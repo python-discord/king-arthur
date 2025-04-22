@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from arthur.apis.netcup.ssh import rce_as_a_service
 from arthur.config import CONFIG
@@ -26,6 +26,18 @@ class Numbers(commands.GroupCog):
         """Disconnect from devops channel on cog unload."""
         if self.devops_vc and (vc := self.devops_vc.guild.voice_client):
             await vc.disconnect(force=True)
+
+    @tasks.loop(hours=1)
+    async def devops_vc_check(self) -> None:
+        """Ensure the uptime of the numbers relay."""
+        if not self.devops_vc or not (vc := self.devops_vc.guild.voice_client):
+            return
+        if not isinstance(vc, discord.VoiceClient):
+            return
+        if vc.is_playing():
+            return
+
+        vc.play(discord.FFmpegOpusAudio(CONFIG.numbers_url))
 
     @commands.group(invoke_without_command=True)
     async def numbers(
