@@ -11,6 +11,7 @@ class Numbers(commands.GroupCog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.devops_vc: discord.VoiceChannel | discord.StageChannel | None = None
+        self.devops_vc_check.start()
 
     async def cog_load(self) -> None:
         """Join devops channel on cog load."""
