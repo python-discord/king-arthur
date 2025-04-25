@@ -3,13 +3,14 @@
 from pathlib import Path
 from typing import Any
 
-from discord import Interaction, Member, User
+from discord import Interaction, Member
 from discord.ext import commands
 from kubernetes_asyncio import config
 from kubernetes_asyncio.config.kube_config import KUBE_CONFIG_DEFAULT_LOCATION
 from pydis_core import BotBase
 from sentry_sdk import new_scope
 
+import arthur
 from arthur import exts
 from arthur.config import CONFIG
 from arthur.log import logger
@@ -20,12 +21,14 @@ class KingArthur(BotBase):
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
         super().__init__(*args, **kwargs)
-
         self.add_check(self._is_devops)
 
-    @staticmethod
-    def _is_devops(ctx: commands.Context | Interaction) -> bool:
+    async def _is_devops(self, ctx: commands.Context | Interaction) -> bool:
         """Check all commands are executed by authorised personnel."""
+        u = ctx.user if isinstance(ctx, Interaction) else ctx.author
+        if await arthur.instance.is_owner(u):
+            return True
+
         if isinstance(ctx, Interaction):
             if isinstance(ctx.user, Member):
                 return CONFIG.devops_role in [r.id for r in ctx.user.roles]
@@ -55,13 +58,6 @@ class KingArthur(BotBase):
         logger.info("Loading <red>jishaku</red>")
         await self.load_extension("jishaku")
         logger.info("Loaded <red>jishaku</red>")
-
-    async def is_owner(self, user: User | Member) -> bool:
-        """Check if the invoker is a bot owner."""
-        if not user.guild:
-            return False
-
-        return CONFIG.devops_role in [r.id for r in user.roles]
 
     async def on_error(self, event_name: str, *args: Any, **kwargs: Any) -> None:
         """Log errors raised in event listeners."""
