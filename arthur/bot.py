@@ -6,6 +6,7 @@ from typing import Any
 from discord import Interaction, Member
 from discord.ext import commands
 from kubernetes_asyncio import config
+from kubernetes_asyncio.client import Configuration
 from kubernetes_asyncio.config.kube_config import KUBE_CONFIG_DEFAULT_LOCATION
 from pydis_core import BotBase
 from sentry_sdk import new_scope
@@ -51,6 +52,7 @@ class KingArthur(BotBase):
             await config.load_kube_config()
         else:
             config.load_incluster_config()
+        Configuration.get_default().disable_strict_ssl_verification = True
         logger.info(f"Logged in <red>{self.user}</>")
 
         await self.load_extensions(exts, sync_app_commands=False)
