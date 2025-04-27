@@ -2,7 +2,8 @@ import aiohttp
 
 from arthur.config import CONFIG
 
-AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.grafana_token.get_secret_value()}"}
+if CONFIG.grafana_token:
+    AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.grafana_token.get_secret_value()}"}
 
 
 async def list_teams(session: aiohttp.ClientSession) -> dict[str, str]:
