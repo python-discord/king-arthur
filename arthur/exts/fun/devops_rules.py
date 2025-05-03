@@ -1,9 +1,10 @@
 """The rules all devops members must follow."""
 
 import discord
-from discord.ext.commands import Cog, Context, Greedy, group
+from discord.ext.commands import Cog, Context, Greedy, MissingRole, group
 
 from arthur.bot import KingArthur
+from arthur.config import CONFIG
 
 RULES_URL = (
     "https://raw.githubusercontent.com/python-discord/infra/main/docs/docs/onboarding/rules.md"
@@ -34,6 +35,12 @@ class Rules(Cog):
     @group(name="rules", aliases=("rule",), invoke_without_command=True)
     async def rules_group(self, ctx: Context, rules: Greedy[int]) -> None:
         """List the requested rule(s), or all of them if not defined."""
+        role_ids = {r.id for r in ctx.author.roles}
+        if CONFIG.helpers_role not in role_ids:
+            raise MissingRole(CONFIG.helpers_role)
+        if CONFIG.devops_role not in role_ids:
+            rules = [4]
+
         if rules:
             output_rules = set(rules) & set(self.rules.keys())
         else:
