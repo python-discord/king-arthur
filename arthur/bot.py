@@ -35,7 +35,7 @@ class KingArthur(BotBase):
                 return CONFIG.devops_role in [r.id for r in ctx.user.roles]
             return False
 
-        if ctx.command.name in {"ed", "rules"}:
+        if ctx.command.name in {"ed", "rules", "monitor"}:
             return True
 
         if not ctx.guild:
