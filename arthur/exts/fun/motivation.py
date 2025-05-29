@@ -1,5 +1,6 @@
 """Send motivating messages to the devops team."""
 
+import random
 import re
 from datetime import UTC, datetime, time
 
@@ -76,6 +77,39 @@ class Motivation(commands.Cog):
         embed.set_author(name="GoComics.com", icon_url=THE_CAT, url=GARF_URL)
         embed.set_image(url=image)
         await self.devops_channel.send(embed=embed)
+
+    @commands.command(name="monitor")
+    async def monitor(
+        self,
+        ctx: commands.Context,
+        channel: discord.VoiceChannel | discord.StageChannel | None = None,
+    ) -> None:
+        """Obey."""
+        if not ctx.guild:
+            return
+
+        if not channel and isinstance(ctx.author, discord.Member) and (vs := ctx.author.voice):
+            channel = vs.channel
+
+        if not channel:
+            await ctx.send(":x: You will join a voice channel or pass one as argument!")
+            return
+
+        vc = ctx.guild.voice_client
+        if vc is None:
+            vc = await channel.connect(self_deaf=True, self_mute=False)
+        else:
+            await vc.move_to(channel)
+
+        selection = random.randint(1, 23)
+        monitor = f"https://pydis.wtf/~fredrick/monitor-{selection:03d}.mp3"
+        audio = await discord.FFmpegOpusAudio.from_probe(monitor)
+        vc.play(audio)
+        if random.random() < 0.1:  # noqa: PLR2004
+            for emoji in ("🇴", "🇧", "🇪", "🇾"):
+                await ctx.message.add_reaction(emoji)
+        else:
+            await ctx.message.add_reaction("🔊")
 
 
 async def setup(bot: KingArthur) -> None:
