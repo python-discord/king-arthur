@@ -17,6 +17,8 @@ from arthur.log import logger
 
 PASSWORD_RESET_LENGTH = 16
 
+MAX_MESSAGE_LENGTH = 2000
+
 NOTIFICATIONS_ENABLED = True
 
 BOOTSTRAP_CHANNEL_TOPIC = """
@@ -406,23 +408,30 @@ class LDAP(commands.Cog):
             LDAPSyncAction.CHANGE: "~",
         }
 
+        messages = [diff_message]
+
         for user in diff_sorted:
             prefix = prefixes[user.action]
-            diff_message += f"{prefix}  {self._format_user(user.discord_user, user.ldap_user)}"
-            diff_message += f" ({', '.join(user.groups)})\n"
 
-        diff_message += "```\n"
+            messages[-1] += f"{prefix}  {self._format_user(user.discord_user, user.ldap_user)}"
+            messages[-1] += f" ({', '.join(user.groups)})\n"
+
+            if len(messages[-1]) > MAX_MESSAGE_LENGTH - 100:
+                messages[-1] += "```"
+                messages.append("```diff\n")
+
+        messages[-1] += "```"
 
         if len(missing_emp) > 0:
-            diff_message += (
+            messages[-1] += (
                 ":warning: **Warning: Some LDAP users are missing an employee number. "
                 "This may lead to duplicated users being created.**\n\n"
             )
+            messages[-1] += "Users missing employee numbers:\n"
+            messages[-1] += "\n".join(f"- `{user.uid}`" for user in missing_emp)
 
-            diff_message += "Users missing employee numbers:\n"
-            diff_message += "\n".join(f"- `{user.uid}`" for user in missing_emp)
-
-        await ctx.reply(diff_message)
+        for message in messages:
+            await ctx.send(message)
 
 
 async def setup(bot: KingArthur) -> None:
