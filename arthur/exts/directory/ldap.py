@@ -89,6 +89,7 @@ class LDAPSyncAction(StrEnum):
     REMOVE = "remove"
     KEEP = "keep"
     CHANGE = "change"
+    NO_ACTION = "no_action"
 
 
 @dataclass
@@ -154,58 +155,72 @@ class LDAP(commands.Cog):
     @tasks.loop(minutes=10)
     async def sync_users(self) -> None:
         """Sync users with the LDAP directory."""
-        logger.info("Syncing users with the LDAP directory.")
+        try:
+            logger.info("Syncing users with the LDAP directory.")
 
-        diff, missing_emp, counts = await self.get_user_diff()
+            diff, missing_emp, counts = await self.get_user_diff()
 
-        add_users = counts[LDAPSyncAction.ADD]
-        remove_users = counts[LDAPSyncAction.REMOVE]
-        keep_users = counts[LDAPSyncAction.KEEP]
-        change_users = counts[LDAPSyncAction.CHANGE]
+            add_users = counts[LDAPSyncAction.ADD]
+            remove_users = counts[LDAPSyncAction.REMOVE]
+            keep_users = counts[LDAPSyncAction.KEEP]
+            change_users = counts[LDAPSyncAction.CHANGE]
+            no_action_users = counts[LDAPSyncAction.NO_ACTION]
 
-        logger.info(
-            f"LDAP: {add_users} missing users, removing {remove_users} users, "
-            f"keeping {keep_users} users, and changing {change_users} users."
-        )
-
-        if len(missing_emp) > 0:
-            logger.error(
-                "LDAP: Some users are missing an employee number. This may lead to duplicated users being created."
+            logger.info(
+                f"LDAP: {add_users} missing users, removing {remove_users} users, "
+                f"keeping {keep_users} users, changing {change_users} users and no action for {no_action_users} users."
             )
 
-            await self.bot.get_channel(CONFIG.devops_channel_id).send(
-                ":x: LDAP Sync: Some users are missing an employee number. This may lead to duplicate users, please rectify."
-            )
+            if len(missing_emp) > 0:
+                logger.error(
+                    "LDAP: Some users are missing an employee number. This may lead to duplicated users being created."
+                )
 
-        notified_users = []
+                await self.bot.get_channel(CONFIG.devops_channel_id).send(
+                    ":x: LDAP Sync: Some users are missing an employee number. This may lead to duplicate users, please rectify."
+                )
 
-        async for message in self.bot.get_channel(CONFIG.ldap_bootstrap_channel_id).history(
-            limit=None, oldest_first=True
-        ):
-            if (
-                "Python Discord LDAP enrollment" in message.content
-                or len(message.mentions) == 0
-                or message.author != self.bot.user
+            notified_users = []
+
+            async for message in self.bot.get_channel(CONFIG.ldap_bootstrap_channel_id).history(
+                limit=None, oldest_first=True
             ):
-                continue
-
-            notified_users.append(message.mentions[0])
-
-        for user in diff:
-            if user.action == LDAPSyncAction.ADD:
-                if user.discord_user in notified_users:
+                if (
+                    "Python Discord LDAP enrollment" in message.content
+                    or len(message.mentions) == 0
+                    or message.author != self.bot.user
+                ):
                     continue
 
-                if NOTIFICATIONS_ENABLED:
-                    await self.bot.get_channel(CONFIG.ldap_bootstrap_channel_id).send(
-                        ELIGIBLE_MESSAGE.format(mention=user.discord_user.mention)
-                    )
-            if user.action == LDAPSyncAction.REMOVE:
-                freeipa.deactivate_user(user.ldap_user.uid)
-            elif user.action == LDAPSyncAction.CHANGE:
-                freeipa.set_user_groups(user.ldap_user.uid, user.groups)
+                notified_users.append(message.mentions[0])
 
-        logger.info("LDAP: Sync complete.")
+            for user in diff:
+                await self._process_user(user, notified_users)
+
+            logger.info("LDAP: Sync complete.")
+        except Exception as e:  # noqa: BLE001
+            logger.exception(f"LDAP: Error during sync: {e}", exc_info=True)
+            await self.bot.get_channel(CONFIG.devops_channel_id).send(
+                f":x: LDAP Sync Error: ```python\n{e}```"
+            )
+
+    async def _process_user(self, user: DiffedUser, notified_users: list[discord.User]) -> None:
+        if user.action == LDAPSyncAction.ADD:
+            if user.discord_user in notified_users:
+                return
+
+            if NOTIFICATIONS_ENABLED:
+                await self.bot.get_channel(CONFIG.ldap_bootstrap_channel_id).send(
+                    ELIGIBLE_MESSAGE.format(mention=user.discord_user.mention)
+                )
+        if user.action == LDAPSyncAction.KEEP:
+            if user.ldap_user and user.ldap_user.locked:
+                freeipa.activate_user(user.ldap_user.uid)
+        if user.action == LDAPSyncAction.REMOVE:
+            if user.ldap_user and not user.ldap_user.locked:
+                freeipa.deactivate_user(user.ldap_user.uid)
+        elif user.action == LDAPSyncAction.CHANGE:
+            freeipa.set_user_groups(user.ldap_user.uid, user.groups)
 
     async def cleanup_bootstrap(self, user: discord.Member) -> None:
         """Clear up the bootstrap message for a user."""
@@ -346,9 +361,12 @@ class LDAP(commands.Cog):
 
             if base_role not in user.roles:
                 if user.id in ldap_discord_id_map:
-                    diff.append(
-                        DiffedUser(user, ldap_discord_id_map[user.id], [], LDAPSyncAction.REMOVE)
+                    action = (
+                        LDAPSyncAction.NO_ACTION
+                        if ldap_discord_id_map[user.id].locked
+                        else LDAPSyncAction.REMOVE
                     )
+                    diff.append(DiffedUser(user, ldap_discord_id_map[user.id], [], action))
                 continue
 
             user_role_ids = {r.id for r in user.roles}
@@ -364,9 +382,12 @@ class LDAP(commands.Cog):
                 else:
                     diff.append(DiffedUser(user, None, roles, LDAPSyncAction.ADD))
             elif user.id in ldap_discord_id_map:
-                diff.append(
-                    DiffedUser(user, ldap_discord_id_map[user.id], [], LDAPSyncAction.REMOVE)
+                action = (
+                    LDAPSyncAction.NO_ACTION
+                    if ldap_discord_id_map[user.id].locked
+                    else LDAPSyncAction.REMOVE
                 )
+                diff.append(DiffedUser(user, ldap_discord_id_map[user.id], [], action))
 
         counter = Counter([user.action for user in diff])
 
@@ -389,6 +410,7 @@ class LDAP(commands.Cog):
         remove_users = counts[LDAPSyncAction.REMOVE]
         keep_users = counts[LDAPSyncAction.KEEP]
         change_users = counts[LDAPSyncAction.CHANGE]
+        no_action_users = counts[LDAPSyncAction.NO_ACTION]
 
         diff_message = "# LDAP Sync Overview\n"
 
@@ -396,6 +418,7 @@ class LDAP(commands.Cog):
         diff_message += f"**Removing Users:** {remove_users}\n"
         diff_message += f"**Keeping Users:** {keep_users}\n"
         diff_message += f"**Changing Users:** {change_users}\n"
+        diff_message += f"**No Action Required:** {no_action_users}\n\n"
 
         diff_message += "```diff\n"
 
@@ -406,6 +429,7 @@ class LDAP(commands.Cog):
             LDAPSyncAction.REMOVE: "-",
             LDAPSyncAction.KEEP: " ",
             LDAPSyncAction.CHANGE: "~",
+            LDAPSyncAction.NO_ACTION: "#",
         }
 
         messages = [diff_message]

@@ -22,6 +22,7 @@ class LDAPUser:
     employee_number: str | None = None
     display_name: str | None = None
     groups: list[str] | None = None
+    locked: bool = False
 
 
 def prepare_dn(dn: str) -> str:
@@ -60,7 +61,7 @@ async def find_users() -> list[LDAPUser]:
             prepare_dn("cn=users,cn=accounts"),
             LDAPSearchScope.SUBTREE,
             "(mail=*@pydis.wtf)",
-            ["uid", "employeeNumber", "displayName", "memberOf"],
+            ["uid", "employeeNumber", "displayName", "memberOf", "nsAccountLock"],
         )
 
         for user in users:
@@ -77,6 +78,7 @@ async def find_users() -> list[LDAPUser]:
                 employee_number=user.get("employeeNumber", [None])[0],
                 display_name=user["displayName"][0],
                 groups=parsed_groups,
+                locked=user.get("nsAccountLock", [False])[0],
             )
 
             found_users.append(new_user)

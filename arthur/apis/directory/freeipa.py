@@ -68,6 +68,13 @@ def deactivate_user(username: str) -> None:
     client.user_mod(username, o_nsaccountlock=True)
 
 
+def activate_user(username: str) -> None:
+    """Activate a user in FreeIPA."""
+    client = create_client()
+
+    client.user_mod(username, o_nsaccountlock=False)
+
+
 def create_user(username: str, display_name: str, groups: list[str], discord_id: int) -> str:
     """
     Create a new user in FreeIPA. If the user exists, the password is reset and returned.
