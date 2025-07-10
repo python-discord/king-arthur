@@ -1,6 +1,3 @@
-from .teams import GithubTeamNotFoundError, list_team_members
+from .teams import GitHubError, add_staff_member
 
-__all__ = (
-    "GithubTeamNotFoundError",
-    "list_team_members",
-)
+__all__ = ("GitHubError", "add_staff_member")
