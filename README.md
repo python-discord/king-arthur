@@ -25,10 +25,10 @@ These environment variables are required to work on the relevant cog.
 | Environment                           | Relevant cog          | Description                                                               | Required/Default          |
 | ------------------------------------- | --------------------- | ------------------------------------------------------------------------- | ------------------------- |
 | KING_ARTHUR_CLOUDFLARE_TOKEN          | Zones                 | A token for the Cloudflare API used for the Cloudflare commands in Arthur | Required                  |
-| KING_ARTHUR_GITHUB_ORG                | GrafanaGitHubTeamSync | The github organisation to fetch teams from                               | python-discord            |
-| KING_ARTHUR_GITHUB_TOKEN              | GrafanaGitHubTeamSync | The github token used to fetch teams to populate grafana                  | Required                  |
-| KING_ARTHUR_GRAFANA_URL               | GrafanaGitHubTeamSync | The URL to the grafana instance to manage teams                           | https://grafana.pydis.wtf |
-| KING_ARTHUR_GRAFANA_TOKEN             | GrafanaGitHubTeamSync | The grafana token used to sync teams with github                          | Required                  |
+| KING_ARTHUR_GITHUB_ORG                | GitHubManagement      | The github organisation to fetch teams from                               | python-discord            |
+| KING_ARTHUR_GITHUB_TOKEN              | GitHubManagement      | The github token used to manage the GitHub organisation                   | Required                  |
+| KING_ARTHUR_GRAFANA_URL               | GrafanaLDAPTeamSync   | The URL to the grafana instance to manage teams                           | https://grafana.pydis.wtf |
+| KING_ARTHUR_GRAFANA_TOKEN             | GrafanaLDAPTeamSync   | The grafana token used to sync teams with LDAP                            | Required                  |
 | KING_ARTHUR_YOUTUBE_API_KEY           | Motivation            | The YouTube API key to fetch missions with                                | Required                  |
 
 ### LDAP & Directory integrations
