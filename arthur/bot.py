@@ -24,7 +24,7 @@ class KingArthur(BotBase):
         super().__init__(*args, **kwargs)
         self.add_check(self._is_devops)
 
-    async def _is_devops(self, ctx: commands.Context | Interaction) -> bool:
+    async def _is_devops(self, ctx: commands.Context | Interaction) -> bool:  # noqa: PLR0911
         """Check all commands are executed by authorised personnel."""
         u = ctx.user if isinstance(ctx, Interaction) else ctx.author
         if await arthur.instance.is_owner(u):
@@ -36,6 +36,10 @@ class KingArthur(BotBase):
             return False
 
         if ctx.command.name in {"ed", "rules", "monitor"}:
+            return True
+
+        if ctx.command.cog_name == "GitHubManagement":
+            # Commands in this cog have explicit additional checks.
             return True
 
         if not ctx.guild:
