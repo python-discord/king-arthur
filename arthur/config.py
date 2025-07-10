@@ -23,9 +23,11 @@ class Config(
     grafana_token: pydantic.SecretStr | None = None
     github_token: pydantic.SecretStr | None = None
     github_org: str = "python-discord"
+    github_team: str = "staff"
 
     devops_role: int = 409416496733880320
     helpers_role: int = 267630620367257601
+    admins_role: int = 267628507062992896
     guild_id: int = 267624335836053506
     devops_channel_id: int = 675756741417369640
     devops_vc_id: int = 881573757536329758
