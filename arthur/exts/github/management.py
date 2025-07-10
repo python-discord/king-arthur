@@ -2,7 +2,7 @@
 
 from discord.ext.commands import Cog, Context, group
 
-from arthur.apis.github import GitHubException, add_staff_member
+from arthur.apis.github import GitHubError, add_staff_member
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
 
@@ -33,7 +33,7 @@ class GitHubManagement(Cog):
         try:
             await add_staff_member(username)
             await ctx.send(f":white_check_mark: Successfully invited {username} to the staff team.")
-        except GitHubException as e:
+        except GitHubError as e:
             await ctx.send(f":x: Failed to add {username} to the staff team: {e}")
 
 
