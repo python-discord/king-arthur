@@ -13,7 +13,7 @@ HTTP_403 = 403
 HTTP_422 = 422
 
 
-class GitHubError(Exception):
+class GitHubException(Exception):
     """Custom exception for GitHub API errors."""
 
     def __init__(self, message: str):
@@ -31,13 +31,13 @@ async def add_staff_member(username: str) -> None:
             except aiohttp.ClientResponseError as e:
                 if e.status == HTTP_404:
                     msg = f"Team or user not found: {e.message}"
-                    raise GitHubError(msg)
+                    raise GitHubException(msg)
                 if e.status == HTTP_403:
                     msg = f"Forbidden: {e.message}"
-                    raise GitHubError(msg)
+                    raise GitHubException(msg)
                 if e.status == HTTP_422:
                     msg = "Cannot add organisation as a team member"
-                    raise GitHubError(msg)
+                    raise GitHubException(msg)
 
                 msg = f"Unexpected error: {e.message}"
-                raise GitHubError(msg)
+                raise GitHubException(msg)
