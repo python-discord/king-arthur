@@ -2,7 +2,7 @@
 
 from discord.ext.commands import Cog, Context, group
 
-from arthur.apis.github import GitHubError, add_staff_member
+from arthur.apis.github import GitHubError, add_staff_member, remove_org_member
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
 
@@ -35,6 +35,17 @@ class GitHubManagement(Cog):
             await ctx.send(f":white_check_mark: Successfully invited {username} to the staff team.")
         except GitHubError as e:
             await ctx.send(f":x: Failed to add {username} to the staff team: {e}")
+
+    @github.command(name="remove")
+    async def remove_org_member(self, ctx: Context, username: str) -> None:
+        """Remove a user from the GitHub organisation."""
+        try:
+            await remove_org_member(username)
+            await ctx.send(
+                f":white_check_mark: Successfully removed {username} from the GitHub organisation."
+            )
+        except GitHubError as e:
+            await ctx.send(f":x: Failed to remove {username} from the organisation: {e}")
 
 
 async def setup(bot: KingArthur) -> None:
