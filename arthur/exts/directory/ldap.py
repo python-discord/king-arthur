@@ -194,8 +194,13 @@ class LDAP(commands.Cog):
 
                 notified_users.append(message.mentions[0])
 
+            handled = set()
+
             for user in diff:
                 await self._process_user(user, notified_users)
+                handled.add(user.discord_user.id)
+
+            self._handle_left_users(handled)
 
             logger.info("LDAP: Sync complete.")
         except Exception as e:  # noqa: BLE001
@@ -203,6 +208,21 @@ class LDAP(commands.Cog):
             await self.bot.get_channel(CONFIG.devops_channel_id).send(
                 f":x: LDAP Sync Error: ```python\n{e}```"
             )
+
+    def _handle_left_users(self, handled: list[int]) -> None:
+        """Handle users that have left the guild and so were not processed."""
+        ldap_users = ldap.find_users()
+
+        for user in ldap_users:
+            if user.employee_number is None or user.employee_number in handled:
+                continue
+
+            if user.locked:
+                logger.info(f"LDAP: User {user.uid} is locked, skipping.")
+                continue
+
+            logger.info(f"LDAP: Deactivating user {user.uid} as they are no longer in the guild.")
+            freeipa.deactivate_user(user.uid)
 
     async def _process_user(self, user: DiffedUser, notified_users: list[discord.User]) -> None:
         if user.action == LDAPSyncAction.ADD:
