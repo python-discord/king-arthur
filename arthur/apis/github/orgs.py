@@ -12,7 +12,6 @@ async def remove_org_member(username: str) -> None:
         async with session.delete(endpoint, headers=HEADERS) as resp:
             try:
                 resp.raise_for_status()
-                return await resp.json()
             except aiohttp.ClientResponseError as e:
                 if e.status == HTTP_404:
                     msg = f"Team or user not found in the org: {e.message}"
