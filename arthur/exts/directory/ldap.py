@@ -198,9 +198,11 @@ class LDAP(commands.Cog):
 
             for user in diff:
                 await self._process_user(user, notified_users)
-                handled.add(user.discord_user.id)
+                handled.add(
+                    user.ldap_user.employee_number if user.ldap_user else str(user.discord_user.id)
+                )
 
-            self._handle_left_users(handled)
+            await self._handle_left_users(handled)
 
             logger.info("LDAP: Sync complete.")
         except Exception as e:  # noqa: BLE001
@@ -209,9 +211,9 @@ class LDAP(commands.Cog):
                 f":x: LDAP Sync Error: ```python\n{e}```"
             )
 
-    def _handle_left_users(self, handled: list[int]) -> None:
+    async def _handle_left_users(self, handled: list[int]) -> None:
         """Handle users that have left the guild and so were not processed."""
-        ldap_users = ldap.find_users()
+        ldap_users = await ldap.find_users()
 
         for user in ldap_users:
             if user.employee_number is None or user.employee_number in handled:
