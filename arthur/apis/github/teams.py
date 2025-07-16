@@ -1,6 +1,6 @@
 import aiohttp
 
-from arthur.apis.github import GitHubError, HEADERS, HTTP_403, HTTP_404, HTTP_422
+from arthur.apis.github.common import GitHubError, HEADERS, HTTP_403, HTTP_404, HTTP_422
 from arthur.config import CONFIG
 
 
