@@ -1,6 +1,7 @@
 """Return system information on our production 9front infrastructure."""
 
 import asyncio
+import base64
 import io
 import random
 from datetime import UTC, datetime
@@ -16,6 +17,7 @@ from wand.image import Image
 from arthur.apis.systems import lib9front
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
+from arthur.exts.systems.motd import MOTD
 
 BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
 THRESHOLD = 0.01
@@ -194,6 +196,13 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         contents = await self.fetch_resource("lib/troll")
         result = random.choice(contents.splitlines())
         await ctx.reply(result)
+
+    @command(name="motd")
+    async def motd(self, ctx: Context) -> None:
+        """Generate an image representing the message of the day."""
+        payload = MOTD.replace(b"\n", b"")
+        file = File(io.BytesIO(base64.b64decode(payload)), filename="motd.png")
+        await ctx.send(file=file)
 
 
 async def setup(bot: KingArthur) -> None:
