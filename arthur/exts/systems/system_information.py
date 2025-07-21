@@ -121,7 +121,7 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         selected_management_comment = random.choice(MANAGEMENT_ONE_TO_ONE_COMMENTS)
 
         await selected_member.send(selected_management_comment)
-        logger.info("Inspirational management tactic applied to %s", selected_member)
+        logger.info("Inspirational management tactic applied to {member}", member=selected_member)
 
     @Cog.listener()
     async def on_message(self, msg: Message) -> None:
