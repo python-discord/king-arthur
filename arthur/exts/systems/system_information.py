@@ -10,6 +10,7 @@ from urllib import parse
 
 import aiohttp
 from discord import File, Member, Message
+from discord.ext import tasks
 from discord.ext.commands import Cog, Context, Converter, command
 from loguru import logger
 from wand.image import Image
@@ -28,6 +29,19 @@ CORPORATE_FRIENDLY_SMILEYS = (
     ":slight_smile:",
     ":grin:",
     ":blush:",
+)
+MANAGEMENT_ONE_TO_ONE_COMMENTS = (
+    "Well Clarice, have the lambs stopped screaming?",
+    "I do wish we could chat longer, but... I'm having an old friend for dinner. Bye.",
+    "What is your father, dear? Is he a coal miner?",
+    "Senator, just one more thing: love your suit!",
+    "Memory, Agent Starling, is what I have instead of a view.",
+    "You still wake up sometimes, don't you? You wake up in the dark and hear the screaming of the lambs.",
+    "People will say we're in love.",
+    "All good things to those who wait.",
+    '"Plum Island Animal Disease Research Center." Sounds charming.',
+    "Ready when you are, Sergeant Pembry.",
+    "A census taker once tried to test me.",
 )
 
 
@@ -72,6 +86,7 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         self.cached_blogcom = None
         self.cached_bullshit = None
         self.last_sent = None
+        self.conduct_one_to_ones.start()
 
     async def fetch_resource(self, name: str) -> str:
         """Fetch the file contents of the given filename, starting from ``/``."""
@@ -80,6 +95,33 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
             async with aiohttp.ClientSession() as session, session.get(url) as resp:
                 self.cached_resources[name] = await resp.text()
         return self.cached_resources[name]
+
+    async def cog_unload(self) -> None:
+        """Tasks to run when cog is unloaded."""
+        self.conduct_one_to_ones.cancel()
+
+    @tasks.loop(hours=12)
+    async def conduct_one_to_ones(self) -> None:
+        """Conduct management one-to-ones with eligible team members."""
+        if random.random() > 0.01:
+            # Management budget exceeded for this one-to-one slot.
+            return
+
+        guild = self.bot.get_guild(CONFIG.guild_id)
+
+        if guild is None:
+            return
+
+        role = guild.get_role(CONFIG.devops_role)
+
+        if role is None:
+            return
+
+        selected_member = random.choice(role.members)
+        selected_management_comment = random.choice(MANAGEMENT_ONE_TO_ONE_COMMENTS)
+
+        await selected_member.send(selected_management_comment)
+        logger.info("Inspirational management tactic applied to %s", selected_member)
 
     @Cog.listener()
     async def on_message(self, msg: Message) -> None:
