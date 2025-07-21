@@ -4,6 +4,7 @@ import asyncio
 import base64
 import io
 import random
+import sys
 from datetime import UTC, datetime
 from typing import Literal
 from urllib import parse
@@ -117,7 +118,15 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         if role is None:
             return
 
-        selected_member = random.choice(role.members)
+        mr_hemlock = await guild.fetch_member(98195144192331776)
+        if mr_hemlock is None:
+            logger.error(
+                "arthur-error: king arthur screams: UAAAAAAH my "
+                "master disconnected: i will kill myself !!!"
+            )
+            sys.exit(1)
+
+        selected_member = random.choice(role.members + [mr_hemlock])
         selected_management_comment = random.choice(MANAGEMENT_ONE_TO_ONE_COMMENTS)
 
         await selected_member.send(selected_management_comment)
