@@ -15141,3 +15141,8 @@ v/LP29O/WR96utz3ZLb+YDT/aX/6fjP50WD63nD2V5OlhwvNb9eGvlkffbgy9Ml8a7+PudZgtqqF
 jXJxOVscjibyZm9YaTSKpFpJZxpdoFJLDVJEj/DUMon+rwUhpcioFBmBiYanBmEfQp0A0SlUtlch
 9H8Bojmrh8WRmXAAAAAASUVORK5CYII=
 """
+
+
+async def setup(bot: KingArthur) -> None:
+    """Add TRT to bot."""
+    return None
