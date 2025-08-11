@@ -19,7 +19,7 @@ from wand.image import Image
 from arthur.apis.systems import lib9front
 from arthur.bot import KingArthur
 from arthur.config import CONFIG
-from arthur.exts.systems.motd import MOTD
+from arthur.exts.systems._motd import MOTD
 
 BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
 THRESHOLD = 0.01
