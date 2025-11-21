@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # The current version (v2) of Docker's build-push action uses
       # buildx, which comes with BuildKit features that help us speed
@@ -54,7 +54,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: python-discord/infra
           path: infra
