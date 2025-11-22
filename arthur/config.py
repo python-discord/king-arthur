@@ -1,12 +1,9 @@
 """Utilities for interacting with the config for King Arthur The Terrible."""
 
 from os import environ
-from typing import TYPE_CHECKING
 
+import pydantic  # noqa: TC002 Pydantic requires this to be present at runtime for parsing
 from pydantic_settings import BaseSettings
-
-if TYPE_CHECKING:
-    import pydantic
 
 
 class Config(
