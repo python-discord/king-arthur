@@ -5,7 +5,7 @@ authors = [
     {name = "Fredrick L.", email = "fredrick@pydis.wtf"},
 ]
 license = {text = "MIT"}
-requires-python = "~=3.13.0"
+requires-python = "~=3.14.0"
 dependencies = [
     "pydis-core==11.8.0",
     "audioop-lts==0.2.2",
@@ -53,7 +53,7 @@ format = "ruff format arthur"
 precommit = "pre-commit install"
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 extend-exclude = [".cache"]
 line-length = 100
 unsafe-fixes = true
