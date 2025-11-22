@@ -25,7 +25,7 @@ async def restart_deployment(deployment: str, namespace: str) -> None:
                     }
                 }
             },
-            field_manager="King Arthur",
+            field_manager="King Arthur The Terrible",
         )
 
 

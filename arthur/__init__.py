@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pydis_core.utils import apply_monkey_patches
 
 if TYPE_CHECKING:
-    from arthur.bot import KingArthur
+    from arthur.bot import KingArthurTheTerrible
 
 
 apply_monkey_patches()
@@ -16,4 +16,4 @@ apply_monkey_patches()
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-instance: "KingArthur" = None  # Global Bot instance.
+instance: "KingArthurTheTerrible" = None  # Global Bot instance.

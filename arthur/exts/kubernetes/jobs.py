@@ -5,7 +5,7 @@ from discord.ext import commands
 from kubernetes_asyncio.client.models import V1CronJobList
 
 from arthur.apis.kubernetes import jobs
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 
 
@@ -58,7 +58,7 @@ class CronJobView(discord.ui.View):
 class Jobs(commands.Cog):
     """Commands for working with Kubernetes Jobs & CronJobs."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @commands.group(name="cronjob", aliases=["cronjobs", "cj"], invoke_without_command=True)
@@ -75,6 +75,6 @@ class Jobs(commands.Cog):
         await ctx.send(":tools: Pick a CronJob to trigger", view=view)
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     await bot.add_cog(Jobs(bot))

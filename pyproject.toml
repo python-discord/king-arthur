@@ -25,7 +25,7 @@ dependencies = [
 ]
 name = "king-arthur"
 version = "1.0.0"
-description = "King Arthur is a helper for the Python Discord DevOps team."
+description = "King Arthur The Terrible is a helper for the Python Discord DevOps team."
 
 [dependency-groups]
 dev = [

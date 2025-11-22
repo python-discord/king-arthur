@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 
 from arthur.apis import grafana
 from arthur.apis.directory import ldap
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger
 
@@ -26,7 +26,7 @@ class GrafanaLDAPTeamSync(commands.Cog):
     in future they will be unified.
     """
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.sync_ldap_grafana_teams.start()
 
@@ -166,7 +166,7 @@ class GrafanaLDAPTeamSync(commands.Cog):
         await self.sync_ldap_grafana_teams(ctx.channel)
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     if ldap.BONSAI_AVAILABLE and CONFIG.enable_ldap and CONFIG.grafana_token:
         await bot.add_cog(GrafanaLDAPTeamSync(bot))

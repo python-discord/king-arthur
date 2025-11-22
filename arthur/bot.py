@@ -17,8 +17,8 @@ from arthur.config import CONFIG
 from arthur.log import logger
 
 
-class KingArthur(BotBase):
-    """Base bot class for King Arthur."""
+class KingArthurTheTerrible(BotBase):
+    """Base bot class for King Arthur The Terrible."""
 
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]) -> None:
         super().__init__(*args, **kwargs)

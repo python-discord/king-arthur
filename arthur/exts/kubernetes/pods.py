@@ -11,7 +11,7 @@ from loguru import logger
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import pods
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.pagination import LinePaginator
 from arthur.utils import generate_error_message
@@ -34,7 +34,7 @@ def tabulate_pod_data(data: list[list[str]]) -> str:
 class Pods(commands.Cog):
     """Commands for working with Kubernetes Pods."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @commands.group(name="pods", aliases=["pod"], invoke_without_command=True)
@@ -161,6 +161,6 @@ class Pods(commands.Cog):
         return
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     await bot.add_cog(Pods(bot))

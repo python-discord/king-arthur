@@ -1,17 +1,17 @@
-"""This cog provides error handling for King Arthur."""
+"""This cog provides error handling for King Arthur The Terrible."""
 
 from discord import Message
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.utils import generate_error_message
 
 
 class ErrorHandler(Cog):
-    """Error handling for King Arthur."""
+    """Error handling for King Arthur The Terrible."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     async def _add_error_reaction(self, message: Message) -> None:
@@ -54,6 +54,6 @@ class ErrorHandler(Cog):
             )
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(ErrorHandler(bot))

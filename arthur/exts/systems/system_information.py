@@ -17,7 +17,7 @@ from loguru import logger
 from wand.image import Image
 
 from arthur.apis.systems import lib9front
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.exts.systems._motd import MOTD
 
@@ -70,7 +70,7 @@ with you! There {seems to be|is|appears to be|is assumed to be} a {tiny|minor|ma
 {Python|Erlang|Chris' exhaust} is peace. \
 {The DevOps team|Decentralized version control|The 2024 presidential election} is replication. \
 Your {message|comment|idea|thought} is strength.|
-Who controls {King Arthur|Kubernetes|Netcup|Joe's medication} controls the future. \
+Who controls {King Arthur The Terrible|Kubernetes|Netcup|Joe's medication} controls the future. \
 Who controls {Bella's rations|the dennis.services mail server|`git push -f` access|edit rights to this message} controls the past.|
 The best {messages|comments|ideas|chats}... are those that tell you what you know already.|
 If you want to keep {a secret|PGP private keys|Lemoncluster access|access to Joe's secret vacation photo library}, you must also hide it from {yourself|the moderators team|the ethical advisory board|Chris}.|
@@ -81,7 +81,7 @@ It's a beautiful thing, the destruction of words.|
 I enjoy talking to you. Your mind appeals to me. It resembles my own mind except that you happen to be {clinically |absolutely |completely |}insane.
 """
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.cached_resources = {}
         self.cached_blogcom = None
@@ -256,6 +256,6 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         await ctx.send(file=file)
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(SystemInformation(bot))

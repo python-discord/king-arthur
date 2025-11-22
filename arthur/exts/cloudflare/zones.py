@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from arthur.apis.cloudflare import zones
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger
 from arthur.utils import generate_error_message
@@ -62,7 +62,7 @@ class ZonesView(discord.ui.View):
 class Zones(commands.Cog):
     """Commands for working with Cloudflare zones."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @commands.group(name="zones", invoke_without_command=True)
@@ -79,7 +79,7 @@ class Zones(commands.Cog):
         await ctx.send(":cloud: Pick which zone(s) that should have their cache purged", view=view)
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     if not CONFIG.cloudflare_token:
         logger.warning("Not loading Cloudflare Zone cog as cloudflare_token env var is not set.")

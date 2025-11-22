@@ -10,7 +10,7 @@ from kubernetes_asyncio.client.rest import ApiException
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import deployments
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.utils import generate_error_message
 
 
@@ -90,7 +90,7 @@ def deployment_to_emote(deployment: V1Deployment) -> str:
 class Deployments(commands.Cog):
     """Commands for working with Kubernetes Deployments."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @commands.group(name="deployments", aliases=["deploy"], invoke_without_command=True)
@@ -183,6 +183,6 @@ class Deployments(commands.Cog):
             )
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     await bot.add_cog(Deployments(bot))

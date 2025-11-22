@@ -3,14 +3,14 @@
 from discord.ext.commands import Cog, Context, group
 
 from arthur.apis.github import GitHubError, add_staff_member, remove_org_member
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 
 
 class GitHubManagement(Cog):
     """Ed is the standard text editor."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     async def cog_check(self, ctx: Context) -> bool:
@@ -48,6 +48,6 @@ class GitHubManagement(Cog):
             await ctx.send(f":x: Failed to remove {username} from the organisation: {e}")
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(GitHubManagement(bot))

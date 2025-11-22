@@ -2,13 +2,13 @@
 
 from discord.ext.commands import Cog, Context, command
 
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 
 
 class Ed(Cog):
     """Ed is the standard text editor."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @command(name="ed", help="[-GVhs] [-p string] [file]")
@@ -17,6 +17,6 @@ class Ed(Cog):
         await ctx.send("?")
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(Ed(bot))

@@ -1,4 +1,4 @@
-"""Entrypoint for King Arthur."""
+"""Entrypoint for King Arthur The Terrible."""
 
 import asyncio
 
@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 import arthur
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger, setup_sentry
 
@@ -23,10 +23,12 @@ async def main() -> None:
     intents.invites = False
     intents.webhooks = False
     intents.integrations = False
-    user_agent = f"github.com/python-discord/king-arthur ({aiohttp.http.SERVER_SOFTWARE})"
+    user_agent = (
+        f"github.com/python-discord/king-arthur the terrible ({aiohttp.http.SERVER_SOFTWARE})"
+    )
 
     async with aiohttp.ClientSession(headers={"User-Agent": user_agent}) as session:
-        arthur.instance = KingArthur(
+        arthur.instance = KingArthurTheTerrible(
             guild_id=CONFIG.guild_id,
             http_session=session,
             command_prefix=commands.when_mentioned_or(*CONFIG.prefixes),

@@ -5,7 +5,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.log import logger
 
 
@@ -22,7 +22,7 @@ class Quote(NamedTuple):
 class QuotesCog(commands.Cog):
     """A cog that sends programming quotes."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.quotes = []
 
@@ -62,6 +62,6 @@ class QuotesCog(commands.Cog):
         await ctx.reply(str(quote))
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Load the QuotesCog."""
     await bot.add_cog(QuotesCog(bot))

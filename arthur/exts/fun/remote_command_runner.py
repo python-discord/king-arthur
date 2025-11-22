@@ -1,13 +1,13 @@
 from discord.ext.commands import Cog, Context, command
 
 from arthur.apis.netcup.ssh import rce_as_a_service
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 
 
 class RemoteCommands(Cog):
     """We love RCE."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @command(name="rce")
@@ -32,6 +32,6 @@ class RemoteCommands(Cog):
         )
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(RemoteCommands(bot))

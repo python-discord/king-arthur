@@ -6,13 +6,13 @@ from discord.ext import commands
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import nodes
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 
 
 class Nodes(commands.Cog):
     """Commands for working with Kubernetes nodes."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @commands.group(name="nodes", aliases=["node"], invoke_without_command=True)
@@ -101,6 +101,6 @@ class Nodes(commands.Cog):
         )
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     await bot.add_cog(Nodes(bot))

@@ -7,7 +7,7 @@ from datetime import UTC, datetime, time
 import discord
 from discord.ext import commands, tasks
 
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger
 
@@ -19,7 +19,7 @@ GARF_URL = "https://www.gocomics.com/garfield/"
 class Motivation(commands.Cog):
     """Motivation is the key to productivity."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.devops_channel = bot.get_channel(CONFIG.devops_channel_id)
         self.send_daily_motivation.start()
@@ -112,6 +112,6 @@ class Motivation(commands.Cog):
             await ctx.message.add_reaction("🔊")
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(Motivation(bot))

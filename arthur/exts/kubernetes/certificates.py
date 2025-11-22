@@ -6,13 +6,13 @@ from discord.ext import commands
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import certificates
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 
 
 class Certificates(commands.Cog):
     """Commands for working with TLS certificates."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @commands.group(name="certificates", aliases=["certs"], invoke_without_command=True)
@@ -49,6 +49,6 @@ class Certificates(commands.Cog):
         await ctx.send(return_message.format(namespace, table))
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     await bot.add_cog(Certificates(bot))

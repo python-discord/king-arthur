@@ -1,4 +1,4 @@
-"""Utility functionality for King Arthur."""
+"""Utility functionality for King Arthur The Terrible."""
 
 from datetime import datetime
 

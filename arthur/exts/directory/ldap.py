@@ -10,7 +10,7 @@ from discord import ui
 from discord.ext import commands, tasks
 
 from arthur.apis.directory import freeipa, keycloak, ldap
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.constants import LDAP_BASE_STAFF_ROLE, LDAP_ROLE_MAPPING
 from arthur.log import logger
@@ -148,7 +148,7 @@ class BootstrapView(ui.View):
 class LDAP(commands.Cog):
     """Commands for working with the LDAP Directory."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.sync_users.start()
 
@@ -480,7 +480,7 @@ class LDAP(commands.Cog):
             await ctx.send(message)
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add the extension to the bot."""
     if not all((ldap.BONSAI_AVAILABLE, freeipa.BONSAI_AVAILABLE, CONFIG.enable_ldap)):
         logger.warning(

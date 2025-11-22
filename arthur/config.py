@@ -1,4 +1,4 @@
-"""Utilities for interacting with the config for King Arthur."""
+"""Utilities for interacting with the config for King Arthur The Terrible."""
 
 from os import environ
 
@@ -12,7 +12,7 @@ class Config(
     env_prefix="KING_ARTHUR_",
     extra="ignore",
 ):
-    """Configuration for King Arthur."""
+    """Configuration for King Arthur The Terrible."""
 
     token: pydantic.SecretStr
     prefixes: tuple[str, ...] = ("arthur ", "M-x ")
@@ -36,7 +36,7 @@ class Config(
     numbers_url: str = "https://pydis.wtf/numbers"
 
     # RCE as a service
-    ssh_username: str = "kingarthur"
+    ssh_username: str = "kingarthur"  # the terrible
     ssh_host: str = "lovelace.box.pydis.wtf"
 
     # LDAP & Directory
@@ -46,7 +46,10 @@ class Config(
     enable_ldap: bool = False
 
     ldap_host: pydantic.AnyUrl | None = None
-    ldap_bind_user: str = "uid=kingarthur,cn=users,cn=accounts,dc=box,dc=pydis,dc=wtf"
+    ldap_bind_user: str = (
+        "uid=kingarthur,"  # the terrible
+        "cn=users,cn=accounts,dc=box,dc=pydis,dc=wtf"
+    )
     ldap_bind_password: pydantic.SecretStr | None = None
     ldap_base_dn: str = "dc=box,dc=pydis,dc=wtf"
 
@@ -55,7 +58,7 @@ class Config(
     # Keycloak
 
     keycloak_address: pydantic.AnyUrl | None = None
-    keycloak_username: str = "kingarthur"
+    keycloak_username: str = "kingarthur"  # the terrible
     keycloak_password: pydantic.SecretStr | None = None
     keycloak_user_realm: str = "pydis"
 

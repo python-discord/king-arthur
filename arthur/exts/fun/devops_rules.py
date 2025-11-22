@@ -3,7 +3,7 @@
 import discord
 from discord.ext.commands import Cog, Context, Greedy, MissingRole, group
 
-from arthur.bot import KingArthur
+from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 
 RULES_URL = (
@@ -14,7 +14,7 @@ RULES_URL = (
 class Rules(Cog):
     """The rules all devops members must follow."""
 
-    def __init__(self, bot: KingArthur) -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.rules: dict
 
@@ -69,6 +69,6 @@ class Rules(Cog):
         await ctx.reply(":+1:")
 
 
-async def setup(bot: KingArthur) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(Rules(bot))
