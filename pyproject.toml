@@ -12,7 +12,7 @@ dependencies = [
     "beautifulsoup4==4.13.4",
     "humanize==4.12.2",
     "jishaku==2.6.0",
-    "kubernetes-asyncio==32.3.0",
+    "kubernetes-asyncio==33.3.0",
     "loguru==0.7.3",
     "pydantic==2.11.3",
     "pydantic-settings==2.9.1",
