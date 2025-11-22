@@ -1,9 +1,12 @@
 """Utilities for interacting with the config for King Arthur The Terrible."""
 
 from os import environ
+from typing import TYPE_CHECKING
 
-import pydantic
 from pydantic_settings import BaseSettings
+
+if TYPE_CHECKING:
+    import pydantic
 
 
 class Config(

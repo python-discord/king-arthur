@@ -1,8 +1,11 @@
 """APIs for managing Cloudflare zones."""
 
-import aiohttp
+from typing import TYPE_CHECKING
 
 from arthur.config import CONFIG
+
+if TYPE_CHECKING:
+    import aiohttp
 
 AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.cloudflare_token.get_secret_value()}"}
 

@@ -1,12 +1,15 @@
 """The Nodes cog helps with managing Kubernetes nodes."""
 
 from textwrap import dedent
+from typing import TYPE_CHECKING
 
 from discord.ext import commands
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import nodes
-from arthur.bot import KingArthurTheTerrible
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 
 class Nodes(commands.Cog):

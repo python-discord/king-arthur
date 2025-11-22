@@ -1,6 +1,9 @@
 """Utility functionality for King Arthur The Terrible."""
 
-from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 def generate_error_message(

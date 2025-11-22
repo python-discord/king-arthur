@@ -1,12 +1,17 @@
 """The zones cog helps with managing Cloudflare zones."""
 
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands
-from kubernetes_asyncio.client.models import V1CronJobList
 
 from arthur.apis.kubernetes import jobs
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
+
+if TYPE_CHECKING:
+    from kubernetes_asyncio.client.models import V1CronJobList
+
+    from arthur.bot import KingArthurTheTerrible
 
 
 class CronJobView(discord.ui.View):

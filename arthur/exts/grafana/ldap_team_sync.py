@@ -1,14 +1,18 @@
+from typing import TYPE_CHECKING
+
 import aiohttp
 import discord
 from discord.ext import commands, tasks
 
 from arthur.apis import grafana
 from arthur.apis.directory import ldap
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger
 
 from . import MissingMembers, SyncFigures
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 GRAFANA_TO_LDAP_NAME_MAPPING = {
     "devops": "devops",

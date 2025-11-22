@@ -1,11 +1,16 @@
 """This cog provides error handling for King Arthur The Terrible."""
 
-from discord import Message
+from typing import TYPE_CHECKING
+
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-from arthur.bot import KingArthurTheTerrible
 from arthur.utils import generate_error_message
+
+if TYPE_CHECKING:
+    from discord import Message
+
+    from arthur.bot import KingArthurTheTerrible
 
 
 class ErrorHandler(Cog):

@@ -1,8 +1,11 @@
 """Ed is the standard text editor."""
 
+from typing import TYPE_CHECKING
+
 from discord.ext.commands import Cog, Context, command
 
-from arthur.bot import KingArthurTheTerrible
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 
 class Ed(Cog):

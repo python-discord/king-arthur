@@ -1,14 +1,19 @@
 """The zones cog helps with managing Cloudflare zones."""
 
-import aiohttp
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands
 
 from arthur.apis.cloudflare import zones
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger
 from arthur.utils import generate_error_message
+
+if TYPE_CHECKING:
+    import aiohttp
+
+    from arthur.bot import KingArthurTheTerrible
 
 
 class ZonesView(discord.ui.View):

@@ -1,10 +1,14 @@
 """The rules all devops members must follow."""
 
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext.commands import Cog, Context, Greedy, MissingRole, group
 
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 RULES_URL = (
     "https://raw.githubusercontent.com/python-discord/infra/main/docs/docs/onboarding/rules.md"

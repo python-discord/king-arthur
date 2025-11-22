@@ -1,8 +1,12 @@
 """APIs for interacting with Kubernetes nodes."""
 
+from typing import TYPE_CHECKING
+
 from kubernetes_asyncio import client
 from kubernetes_asyncio.client.api_client import ApiClient
-from kubernetes_asyncio.client.models import V1NodeList
+
+if TYPE_CHECKING:
+    from kubernetes_asyncio.client.models import V1NodeList
 
 
 async def list_nodes() -> V1NodeList:

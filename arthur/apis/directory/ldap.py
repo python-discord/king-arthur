@@ -38,7 +38,7 @@ def get_cn(dn: str) -> str:
 
 
 @cache
-def create_client() -> "LDAPClient":
+def create_client() -> LDAPClient:
     """Create an LDAP client with the configured settings."""
     client = LDAPClient(str(CONFIG.ldap_host), tls=True)
 

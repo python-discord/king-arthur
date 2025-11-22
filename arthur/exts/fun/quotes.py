@@ -1,12 +1,14 @@
 import random
-from typing import NamedTuple
+from typing import NamedTuple, TYPE_CHECKING
 
 import aiohttp
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-from arthur.bot import KingArthurTheTerrible
 from arthur.log import logger
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 
 class Quote(NamedTuple):

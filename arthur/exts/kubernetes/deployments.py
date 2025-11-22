@@ -2,16 +2,20 @@
 
 from http import HTTPStatus
 from textwrap import dedent
+from typing import TYPE_CHECKING
 
 from discord import ButtonStyle, Interaction, ui
 from discord.ext import commands
-from kubernetes_asyncio.client.models import V1Deployment
 from kubernetes_asyncio.client.rest import ApiException
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import deployments
-from arthur.bot import KingArthurTheTerrible
 from arthur.utils import generate_error_message
+
+if TYPE_CHECKING:
+    from kubernetes_asyncio.client.models import V1Deployment
+
+    from arthur.bot import KingArthurTheTerrible
 
 
 class ConfirmDeployment(ui.View):

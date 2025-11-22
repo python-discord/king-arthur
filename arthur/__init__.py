@@ -16,4 +16,4 @@ apply_monkey_patches()
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-instance: "KingArthurTheTerrible" = None  # Global Bot instance.
+instance: KingArthurTheTerrible = None  # Global Bot instance.

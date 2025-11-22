@@ -1,10 +1,14 @@
 """Commands for managing the GitHub organisation and teams."""
 
+from typing import TYPE_CHECKING
+
 from discord.ext.commands import Cog, Context, group
 
 from arthur.apis.github import GitHubError, add_staff_member, remove_org_member
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 
 class GitHubManagement(Cog):

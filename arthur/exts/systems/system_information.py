@@ -6,7 +6,7 @@ import io
 import random
 import sys
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 from urllib import parse
 
 import aiohttp
@@ -17,9 +17,11 @@ from loguru import logger
 from wand.image import Image
 
 from arthur.apis.systems import lib9front
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.exts.systems._motd import MOTD
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
 THRESHOLD = 0.01

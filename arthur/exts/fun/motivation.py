@@ -3,13 +3,16 @@
 import random
 import re
 from datetime import UTC, datetime, time
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands, tasks
 
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.log import logger
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 MOTIVATION_IMAGE_RE = re.compile(r"data-image=\"(https://assets\.amuniversal\.com/.+?)\"")
 THE_CAT = "https://avatar.amuniversal.com/feature_avatars/ubadge_images/features/ga/mid_u-201701251612.png"

@@ -1,8 +1,12 @@
 """APIs for working with Kubernetes pods."""
 
+from typing import TYPE_CHECKING
+
 from kubernetes_asyncio import client
 from kubernetes_asyncio.client.api_client import ApiClient
-from kubernetes_asyncio.client.models import V1PodList
+
+if TYPE_CHECKING:
+    from kubernetes_asyncio.client.models import V1PodList
 
 
 async def list_pods(namespace: str) -> V1PodList:

@@ -1,6 +1,9 @@
-import aiohttp
+from typing import TYPE_CHECKING
 
 from arthur.config import CONFIG
+
+if TYPE_CHECKING:
+    import aiohttp
 
 if CONFIG.grafana_token:
     AUTH_HEADER = {"Authorization": f"Bearer {CONFIG.grafana_token.get_secret_value()}"}

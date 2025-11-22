@@ -1,10 +1,9 @@
 """Module containing the core bot base for King Arthur."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from discord import Interaction, Member
-from discord.ext import commands
 from kubernetes_asyncio import config
 from kubernetes_asyncio.client import Configuration
 from kubernetes_asyncio.config.kube_config import KUBE_CONFIG_DEFAULT_LOCATION
@@ -15,6 +14,9 @@ import arthur
 from arthur import exts
 from arthur.config import CONFIG
 from arthur.log import logger
+
+if TYPE_CHECKING:
+    from discord.ext import commands
 
 
 class KingArthurTheTerrible(BotBase):

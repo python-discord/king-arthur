@@ -1,8 +1,12 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-import discord
-from discord.ext.commands import Context
 from pydis_core.utils.pagination import LinePaginator as _LinePaginator, PaginationEmojis
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    import discord
+    from discord.ext.commands import Context
 
 
 class LinePaginator(_LinePaginator):

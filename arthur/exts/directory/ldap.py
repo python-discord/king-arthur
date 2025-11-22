@@ -4,16 +4,19 @@ import secrets
 from collections import Counter
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 import discord
 from discord import ui
 from discord.ext import commands, tasks
 
 from arthur.apis.directory import freeipa, keycloak, ldap
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.constants import LDAP_BASE_STAFF_ROLE, LDAP_ROLE_MAPPING
 from arthur.log import logger
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 PASSWORD_RESET_LENGTH = 16
 
@@ -112,7 +115,7 @@ class BootstrapType(StrEnum):
 class BootstrapView(ui.View):
     """View for the LDAP bootstrap command."""
 
-    def __init__(self, cog: "LDAP") -> None:
+    def __init__(self, cog: LDAP) -> None:
         super().__init__(timeout=None)
         self.cog = cog
 

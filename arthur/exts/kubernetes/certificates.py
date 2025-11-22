@@ -1,12 +1,15 @@
 """The Certificates cog helps with managing TLS certificates."""
 
 from textwrap import dedent
+from typing import TYPE_CHECKING
 
 from discord.ext import commands
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import certificates
-from arthur.bot import KingArthurTheTerrible
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 
 class Certificates(commands.Cog):

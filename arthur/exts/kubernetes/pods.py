@@ -2,6 +2,7 @@
 
 import zoneinfo
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import discord
 import humanize
@@ -11,10 +12,12 @@ from loguru import logger
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import pods
-from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
 from arthur.pagination import LinePaginator
 from arthur.utils import generate_error_message
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 MAX_MESSAGE_LENGTH = 2000
 
