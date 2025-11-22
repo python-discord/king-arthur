@@ -14,11 +14,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libldap2-dev libsasl2-dev heimdal-dev
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
-          version: "0.6.16"
           enable-cache: true
+          resolution-strategy: "lowest"
           cache-dependency-glob: "uv.lock"
+          activate-environment: true
 
       - name: "Set up Python"
         uses: actions/setup-python@v5
@@ -29,11 +30,11 @@ jobs:
         run: uv sync --group dev
 
       - name: Run pre-commit hooks
-        run: SKIP=ruff-lint uv run pre-commit run --all-files
+        run: SKIP=ruff-lint pre-commit run --all-files
 
       # Run `ruff` using github formatting to enable automatic inline annotations.
       - name: Run ruff
-        run: "uv run ruff check --output-format=github ."
+        run: "ruff check --output-format=github ."
 
   artifact:
     name: Generate & upload pull request artifacts
