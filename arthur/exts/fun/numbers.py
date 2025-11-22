@@ -1,20 +1,32 @@
+from http import HTTPStatus
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands, tasks
 
 from arthur.apis.netcup.ssh import rce_as_a_service
 from arthur.config import CONFIG
+from arthur.log import logger
+
+if TYPE_CHECKING:
+    from arthur.bot import KingArthurTheTerrible
 
 
 class Numbers(commands.GroupCog):
     """Commands for working with and controlling the numbers forwarder."""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: KingArthurTheTerrible):
         self.bot = bot
         self.devops_vc: discord.VoiceChannel | discord.StageChannel | None = None
         self.devops_vc_check.start()
 
     async def cog_load(self) -> None:
         """Join devops channel on cog load."""
+        async with self.bot.http_session.head(CONFIG.numbers_url) as resp:
+            if resp.status != HTTPStatus.OK:
+                logger.warning("Numbers URL is not reachable; not connecting to devops VC.")
+                return
+
         devops_vc = self.bot.get_channel(CONFIG.devops_vc_id)
         if not isinstance(devops_vc, (discord.VoiceChannel, discord.StageChannel)):
             return
@@ -98,6 +110,6 @@ class Numbers(commands.GroupCog):
             await ctx.send(":x: Not in a voice channel!")
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Set up the numbers cog."""
     await bot.add_cog(Numbers(bot))
