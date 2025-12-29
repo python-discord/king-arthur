@@ -573,7 +573,7 @@ requires-dist = [
     { name = "pydis-core", specifier = "==11.8.0" },
     { name = "pynacl", marker = "extra == 'voice'", specifier = "==1.6.1" },
     { name = "python-freeipa", specifier = "==1.0.10" },
-    { name = "python-keycloak", specifier = "==5.8.1" },
+    { name = "python-keycloak", specifier = "==6.0.0" },
     { name = "sentry-sdk", specifier = "==2.45.0" },
     { name = "tabulate", extras = ["widechars"], specifier = "==0.9.0" },
     { name = "wand", specifier = "==0.6.13" },
@@ -969,7 +969,7 @@ wheels = [
 
 [[package]]
 name = "python-keycloak"
-version = "5.8.1"
+version = "6.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -980,9 +980,9 @@ dependencies = [
     { name = "requests" },
     { name = "requests-toolbelt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/b4/b2c988d8f4f161ff3f68cf2980bd41adb4067e402ac6bb8bc2302e05a300/python_keycloak-5.8.1.tar.gz", hash = "sha256:b99a1efc7eb8715c3a7d915005728f8ba2ee03c81cdf12210c65ce794cd148ad", size = 69461, upload-time = "2025-08-19T21:08:13.136Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/95/df72437403eba9f96902ff3b3049a3e06d0f0e47e5bd71ab1b364d440cef/python_keycloak-6.0.0.tar.gz", hash = "sha256:87271d381639f4179a9add88afbb3dbbe9689509cf240d1cf883e44beff4d8f9", size = 71107, upload-time = "2025-12-28T17:57:52.208Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/90/c9602f31c59f5706c4dfdf0beb7320706e62db597d0abf18f747f68f35e7/python_keycloak-5.8.1-py3-none-any.whl", hash = "sha256:f80accf3e63b6c907f0f873ffac7a07705bd89d935520ba235259ba81b9ed864", size = 77719, upload-time = "2025-08-19T21:08:11.536Z" },
+    { url = "https://files.pythonhosted.org/packages/44/7e/f51774cb30db61f04dc0920f27b3a2c50ac05c8819dc4086436decf95010/python_keycloak-6.0.0-py3-none-any.whl", hash = "sha256:6f6697a0a894d6ded077aa86e12aa41433a0afffa27aa0b9e38395dd69a94009", size = 80167, upload-time = "2025-12-28T17:57:50.869Z" },
 ]
 
 [[package]]
