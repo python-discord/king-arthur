@@ -5,12 +5,13 @@ all: install precommit
 install:
 	uv sync --frozen --all-groups
 
-lock:
+just-lock:
 	uv lock --upgrade
-	uv sync --frozen --all-groups
+
+lock: just-lock install
 
 outdated:
-	uv tree --outdated
+	uv tree --outdated --all-groups
 
 lint:
 	uv run pre-commit run --all-files
