@@ -1,6 +1,6 @@
-.PHONY: all install lock lint precommit start format
+.PHONY: all install just-lock lock outdated lint precommit start format
 
-all: install precommit
+all: install prek
 
 install:
 	uv sync --frozen --all-groups
@@ -14,10 +14,10 @@ outdated:
 	uv tree --outdated --all-groups
 
 lint:
-	uv run pre-commit run --all-files
+	uv run prek run --all-files
 
-precommit:
-	uv run pre-commit install
+prek:
+	uv run prek install
 
 start:
 	uv run python -m arthur

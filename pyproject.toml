@@ -33,7 +33,7 @@ required-version = ">=0.9.7"
 
 [dependency-groups]
 dev = [
-    "pre-commit==4.4.0",
+    "prek>=0.2.29",
     "ruff==0.14.13",
     "taskipy==1.14.1",
 ]
@@ -47,14 +47,14 @@ voice = [
 ]
 
 [tool.taskipy.tasks]
-all = "task lock && task precommit"
+all = "task lock && task prek"
 lock = "task justlock && task install"
 justlock = "uv lock --upgrade"
 install = "uv sync --frozen --all-groups"
 start = "python -m arthur"
-lint = "pre-commit run --all-files"
+lint = "prek run --all-files"
 format = "ruff format arthur"
-precommit = "pre-commit install"
+prek = "prek install"
 
 [tool.ruff]
 extend-exclude = [".cache"]
