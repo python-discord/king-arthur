@@ -36,6 +36,7 @@ async def main() -> None:
             case_insensitive=True,
             intents=intents,
             max_messages=100,
+            activity=discord.Game(name="Always watching"),
         )
         async with arthur.instance as bot:
             await bot.start(CONFIG.token.get_secret_value())
