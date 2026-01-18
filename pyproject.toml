@@ -43,7 +43,7 @@ ldap = [
     "bonsai<2.0.0,>=1.5.3",
 ]
 voice = [
-    "pynacl==1.6.1",
+    "pynacl==1.6.2",
 ]
 
 [tool.taskipy.tasks]
