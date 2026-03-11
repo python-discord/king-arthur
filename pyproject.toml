@@ -7,7 +7,7 @@ authors = [
 license = {text = "MIT"}
 requires-python = "~=3.14.0"
 dependencies = [
-    "pydis-core==11.8.0",
+    "pydis-core==11.9.1",
     "audioop-lts==0.2.2",
     "asyncssh==2.22.0",
     "beautifulsoup4==4.14.3",
