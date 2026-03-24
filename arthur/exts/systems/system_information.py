@@ -82,6 +82,95 @@ Reading your message, I realize: Perhaps a lunatic was simply a minority of one.
 It's a beautiful thing, the destruction of words.|
 I enjoy talking to you. Your mind appeals to me. It resembles my own mind except that you happen to be {clinically |absolutely |completely |}insane.
 """
+    GREATEST_WSGI_SERVER_EVER_LOGLINES = (
+        "[DANGER] async queue is full !!!",
+        "[uwsgi-stats-pusher] goodbye...",
+        "uWSGI mule %d braying: my master died, i will follow him...",
+        "created farm %d name: %s mules:%s",
+        "*** BOOOOOOM ***",
+        "unable to setup the time bomb, goodbye",
+        "Fire in the hole !!! (%d seconds to detonation)",
+        "!!! uWSGI process %d got Segmentation Fault !!!",
+        "!!! uWSGI process %d got Floating Point Exception !!!",
+        "thunder lock: enabled (with robust mutex watchdog)",
+        "...you should enable the master process... really...",
+        "your mercy for graceful operations on workers is %d seconds",
+        "your loop engine died. R.I.P.",
+        "--- unable to connect to zerg server %s ---",
+        "unknown farm: %s",
+        "[spooler] something horrible happened to the spooler. Better to kill it.",
+        "[uwsgi-route] ERROR \"goto\" instruction can only jump forward (check your label !!!)",
+        "emperor socket mapped to: %s",
+        "announcing my loyalty to the Emperor...",
+        "uwsgi zerg socket %d attached to UNIX address %s fd %d",
+        "attaching zerg sockets...",
+        "zerg sockets attached",
+        # chris lovering when his offshore accounts ("nodes") are sanctioned
+        "[%s pid %d] no more nodes available. Going cheap...",
+        "gateway \"%s %d\" has been buried (pid: %d)",
+        "waiting for Emperor death...",
+        "The Emperor has been buried (pid: %d)",
+        "cheaper hard rss memory limit exceeded, cheap one of %d workers",
+        # waiter! waiter! more uwsgi cheap workers please!
+        "worker %d should die...",
+        "overloaded !!!",
+        "*** HARAKIRI ON WORKER %d (pid: %d, try: %d, graceful: %s) ***",
+        "going cheap...",
+        "lost connection with mules",
+        "goodbye to uWSGI.",
+        "chain next victim is worker %d",
+        "*** HARAKIRI ON MULE %d (pid: %d) ***",
+        "OOOPS the spooler is no more...trying respawn...",
+        "!!! Emperor died !!!",
+        # the vet office wants a word
+        "OOOPS mule %d (pid: %d) crippled...trying respawn...",
+        # ploen.social when the private key drive is missing
+        "mountpoint %s failed, triggering detonation...",
+        "asking Emperor for reinforcements (overload: %llu)...",
+        "*** PAUSE (press start to resume, if you do not have a joypad send SIGTSTP) ***",
+        # american worker rights be like
+        "worker %d (pid: %d) is taking too much time to die...NO MERCY !!!",
+        # american animal rights be like
+        "mule %d (pid: %d) is taking too much time to die...NO MERCY !!!",
+        "[broodlord] instance not governed by an Emperor !!!",
+        "something horrible happened...",
+        "mule %d (pid: %d) annihilated",
+        "DAMN ! worker %d (pid: %d) died, killed by signal %d :( trying respawn ...",
+        # amazon warehouse-related lines:
+        "DAMN ! worker %d (pid: %d) MYSTERIOUSLY killed by signal %d :( trying respawn ...",
+        "worker respawning too fast !!! i have to sleep a bit (%d seconds)...",
+        "[emperor] unloyal bad behaving vassal found: %s throttling it...",
+        "[emperor] *** RAGNAROK ALREADY EVOKED (mercyless in %d seconds)***",
+        "[emperor] *** RAGNAROK EVOKED ***",
+        "[emperor] curse the uwsgi instance %s (pid: %d)",
+        "[emperor-tyrant] dropping privileges to %d %d for instance %s",
+        "*** your Emperor will not be able to correctly wait() on vassals ***",
+        "[emperor] vassal %s is now loyal",
+        "[emperor] going in broodlord mode: launching zergs for %s",
+        "--- MUTINY DETECTED !!! IMPALING VASSALS... ---",
+        "received message %d from emperor",
+        "lost connection with my emperor !!!",
+        "i am an edge triggered socket !!!",
+        "the gevent Hub is no more :(",
+        "uwsgi-daemons] legion \"%s\" daemon \"%s\" (pid: %d) annihilated",
+        "[uwsgi-rados] callback %llu woke up too late",
+        "[DANGER] you have configured a too much tiny buffer for the scrolls list !!! tune it with --legion-scroll-list-max-size",
+        "[uwsgi-legion] --- WE HAVE QUORUM FOR LEGION %s !!! (valor: %llu uuid: %.*s checksum: %llu votes: %d) ---",
+        "[uwsgi-legion] attempting to become the Lord of the Legion %s",
+        "[uwsgi-legion] suspending myself from Legion \"%s\" for %d seconds",
+        "[uwsgi-legion] i am now the Lord of the Legion %s",
+        "[uwsgi-legion] a new Lord (valor: %llu uuid: %.*s) raised for Legion %s...",
+        "*********** The New Lord Scroll ***********",
+        "[uwsgi-legion] ERROR, unlord hook returned: %d",
+        "[uwsgi-legion] i cannot be The Lord of The Legion %s without a quorum ...",
+        "!!!! Loading both PyPy and CPython in the same process IS PURE EVIL AND IT IS NOT SUPPORTED !!!",
+        "invalid Web3 response.",
+        "timeout while piping from %d to %d !!!",
+        "[BUG] current_wsgi_req NOT FOUND !!!",
+        "something horrible happened !!! check your spooler ASAP !!!",
+        "uWSGI %s %d screams: UAAAAAAH my master disconnected: I will kill myself!!!",
+        "F*CK !!! i must kill myself (pid: %d app_id: %d)...",
+    )
 
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
@@ -256,6 +345,12 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
         payload = MOTD.replace(b"\n", b"")
         file = File(io.BytesIO(base64.b64decode(payload)), filename="motd.png")
         await ctx.send(file=file)
+
+    @command(name="uwsgi")
+    async def uwsgi(self, ctx: Context) -> None:
+        """Return a log line suitable for industry standard WSGI servers."""
+        message = random.choice(self.GREATEST_WSGI_SERVER_EVER_LOGLINES)
+        await ctx.reply(f"``{message}``")
 
 
 async def setup(bot: KingArthurTheTerrible) -> None:
