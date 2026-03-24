@@ -6,6 +6,7 @@ import io
 import random
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Literal, TYPE_CHECKING
 from urllib import parse
 
@@ -27,25 +28,7 @@ BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
 THRESHOLD = 0.01
 MIN_MINUTES = 30
 BLOG_ABOUT_IT_THRESHOLD = 1000
-CORPORATE_FRIENDLY_SMILEYS = (
-    ":smile:",
-    ":slight_smile:",
-    ":grin:",
-    ":blush:",
-)
-MANAGEMENT_ONE_TO_ONE_COMMENTS = (
-    "Well Clarice, have the lambs stopped screaming?",
-    "I do wish we could chat longer, but... I'm having an old friend for dinner. Bye.",
-    "What is your father, dear? Is he a coal miner?",
-    "Senator, just one more thing: love your suit!",
-    "Memory, Agent Starling, is what I have instead of a view.",
-    "You still wake up sometimes, don't you? You wake up in the dark and hear the screaming of the lambs.",
-    "People will say we're in love.",
-    "All good things to those who wait.",
-    '"Plum Island Animal Disease Research Center." Sounds charming.',
-    "Ready when you are, Sergeant Pembry.",
-    "A census taker once tried to test me.",
-)
+RESOURCE_PATH = Path(__file__).parent.parent.parent / "resources" / "systems"
 
 
 class URLConverter(Converter):
@@ -65,119 +48,20 @@ class URLConverter(Converter):
 class SystemInformation(Cog):
     """Utilities for fetching system information from our 9front infrastructure."""
 
-    SUPPORTIVE_PYTHON_DISCORD_COMMENTS = """\
-{Lemon|Bella|Chris} would {seriously|really|honestly} love to {have a word|discuss this topic} \
-with you! There {seems to be|is|appears to be|is assumed to be} a {tiny|minor|major|large} \
-{misunderstanding|miscommunication} here!|
-{Python|Erlang|Chris' exhaust} is peace. \
-{The DevOps team|Decentralized version control|The 2024 presidential election} is replication. \
-Your {message|comment|idea|thought} is strength.|
-Who controls {King Arthur The Terrible|Kubernetes|Netcup|Joe's medication} controls the future. \
-Who controls {Bella's rations|the dennis.services mail server|`git push -f` access|edit rights to this message} controls the past.|
-The best {messages|comments|ideas|chats}... are those that tell you what you know already.|
-If you want to keep {a secret|PGP private keys|Lemoncluster access|access to Joe's secret vacation photo library}, you must also hide it from {yourself|the moderators team|the ethical advisory board|Chris}.|
-{:warning:|:information_source:|:no_entry_sign:} Detected a high amount of doublethink in this message. \
-The {moderators have|administrators have|DevOps team has|Python Discord ethical advisory board has} been informed.|
-Reading your message, I realize: Perhaps a lunatic was simply a minority of one.|
-It's a beautiful thing, the destruction of words.|
-I enjoy talking to you. Your mind appeals to me. It resembles my own mind except that you happen to be {clinically |absolutely |completely |}insane.
-"""
-    GREATEST_WSGI_SERVER_EVER_LOGLINES = (
-        "[DANGER] async queue is full !!!",
-        "[uwsgi-stats-pusher] goodbye...",
-        "uWSGI mule %d braying: my master died, i will follow him...",
-        "created farm %d name: %s mules:%s",
-        "*** BOOOOOOM ***",
-        "unable to setup the time bomb, goodbye",
-        "Fire in the hole !!! (%d seconds to detonation)",
-        "!!! uWSGI process %d got Segmentation Fault !!!",
-        "!!! uWSGI process %d got Floating Point Exception !!!",
-        "thunder lock: enabled (with robust mutex watchdog)",
-        "...you should enable the master process... really...",
-        "your mercy for graceful operations on workers is %d seconds",
-        "your loop engine died. R.I.P.",
-        "--- unable to connect to zerg server %s ---",
-        "unknown farm: %s",
-        "[spooler] something horrible happened to the spooler. Better to kill it.",
-        '[uwsgi-route] ERROR "goto" instruction can only jump forward (check your label !!!)',
-        "emperor socket mapped to: %s",
-        "announcing my loyalty to the Emperor...",
-        "uwsgi zerg socket %d attached to UNIX address %s fd %d",
-        "attaching zerg sockets...",
-        "zerg sockets attached",
-        # chris lovering when his offshore accounts ("nodes") are sanctioned
-        "[%s pid %d] no more nodes available. Going cheap...",
-        'gateway "%s %d" has been buried (pid: %d)',
-        "waiting for Emperor death...",
-        "The Emperor has been buried (pid: %d)",
-        "cheaper hard rss memory limit exceeded, cheap one of %d workers",
-        # waiter! waiter! more uwsgi cheap workers please!
-        "worker %d should die...",
-        "overloaded !!!",
-        "*** HARAKIRI ON WORKER %d (pid: %d, try: %d, graceful: %s) ***",
-        "going cheap...",
-        "lost connection with mules",
-        "goodbye to uWSGI.",
-        "chain next victim is worker %d",
-        "*** HARAKIRI ON MULE %d (pid: %d) ***",
-        "OOOPS the spooler is no more...trying respawn...",
-        "!!! Emperor died !!!",
-        # the vet office wants a word
-        "OOOPS mule %d (pid: %d) crippled...trying respawn...",
-        # ploen.social when the private key drive is missing
-        "mountpoint %s failed, triggering detonation...",
-        "asking Emperor for reinforcements (overload: %llu)...",
-        "*** PAUSE (press start to resume, if you do not have a joypad send SIGTSTP) ***",
-        # american worker rights be like
-        "worker %d (pid: %d) is taking too much time to die...NO MERCY !!!",
-        # american animal rights be like
-        "mule %d (pid: %d) is taking too much time to die...NO MERCY !!!",
-        "[broodlord] instance not governed by an Emperor !!!",
-        "something horrible happened...",
-        "mule %d (pid: %d) annihilated",
-        "DAMN ! worker %d (pid: %d) died, killed by signal %d :( trying respawn ...",
-        # amazon warehouse-related lines:
-        "DAMN ! worker %d (pid: %d) MYSTERIOUSLY killed by signal %d :( trying respawn ...",
-        "worker respawning too fast !!! i have to sleep a bit (%d seconds)...",
-        "[emperor] unloyal bad behaving vassal found: %s throttling it...",
-        "[emperor] *** RAGNAROK ALREADY EVOKED (mercyless in %d seconds)***",
-        "[emperor] *** RAGNAROK EVOKED ***",
-        "[emperor] curse the uwsgi instance %s (pid: %d)",
-        "[emperor-tyrant] dropping privileges to %d %d for instance %s",
-        "*** your Emperor will not be able to correctly wait() on vassals ***",
-        "[emperor] vassal %s is now loyal",
-        "[emperor] going in broodlord mode: launching zergs for %s",
-        "--- MUTINY DETECTED !!! IMPALING VASSALS... ---",
-        "received message %d from emperor",
-        "lost connection with my emperor !!!",
-        "i am an edge triggered socket !!!",
-        "the gevent Hub is no more :(",
-        'uwsgi-daemons] legion "%s" daemon "%s" (pid: %d) annihilated',
-        "[uwsgi-rados] callback %llu woke up too late",
-        "[DANGER] you have configured a too much tiny buffer for the scrolls list !!! tune it with --legion-scroll-list-max-size",
-        "[uwsgi-legion] --- WE HAVE QUORUM FOR LEGION %s !!! (valor: %llu uuid: %.*s checksum: %llu votes: %d) ---",
-        "[uwsgi-legion] attempting to become the Lord of the Legion %s",
-        '[uwsgi-legion] suspending myself from Legion "%s" for %d seconds',
-        "[uwsgi-legion] i am now the Lord of the Legion %s",
-        "[uwsgi-legion] a new Lord (valor: %llu uuid: %.*s) raised for Legion %s...",
-        "*********** The New Lord Scroll ***********",
-        "[uwsgi-legion] ERROR, unlord hook returned: %d",
-        "[uwsgi-legion] i cannot be The Lord of The Legion %s without a quorum ...",
-        "!!!! Loading both PyPy and CPython in the same process IS PURE EVIL AND IT IS NOT SUPPORTED !!!",
-        "invalid Web3 response.",
-        "timeout while piping from %d to %d !!!",
-        "[BUG] current_wsgi_req NOT FOUND !!!",
-        "something horrible happened !!! check your spooler ASAP !!!",
-        "uWSGI %s %d screams: UAAAAAAH my master disconnected: I will kill myself!!!",
-        "F*CK !!! i must kill myself (pid: %d app_id: %d)...",
-    )
-
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.cached_resources = {}
         self.cached_blogcom = None
         self.cached_bullshit = None
         self.last_sent = None
+
+        self.smileys = RESOURCE_PATH.joinpath("smileys.txt").read_text().splitlines()
+        self.management_comments = (
+            RESOURCE_PATH.joinpath("management_comments.txt").read_text().splitlines()
+        )
+        self.supportive_comments = RESOURCE_PATH.joinpath("supportive_comments.txt").read_text()
+        self.uwsgi_loglines = RESOURCE_PATH.joinpath("uwsgi_loglines.txt").read_text().splitlines()
+
         self.conduct_one_to_ones.start()
 
     async def fetch_resource(self, name: str) -> str:
@@ -218,7 +102,7 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
             sys.exit(1)
 
         selected_member = random.choice(role.members + [mr_hemlock])
-        selected_management_comment = random.choice(MANAGEMENT_ONE_TO_ONE_COMMENTS)
+        selected_management_comment = random.choice(self.management_comments)
 
         await selected_member.send(selected_management_comment)
         logger.info("Inspirational management tactic applied to {member}", member=selected_member)
@@ -258,14 +142,14 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
             if random.random() < 0.9:
                 blogcom = await self.fetch_resource("lib/blogcom")
             else:
-                blogcom = self.SUPPORTIVE_PYTHON_DISCORD_COMMENTS
+                blogcom = self.supportive_comments
 
             comment = lib9front.generate_blog_comment(blogcom).strip()
 
             self.last_sent = datetime.now(tz=UTC)
             async with msg.channel.typing():
                 await asyncio.sleep(3)
-                await msg.reply(f"{comment} {random.choice(CORPORATE_FRIENDLY_SMILEYS)}")
+                await msg.reply(f"{comment} {random.choice(self.smileys)}")
 
     @command(name="software")
     async def software(self, ctx: Context) -> None:
@@ -349,7 +233,7 @@ I enjoy talking to you. Your mind appeals to me. It resembles my own mind except
     @command(name="uwsgi")
     async def uwsgi(self, ctx: Context) -> None:
         """Return a log line suitable for industry standard WSGI servers."""
-        message = random.choice(self.GREATEST_WSGI_SERVER_EVER_LOGLINES)
+        message = random.choice(self.uwsgi_loglines)
         await ctx.reply(f"``{message}``")
 
 
