@@ -19,4 +19,4 @@ jobs:
           SENTRY_PROJECT: king-arthur
         with:
           environment: production
-          version_prefix: king-arthur@
+          release_prefix: king-arthur@
