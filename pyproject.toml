@@ -13,15 +13,15 @@ dependencies = [
     "beautifulsoup4==4.14.3",
     "humanize==4.15.0",
     "jishaku==2.6.3",
-    "kubernetes-asyncio==34.3.3",
+    "kubernetes-asyncio==35.0.1",
     "loguru==0.7.3",
     "pydantic==2.12.5",
-    "pydantic-settings==2.12.0",
+    "pydantic-settings==2.13.1",
     "python-freeipa==1.0.10",
-    "python-keycloak==7.0.2",
-    "sentry-sdk==2.49.0",
-    "tabulate[widechars]==0.9.0",
-    "wand==0.6.13",
+    "python-keycloak==7.1.1",
+    "sentry-sdk==2.56.0",
+    "tabulate[widechars]==0.10.0",
+    "wand==0.7.0",
 ]
 name = "king-arthur"
 version = "1.0.0"
@@ -34,7 +34,7 @@ required-version = ">=0.9.7"
 [dependency-groups]
 dev = [
     "prek>=0.2.29",
-    "ruff==0.14.13",
+    "ruff==0.15.8",
     "taskipy==1.14.1",
 ]
 
