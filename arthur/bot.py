@@ -54,7 +54,7 @@ class KingArthurTheTerrible(BotBase):
         await super().setup_hook()
 
         # Authenticate with Kubernetes
-        if Path(KUBE_CONFIG_DEFAULT_LOCATION).exists():
+        if Path(KUBE_CONFIG_DEFAULT_LOCATION).exists():  # noqa: ASYNC240
             await config.load_kube_config()
         else:
             config.load_incluster_config()
