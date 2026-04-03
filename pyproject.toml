@@ -28,7 +28,6 @@ version = "1.0.0"
 description = "King Arthur The Terrible is a helper for the Python Discord DevOps team."
 
 [tool.uv]
-prerelease = "allow"
 required-version = ">=0.9.7"
 
 [dependency-groups]
