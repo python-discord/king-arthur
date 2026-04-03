@@ -30,3 +30,20 @@ def force_password_reset(username: str, password: str) -> None:
         raise ValueError(msg)
 
     client.set_user_password(user_id, password, temporary=True)
+
+
+def get_user_github_id(username: str) -> str | None:
+    """Fetch a users GitHub ID from Keycloak."""
+    client = create_client()
+
+    user = client.get_user(username)
+    github_id = None
+    for ident in user["federatedIdentities"]:
+        if ident["identityProvider"] == "github":
+            github_id = ident["userId"]
+            break
+
+    if not github_id:
+        return None
+
+    return github_id
