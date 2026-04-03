@@ -6,6 +6,7 @@ from discord.ext.commands import Cog, Context, group
 
 from arthur.apis.github import GitHubError, add_member_to_team, remove_org_member
 from arthur.config import CONFIG
+from arthur.constants import LDAP_ROLE_MAPPING
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
@@ -35,7 +36,7 @@ class GitHubManagement(Cog):
     async def add_team_member(self, ctx: Context, username: str) -> None:
         """Add a user to the default GitHub team."""
         try:
-            await add_member_to_team(username, CONFIG.github_team)
+            await add_member_to_team(username, LDAP_ROLE_MAPPING["helpers"]["github_team_slug"])
             await ctx.send(f":white_check_mark: Successfully invited {username} to the staff team.")
         except GitHubError as e:
             await ctx.send(f":x: Failed to add {username} to the staff team: {e}")

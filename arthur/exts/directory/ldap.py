@@ -12,7 +12,7 @@ from discord.ext import commands, tasks
 
 from arthur.apis.directory import freeipa, keycloak, ldap
 from arthur.config import CONFIG
-from arthur.constants import LDAP_BASE_STAFF_ROLE, LDAP_ROLE_MAPPING
+from arthur.constants import HELPER_ROLE_ID, LDAP_ROLE_MAPPING
 from arthur.log import logger
 
 if TYPE_CHECKING:
@@ -126,7 +126,7 @@ class BootstrapView(ui.View):
         """Generate credentials for the user."""
         user = interaction.user
 
-        if LDAP_BASE_STAFF_ROLE not in [role.id for role in user.roles]:
+        if HELPER_ROLE_ID not in [role.id for role in user.roles]:
             await interaction.response.send_message(
                 "You are not eligible for LDAP enrollment.", ephemeral=True
             )
@@ -265,7 +265,7 @@ class LDAP(commands.Cog):
         before_roles = {role.id for role in before.roles}
         after_roles = {role.id for role in after.roles}
 
-        if LDAP_BASE_STAFF_ROLE in before_roles or LDAP_BASE_STAFF_ROLE in after_roles:
+        if HELPER_ROLE_ID in before_roles or HELPER_ROLE_ID in after_roles:
             await self.sync_users()
 
     async def bootstrap(self, user: discord.Member) -> tuple[BootstrapType, str, str | None]:
@@ -375,7 +375,7 @@ class LDAP(commands.Cog):
 
         enrolled_roles = {mapping["discord_role_id"] for mapping in LDAP_ROLE_MAPPING.values()}
 
-        base_role = guild.get_role(LDAP_BASE_STAFF_ROLE)
+        base_role = guild.get_role(HELPER_ROLE_ID)
 
         diff = []
         missing_emp = [user for user in users if user.employee_number is None]
