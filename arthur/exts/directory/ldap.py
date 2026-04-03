@@ -330,8 +330,8 @@ class LDAP(commands.Cog):
             await channel.send(bootstrap_message, view=BootstrapView(self))
 
         # Validate all enrolled roles can see the channel
-        for role_id in LDAP_ROLE_MAPPING.values():
-            role = channel.guild.get_role(role_id)
+        for mapping in LDAP_ROLE_MAPPING.values():
+            role = channel.guild.get_role(mapping["discord_role_id"])
 
             if not role:
                 continue
@@ -361,8 +361,8 @@ class LDAP(commands.Cog):
         """Return the groups a user is enrolled in."""
         return [
             role
-            for role, discord_role_id in LDAP_ROLE_MAPPING.items()
-            if discord_role_id in [r.id for r in user.roles]
+            for role, mapping in LDAP_ROLE_MAPPING.items()
+            if mapping["discord_role_id"] in [r.id for r in user.roles]
         ]
 
     async def get_user_diff(
@@ -373,7 +373,7 @@ class LDAP(commands.Cog):
         users = await ldap.find_users()
         ldap_discord_id_map = {user.employee_number: user for user in users}
 
-        enrolled_roles = set(LDAP_ROLE_MAPPING.values())
+        enrolled_roles = {mapping["discord_role_id"] for mapping in LDAP_ROLE_MAPPING.values()}
 
         base_role = guild.get_role(LDAP_BASE_STAFF_ROLE)
 
