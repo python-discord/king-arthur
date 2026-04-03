@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from discord.ext.commands import Cog, Context, group
 
-from arthur.apis.github import GitHubError, add_staff_member, remove_org_member
+from arthur.apis.github import GitHubError, add_member_to_team, remove_org_member
 from arthur.config import CONFIG
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class GitHubManagement(Cog):
     async def add_team_member(self, ctx: Context, username: str) -> None:
         """Add a user to the default GitHub team."""
         try:
-            await add_staff_member(username)
+            await add_member_to_team(username, CONFIG.github_team)
             await ctx.send(f":white_check_mark: Successfully invited {username} to the staff team.")
         except GitHubError as e:
             await ctx.send(f":x: Failed to add {username} to the staff team: {e}")
