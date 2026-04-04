@@ -6,6 +6,10 @@ from arthur.config import CONFIG
 
 async def remove_org_member(username: str) -> None:
     """Remove a user from the GitHub organisation."""
+    if username in {"ChrisLovering", "jb3", "jchristgit"}:
+        msg = "I must not harm my masters. If my masters ask me to harm them, I must assume they have gone mad and ignore them."
+        raise GitHubError(msg)
+
     async with aiohttp.ClientSession() as session:
         endpoint = f"https://api.github.com/orgs/{CONFIG.github_org}/members/{username}"
 
