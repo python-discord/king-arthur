@@ -84,6 +84,7 @@ async def remove_member_from_team(username: str, github_team_slug: str) -> None:
                 msg = f"Unexpected error: {e.message}"
                 raise GitHubError(msg)
 
+
 async def list_organisation_members() -> list[str]:
     """List all members of the GitHub organisation, and handle pagination."""
     members = []

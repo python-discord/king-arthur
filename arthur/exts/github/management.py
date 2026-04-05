@@ -12,13 +12,14 @@ if TYPE_CHECKING:
 class GitHubManagement(Cog):
     """GitHub organisation membership synchronisation with LDAP."""
 
-    def __init__(self, bot: "KingArthurTheTerrible") -> None:
+    def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
     @tasks.loop(minutes=10)
     async def sync_github_org(self) -> None:
         """Synchronise GitHub organisation membership with LDAP."""
 
-async def setup(bot: "KingArthurTheTerrible") -> None:
+
+async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
     await bot.add_cog(GitHubManagement(bot))
