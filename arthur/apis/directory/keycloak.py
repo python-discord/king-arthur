@@ -47,3 +47,21 @@ def get_user_github_id(username: str) -> str | None:
         return None
 
     return github_id
+
+def all_github_ids() -> list[str]:
+    """Fetch all GitHub IDs from Keycloak."""
+    client = create_client()
+
+    users = client.get_users({
+        "enabled": True,
+        "search": "*"
+    })
+
+    github_ids = []
+    for user in users:
+        for ident in user["federatedIdentities"]:
+            if ident["identityProvider"] == "github":
+                github_ids.append(ident["userId"])
+                break
+
+    return github_ids
