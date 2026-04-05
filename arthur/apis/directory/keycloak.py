@@ -53,13 +53,13 @@ def all_github_ids() -> list[str]:
     """Fetch all GitHub IDs from Keycloak."""
     client = create_client()
 
-    users = client.get_users({"enabled": True, "search": "*"})
-
+    users = client.get_users()
     github_ids = []
+
     for user in users:
-        for ident in user["federatedIdentities"]:
+        user_details = client.get_user(user["id"])
+        for ident in user_details["federatedIdentities"]:
             if ident["identityProvider"] == "github":
-                github_ids.append(ident["userId"])
-                break
+                github_ids.append(ident["userId"])  # noqa: PERF401
 
     return github_ids
