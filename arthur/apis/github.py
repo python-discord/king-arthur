@@ -83,3 +83,26 @@ async def remove_member_from_team(username: str, github_team_slug: str) -> None:
 
                 msg = f"Unexpected error: {e.message}"
                 raise GitHubError(msg)
+
+async def list_organisation_members() -> list[str]:
+    """List all members of the GitHub organisation, and handle pagination."""
+    members = []
+    page = 1
+    per_page = 100
+
+    async with aiohttp.ClientSession() as session:
+        while True:
+            endpoint = f"https://api.github.com/orgs/{CONFIG.github_org}/members?per_page={per_page}&page={page}"
+            async with session.get(endpoint, headers=HEADERS) as response:
+                try:
+                    response.raise_for_status()
+                    data = await response.json()
+                    members.extend([member["login"] for member in data])
+                    if len(data) < per_page:
+                        break
+                    page += 1
+                except aiohttp.ClientResponseError as e:
+                    msg = f"Failed to list organisation members: {e.message}"
+                    raise GitHubError(msg)
+
+    return members
