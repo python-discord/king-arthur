@@ -44,7 +44,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     imagemagick \
     libldap2 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /var/cache/debconf/*
 
 COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
 
