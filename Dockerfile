@@ -13,6 +13,7 @@ RUN apt-get update \
     libsasl2-dev \
     gcc \
     heimdal-dev \
+    xz-utils \
     && apt autoclean && rm -rf /var/lib/apt/lists/*
 
 # Install project dependencies with build tools available
@@ -21,6 +22,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
   --mount=type=bind,source=uv.lock,target=uv.lock \
   --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
   uv sync --frozen --no-install-project --extra ldap --extra voice --no-group dev
+
+# Download and extract static ffmpeg binaries
+ADD https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-04-12-13-04/ffmpeg-n7.1.3-43-g5a1f107b4c-linux64-gpl-7.1.tar.xz /tmp/ffmpeg.tar.xz
+RUN tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ \
+    && mv /tmp/ffmpeg-n7.1.3-43-g5a1f107b4c-linux64-gpl-7.1/bin/ffmpeg /usr/local/bin/ffmpeg \
+    && rm -rf /tmp/ffmpeg*
 
 # -------------------------------------------------------------------------------
 
@@ -35,10 +42,11 @@ ENV GIT_SHA=$git_sha
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-    libmagickwand-dev \
-    libldap2-dev \
-    ffmpeg \
+    imagemagick \
+    libldap2 \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
 
 # Install dependencies from build cache
 # .venv not put in /app so that it doesn't conflict with the dev
