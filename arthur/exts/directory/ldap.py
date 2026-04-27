@@ -273,7 +273,7 @@ class LDAP(commands.Cog):
         if ldap_user := await ldap.find_by_discord_id(user.id):
             password = secrets.token_urlsafe(20)
 
-            keycloak.force_password_reset(ldap_user.uid, password)
+            await keycloak.force_password_reset(ldap_user.uid, password)
 
             return BootstrapType.RESET, password, ldap_user.uid
 

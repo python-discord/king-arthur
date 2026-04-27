@@ -19,7 +19,7 @@ def create_client() -> KeycloakAdmin:
     )
 
 
-def force_password_reset(username: str, password: str) -> None:
+async def force_password_reset(username: str, password: str) -> None:
     """Force a password reset for a user."""
     client = create_client()
 
@@ -32,7 +32,7 @@ def force_password_reset(username: str, password: str) -> None:
     client.set_user_password(user_id, password, temporary=True)
 
 
-def get_user_github_id(username: str) -> str | None:
+async def get_user_github_id(username: str) -> str | None:
     """Fetch a users GitHub ID from Keycloak."""
     client = create_client()
 
@@ -49,7 +49,7 @@ def get_user_github_id(username: str) -> str | None:
     return github_id
 
 
-def all_github_ids() -> list[str]:
+async def all_github_ids() -> list[str]:
     """Fetch all GitHub IDs from Keycloak."""
     client = create_client()
 
