@@ -24,9 +24,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
   uv sync --frozen --no-install-project --extra ldap --extra voice --no-group dev
 
 # Download and extract static ffmpeg binaries
-ADD https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-04-12-13-04/ffmpeg-n7.1.3-43-g5a1f107b4c-linux64-gpl-7.1.tar.xz /tmp/ffmpeg.tar.xz
+ADD https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz /tmp/ffmpeg.tar.xz
 RUN tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ \
-    && mv /tmp/ffmpeg-n7.1.3-43-g5a1f107b4c-linux64-gpl-7.1/bin/ffmpeg /usr/local/bin/ffmpeg \
+    && mv /tmp/ffmpeg-master-latest-linux64-gpl/ffmpeg /usr/local/bin/ffmpeg \
     && rm -rf /tmp/ffmpeg*
 
 # -------------------------------------------------------------------------------
