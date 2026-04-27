@@ -18,7 +18,7 @@ LDAP_ROLE_MAPPING: dict[str, LDAPGroupMapping] = {
     "administrators": {"discord_role_id": 267628507062992896, "github_team_slug": "admins"},
     "moderators": {"discord_role_id": 267629731250176001, "github_team_slug": "moderators"},
     "coredevs": {"discord_role_id": 587606783669829632, "github_team_slug": "core-developers"},
-    "events": {"discord_role_id": 787816728474288181, "github_team_slug": "events"},
+    "events": {"discord_role_id": 787816728474288181, "github_team_slug": "events-team"},
     "directors": {"discord_role_id": 267627879762755584, "github_team_slug": "directors"},
 }
 
