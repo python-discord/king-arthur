@@ -1,5 +1,7 @@
 ARG python_version=3.14-slim
+ARG ffmpeg_version=8.1
 
+FROM mwader/static-ffmpeg:$ffmpeg_version AS ffmpeg
 FROM python:$python_version AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /bin/
 
@@ -23,12 +25,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
   --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
   uv sync --frozen --no-install-project --extra ldap --extra voice --no-group dev
 
-# Download and extract static ffmpeg binaries
-ADD https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz /tmp/ffmpeg.tar.xz
-RUN tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ \
-    && mv /tmp/ffmpeg-master-latest-linux64-gpl/ffmpeg /usr/local/bin/ffmpeg \
-    && rm -rf /tmp/ffmpeg*
-
 # -------------------------------------------------------------------------------
 
 FROM python:$python_version
@@ -46,7 +42,8 @@ RUN apt-get update \
     libldap2 \
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf/*
 
-COPY --from=builder /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
+# Copy a static build of ffmpeg from the ffmpeg stage.
+COPY --from=ffmpeg /ffmpeg /usr/local/bin/ffmpeg
 
 # Install dependencies from build cache
 # .venv not put in /app so that it doesn't conflict with the dev
