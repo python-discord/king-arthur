@@ -176,7 +176,7 @@ class GitHubManagement(Cog):
             f":red_circle: would remove from org: `{username}`" for username in to_remove
         ]
         keep_lines = [
-            f":large_blue_circle: would keep in org: `{username}`" for username in to_keep
+            f":large_blue_diamond: would keep in org: `{username}`" for username in to_keep
         ]
 
         if not add_lines:
@@ -253,7 +253,7 @@ class GitHubManagement(Cog):
                 for username in to_remove
             ]
             keep_lines = [
-                f":large_blue_circle: would keep in `{github_team_slug}`: `{username}`"
+                f":large_blue_diamond: would keep in `{github_team_slug}`: `{username}`"
                 for username in to_keep
             ]
 
