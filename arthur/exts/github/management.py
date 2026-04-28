@@ -342,6 +342,28 @@ class GitHubManagement(Cog):
         """Dry-run GitHub team membership synchronisation with Keycloak."""
         keycloak_identities, github_org_members, resolved_keycloak_logins_by_id, _, _ = common_info
         ignored_normalised = self._ignored_github_users_normalised()
+
+        desired_org_by_user_id = {
+            identity["user_id"].strip(): resolved_keycloak_logins_by_id[identity["user_id"].strip()]
+            for identity in keycloak_identities.values()
+            if identity.get("user_id")
+            and identity["user_id"].strip() in resolved_keycloak_logins_by_id
+        }
+        desired_org_by_user_id = {
+            user_id: username
+            for user_id, username in desired_org_by_user_id.items()
+            if self._normalise_login(username) not in ignored_normalised
+        }
+        github_org_by_user_id = {
+            user_id: username
+            for user_id, username in github_org_members.items()
+            if self._normalise_login(username) not in ignored_normalised
+        }
+        org_users_to_remove = set(github_org_by_user_id) - set(desired_org_by_user_id)
+        org_users_to_remove_normalised = {
+            self._normalise_login(github_org_by_user_id[user_id]) for user_id in org_users_to_remove
+        }
+
         keycloak_to_github = {
             keycloak_username: resolved_keycloak_logins_by_id[identity["user_id"].strip()]
             for keycloak_username, identity in keycloak_identities.items()
@@ -381,6 +403,7 @@ class GitHubManagement(Cog):
                 normalised: username
                 for normalised, username in current_by_normalised.items()
                 if normalised not in ignored_normalised
+                and normalised not in org_users_to_remove_normalised
             }
 
             desired_normalised = set(desired_by_normalised)
