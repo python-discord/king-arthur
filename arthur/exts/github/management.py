@@ -29,6 +29,11 @@ class GitHubManagement(Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
+    @staticmethod
+    def _normalise_login(username: str) -> str:
+        """Return a case-insensitive key used for login comparisons."""
+        return username.casefold()
+
     @tasks.loop(minutes=10)
     async def sync_github_org(self) -> None:
         """
@@ -139,37 +144,53 @@ class GitHubManagement(Cog):
         """Dry-run GitHub organisation membership synchronisation with Keycloak."""
         keycloak_identities, github_org_members = await self._fetch_common_info()
 
-        desired_org_members = {
-            identity["user_name"]
+        desired_org_members = [
+            identity["user_name"].strip()
             for identity in keycloak_identities.values()
             if identity.get("user_name")
+        ]
+
+        desired_by_normalised = {
+            self._normalise_login(username): username for username in desired_org_members
+        }
+        github_by_normalised = {
+            self._normalise_login(username): username for username in github_org_members
         }
 
-        to_add = desired_org_members - github_org_members
-        to_remove = github_org_members - desired_org_members
+        desired_normalised = set(desired_by_normalised)
+        github_normalised = set(github_by_normalised)
 
-        added = 0
-        removed = 0
+        to_add_normalised = desired_normalised - github_normalised
+        to_remove_normalised = github_normalised - desired_normalised
+        kept_normalised = desired_normalised & github_normalised
 
-        add_lines = [
-            f":green_circle: would add to org: `{username}`" for username in sorted(to_add)
+        to_add = [desired_by_normalised[username] for username in sorted(to_add_normalised)]
+        to_remove = [github_by_normalised[username] for username in sorted(to_remove_normalised)]
+        to_keep = [
+            github_by_normalised.get(username, desired_by_normalised[username])
+            for username in sorted(kept_normalised)
         ]
+
+        add_lines = [f":green_circle: would add to org: `{username}`" for username in to_add]
         remove_lines = [
-            f":red_circle: would remove from org: `{username}`" for username in sorted(to_remove)
+            f":red_circle: would remove from org: `{username}`" for username in to_remove
         ]
+        keep_lines = [f":large_blue_circle: would keep in org: `{username}`" for username in to_keep]
 
         if not add_lines:
             add_lines = [":white_circle: no org additions needed"]
         if not remove_lines:
             remove_lines = [":white_circle: no org removals needed"]
+        if not keep_lines:
+            keep_lines = [":white_circle: no org members would be kept"]
 
         await self._send_report_lines(
             report_thread,
-            [":office: **Org dry-run decisions**", *add_lines, *remove_lines],
+            [":office: **Org dry-run decisions**", *add_lines, *remove_lines, *keep_lines],
         )
 
-        added = len(to_add)
-        removed = len(to_remove)
+        added = len(to_add_normalised)
+        removed = len(to_remove_normalised)
 
         return added, removed
 
@@ -188,24 +209,37 @@ class GitHubManagement(Cog):
         for ldap_group, mapping in LDAP_ROLE_MAPPING.items():
             github_team_slug = mapping["github_team_slug"]
             ldap_members = await ldap.get_group_members(ldap_group)
-            desired_team_members = {
+            desired_team_members = [
                 keycloak_to_github[member.uid]
                 for member in ldap_members
                 if member.uid in keycloak_to_github
+            ]
+
+            current_team_members = await list_team_members(github_team_slug)
+
+            desired_by_normalised = {
+                self._normalise_login(username): username for username in desired_team_members
+            }
+            current_by_normalised = {
+                self._normalise_login(username): username for username in current_team_members
             }
 
-            current_team_members = set(await list_team_members(github_team_slug))
+            desired_normalised = set(desired_by_normalised)
+            current_normalised = set(current_by_normalised)
 
-            to_add = desired_team_members - current_team_members
-            to_remove = current_team_members - desired_team_members
+            to_add_normalised = desired_normalised - current_normalised
+            to_remove_normalised = current_normalised - desired_normalised
+
+            to_add = [desired_by_normalised[username] for username in sorted(to_add_normalised)]
+            to_remove = [current_by_normalised[username] for username in sorted(to_remove_normalised)]
 
             add_lines = [
                 f":green_circle: would add to `{github_team_slug}`: `{username}`"
-                for username in sorted(to_add)
+                for username in to_add
             ]
             remove_lines = [
                 f":red_circle: would remove from `{github_team_slug}`: `{username}`"
-                for username in sorted(to_remove)
+                for username in to_remove
             ]
 
             if not add_lines and not remove_lines:
@@ -223,8 +257,8 @@ class GitHubManagement(Cog):
                     ],
                 )
 
-            added += len(to_add)
-            removed += len(to_remove)
+            added += len(to_add_normalised)
+            removed += len(to_remove_normalised)
 
         return added, removed
 
