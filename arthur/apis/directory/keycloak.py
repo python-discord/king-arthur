@@ -49,17 +49,27 @@ async def get_user_github_id(username: str) -> str | None:
     return github_id
 
 
-async def all_github_ids() -> list[str]:
-    """Fetch all GitHub IDs from Keycloak."""
+async def all_github_identities() -> dict[str, dict[str, str]]:
+    """Fetch Keycloak usernames and their linked GitHub identity information."""
     client = create_client()
 
     users = client.get_users()
-    github_ids = []
+    github_identities = {}
 
     for user in users:
         user_details = client.get_user(user["id"])
         for ident in user_details["federatedIdentities"]:
             if ident["identityProvider"] == "github":
-                github_ids.append(ident["userId"])  # noqa: PERF401
+                github_identities[user_details["username"]] = {
+                    "user_id": ident.get("userId", ""),
+                    "user_name": ident.get("userName", ""),
+                }
+                break
 
-    return github_ids
+    return github_identities
+
+
+async def all_github_ids() -> list[str]:
+    """Fetch all GitHub IDs from Keycloak."""
+    identities = await all_github_identities()
+    return [ident["user_id"] for ident in identities.values() if ident.get("user_id")]

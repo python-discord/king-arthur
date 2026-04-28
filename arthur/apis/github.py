@@ -43,6 +43,25 @@ async def remove_org_member(username: str) -> None:
                 raise GitHubError(msg)
 
 
+async def add_org_member(username: str) -> None:
+    """Add a user to the GitHub organisation."""
+    async with aiohttp.ClientSession() as session:
+        endpoint = f"https://api.github.com/orgs/{CONFIG.github_org}/memberships/{username}"
+        async with session.put(endpoint, headers=HEADERS, json={"role": "member"}) as response:
+            try:
+                response.raise_for_status()
+            except aiohttp.ClientResponseError as e:
+                if e.status == HTTPStatus.NOT_FOUND:
+                    msg = f"User not found: {e.message}"
+                    raise GitHubError(msg)
+                if e.status == HTTPStatus.FORBIDDEN:
+                    msg = f"Forbidden: {e.message}"
+                    raise GitHubError(msg)
+
+                msg = f"Unexpected error: {e.message}"
+                raise GitHubError(msg)
+
+
 async def add_member_to_team(username: str, github_team_slug: str) -> None:
     """Add a user to a GitHub team."""
     async with aiohttp.ClientSession() as session:
@@ -64,6 +83,33 @@ async def add_member_to_team(username: str, github_team_slug: str) -> None:
 
                 msg = f"Unexpected error: {e.message}"
                 raise GitHubError(msg)
+
+
+async def list_team_members(github_team_slug: str) -> list[str]:
+    """List all members of a GitHub team, and handle pagination."""
+    members = []
+    page = 1
+    per_page = 100
+
+    async with aiohttp.ClientSession() as session:
+        while True:
+            endpoint = (
+                f"https://api.github.com/orgs/{CONFIG.github_org}/teams/{github_team_slug}"
+                f"/members?per_page={per_page}&page={page}"
+            )
+            async with session.get(endpoint, headers=HEADERS) as response:
+                try:
+                    response.raise_for_status()
+                    data = await response.json()
+                    members.extend([member["login"] for member in data])
+                    if len(data) < per_page:
+                        break
+                    page += 1
+                except aiohttp.ClientResponseError as e:
+                    msg = f"Failed to list team members for {github_team_slug}: {e.message}"
+                    raise GitHubError(msg)
+
+    return members
 
 
 async def remove_member_from_team(username: str, github_team_slug: str) -> None:
