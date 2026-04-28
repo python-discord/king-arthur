@@ -9,8 +9,9 @@ from discord.ext.commands import Cog
 from arthur.apis.directory import ldap
 from arthur.apis.directory.keycloak import all_github_identities
 from arthur.apis.github import (
+    get_username_for_user_id,
     list_failed_org_invitations,
-    list_organisation_members,
+    list_organisation_member_identities,
     list_pending_org_invitations,
     list_team_members,
 )
@@ -162,58 +163,78 @@ class GitHubManagement(Cog):
 
     async def _fetch_common_info(
         self,
-    ) -> tuple[dict[str, dict[str, str]], set[str], set[str], set[str]]:
+    ) -> tuple[dict[str, dict[str, str]], dict[str, str], dict[str, str], set[str], set[str]]:
         """Fetch common data needed for both GitHub org and team synchronisation."""
         keycloak_identities = await all_github_identities()
-        github_org_members = set(await list_organisation_members())
+        github_org_members = await list_organisation_member_identities()
+        resolved_keycloak_logins_by_id = dict(github_org_members)
+
+        unresolved_user_ids = {
+            identity["user_id"].strip()
+            for identity in keycloak_identities.values()
+            if identity.get("user_id") and identity["user_id"].strip() not in github_org_members
+        }
+
+        for user_id in sorted(unresolved_user_ids):
+            resolved_login = await get_username_for_user_id(user_id)
+            if resolved_login:
+                resolved_keycloak_logins_by_id[user_id] = resolved_login
+                continue
+
+            logger.warning(f"GitHub: Could not resolve login for GitHub user ID {user_id}.")
+
         pending_invitations = await list_pending_org_invitations()
         failed_invitations = await list_failed_org_invitations()
 
-        return keycloak_identities, github_org_members, pending_invitations, failed_invitations
+        return (
+            keycloak_identities,
+            github_org_members,
+            resolved_keycloak_logins_by_id,
+            pending_invitations,
+            failed_invitations,
+        )
 
     async def _sync_github_members(
         self,
         report_thread: discord.Thread,
-        common_info: tuple[dict[str, dict[str, str]], set[str], set[str], set[str]],
+        common_info: tuple[
+            dict[str, dict[str, str]], dict[str, str], dict[str, str], set[str], set[str]
+        ],
     ) -> tuple[int, int, int]:
         """Dry-run GitHub organisation membership synchronisation with Keycloak."""
         (
             keycloak_identities,
             github_org_members,
+            resolved_keycloak_logins_by_id,
             pending_invitations,
             failed_invitations,
         ) = common_info
 
-        desired_org_members = [
-            identity["user_name"].strip()
+        desired_by_user_id = {
+            identity["user_id"].strip(): resolved_keycloak_logins_by_id[identity["user_id"].strip()]
             for identity in keycloak_identities.values()
-            if identity.get("user_name")
-        ]
+            if identity.get("user_id")
+            and identity["user_id"].strip() in resolved_keycloak_logins_by_id
+        }
+        github_by_user_id = dict(github_org_members)
 
-        desired_by_normalised = {
-            self._normalise_login(username): username for username in desired_org_members
+        desired_by_user_id = {
+            user_id: username
+            for user_id, username in desired_by_user_id.items()
+            if self._normalise_login(username) not in self._ignored_github_users_normalised()
         }
-        github_by_normalised = {
-            self._normalise_login(username): username for username in github_org_members
-        }
-        ignored_normalised = self._ignored_github_users_normalised()
-        desired_by_normalised = {
-            normalised: username
-            for normalised, username in desired_by_normalised.items()
-            if normalised not in ignored_normalised
-        }
-        github_by_normalised = {
-            normalised: username
-            for normalised, username in github_by_normalised.items()
-            if normalised not in ignored_normalised
+        github_by_user_id = {
+            user_id: username
+            for user_id, username in github_by_user_id.items()
+            if self._normalise_login(username) not in self._ignored_github_users_normalised()
         }
 
-        desired_normalised = set(desired_by_normalised)
-        github_normalised = set(github_by_normalised)
+        desired_user_ids = set(desired_by_user_id)
+        github_user_ids = set(github_by_user_id)
 
-        to_add_normalised = desired_normalised - github_normalised
-        to_remove_normalised = github_normalised - desired_normalised
-        kept_normalised = desired_normalised & github_normalised
+        to_add_user_ids = desired_user_ids - github_user_ids
+        to_remove_user_ids = github_user_ids - desired_user_ids
+        kept_user_ids = desired_user_ids & github_user_ids
 
         pending_by_normalised = {
             self._normalise_login(username): username for username in pending_invitations
@@ -221,38 +242,39 @@ class GitHubManagement(Cog):
         failed_by_normalised = {
             self._normalise_login(username): username for username in failed_invitations
         }
-        pending_by_normalised = {
-            normalised: username
-            for normalised, username in pending_by_normalised.items()
-            if normalised not in ignored_normalised
+        pending_to_add_user_ids = {
+            user_id
+            for user_id in to_add_user_ids
+            if self._normalise_login(desired_by_user_id[user_id]) in pending_by_normalised
         }
-        failed_by_normalised = {
-            normalised: username
-            for normalised, username in failed_by_normalised.items()
-            if normalised not in ignored_normalised
+        failed_to_add_user_ids = {
+            user_id
+            for user_id in to_add_user_ids
+            if self._normalise_login(desired_by_user_id[user_id]) in failed_by_normalised
         }
-
-        pending_to_add_normalised = to_add_normalised & set(pending_by_normalised)
-        failed_to_add_normalised = to_add_normalised & set(failed_by_normalised)
-        actionable_to_add_normalised = (
-            to_add_normalised - pending_to_add_normalised - failed_to_add_normalised
+        actionable_to_add_user_ids = (
+            to_add_user_ids - pending_to_add_user_ids - failed_to_add_user_ids
         )
 
-        to_add = [
-            desired_by_normalised[username] for username in sorted(actionable_to_add_normalised)
-        ]
-        to_remove = [github_by_normalised[username] for username in sorted(to_remove_normalised)]
+        to_add = [desired_by_user_id[user_id] for user_id in sorted(actionable_to_add_user_ids)]
+        to_remove = [github_by_user_id[user_id] for user_id in sorted(to_remove_user_ids)]
         to_keep = [
-            github_by_normalised.get(username, desired_by_normalised[username])
-            for username in sorted(kept_normalised)
+            github_by_user_id.get(user_id, desired_by_user_id[user_id])
+            for user_id in sorted(kept_user_ids)
         ]
         to_skip_pending = [
-            pending_by_normalised.get(username, desired_by_normalised[username])
-            for username in sorted(pending_to_add_normalised)
+            pending_by_normalised.get(
+                self._normalise_login(desired_by_user_id[user_id]),
+                desired_by_user_id[user_id],
+            )
+            for user_id in sorted(pending_to_add_user_ids)
         ]
         to_skip_failed = [
-            failed_by_normalised.get(username, desired_by_normalised[username])
-            for username in sorted(failed_to_add_normalised)
+            failed_by_normalised.get(
+                self._normalise_login(desired_by_user_id[user_id]),
+                desired_by_user_id[user_id],
+            )
+            for user_id in sorted(failed_to_add_user_ids)
         ]
 
         add_lines = [f":green_circle: would add to org: `{username}`" for username in to_add]
@@ -304,25 +326,29 @@ class GitHubManagement(Cog):
                     f"`{username}` because a failed invitation record already exists."
                 )
 
-        added = len(actionable_to_add_normalised)
-        removed = len(to_remove_normalised)
-        kept = len(kept_normalised)
+        added = len(actionable_to_add_user_ids)
+        removed = len(to_remove_user_ids)
+        kept = len(kept_user_ids)
 
         return added, removed, kept
 
     async def _sync_github_teams(
         self,
         report_thread: discord.Thread,
-        common_info: tuple[dict[str, dict[str, str]], set[str], set[str], set[str]],
+        common_info: tuple[
+            dict[str, dict[str, str]], dict[str, str], dict[str, str], set[str], set[str]
+        ],
     ) -> tuple[int, int, int]:
         """Dry-run GitHub team membership synchronisation with Keycloak."""
-        keycloak_identities, _, _, _ = common_info
+        keycloak_identities, _, resolved_keycloak_logins_by_id, _, _ = common_info
         ignored_normalised = self._ignored_github_users_normalised()
         keycloak_to_github = {
-            keycloak_username: identity["user_name"]
+            keycloak_username: resolved_keycloak_logins_by_id[identity["user_id"].strip()]
             for keycloak_username, identity in keycloak_identities.items()
-            if identity.get("user_name")
-            and self._normalise_login(identity["user_name"]) not in ignored_normalised
+            if identity.get("user_id")
+            and identity["user_id"].strip() in resolved_keycloak_logins_by_id
+            and self._normalise_login(resolved_keycloak_logins_by_id[identity["user_id"].strip()])
+            not in ignored_normalised
         }
 
         added = 0

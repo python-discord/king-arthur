@@ -62,6 +62,54 @@ async def add_org_member(username: str) -> None:
                 raise GitHubError(msg)
 
 
+async def get_username_for_user_id(user_id: str) -> str | None:
+    """Resolve a GitHub login from an account ID."""
+    async with aiohttp.ClientSession() as session:
+        endpoint = f"https://api.github.com/user/{user_id}"
+        async with session.get(endpoint, headers=HEADERS) as response:
+            try:
+                response.raise_for_status()
+                data = await response.json()
+            except aiohttp.ClientResponseError as e:
+                if e.status == HTTPStatus.NOT_FOUND:
+                    return None
+
+                msg = f"Failed to resolve GitHub user ID {user_id}: {e.message}"
+                raise GitHubError(msg)
+
+    return data.get("login")
+
+
+async def list_organisation_member_identities() -> dict[str, str]:
+    """List all organisation members as a mapping of account ID to login."""
+    members = {}
+    page = 1
+    per_page = 100
+
+    async with aiohttp.ClientSession() as session:
+        while True:
+            endpoint = f"https://api.github.com/orgs/{CONFIG.github_org}/members?per_page={per_page}&page={page}"
+            async with session.get(endpoint, headers=HEADERS) as response:
+                try:
+                    response.raise_for_status()
+                    data = await response.json()
+                    members.update(
+                        {
+                            str(member["id"]): member["login"]
+                            for member in data
+                            if member.get("id") and member.get("login")
+                        }
+                    )
+                    if len(data) < per_page:
+                        break
+                    page += 1
+                except aiohttp.ClientResponseError as e:
+                    msg = f"Failed to list organisation member identities: {e.message}"
+                    raise GitHubError(msg)
+
+    return members
+
+
 async def list_pending_org_invitations() -> set[str]:
     """List GitHub logins with pending organisation invitations."""
     pending = set()
