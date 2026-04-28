@@ -79,7 +79,9 @@ async def list_pending_org_invitations() -> set[str]:
                     response.raise_for_status()
                     data = await response.json()
                     for invitation in data:
-                        login = invitation.get("login") or invitation.get("invitee", {}).get("login")
+                        login = invitation.get("login") or invitation.get("invitee", {}).get(
+                            "login"
+                        )
                         if login:
                             pending.add(login)
 
@@ -110,7 +112,9 @@ async def list_failed_org_invitations() -> set[str]:
                     response.raise_for_status()
                     data = await response.json()
                     for invitation in data:
-                        login = invitation.get("login") or invitation.get("invitee", {}).get("login")
+                        login = invitation.get("login") or invitation.get("invitee", {}).get(
+                            "login"
+                        )
                         if login:
                             failed.add(login)
 
