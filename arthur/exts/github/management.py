@@ -340,13 +340,13 @@ class GitHubManagement(Cog):
         ],
     ) -> tuple[int, int, int]:
         """Dry-run GitHub team membership synchronisation with Keycloak."""
-        keycloak_identities, _, resolved_keycloak_logins_by_id, _, _ = common_info
+        keycloak_identities, github_org_members, resolved_keycloak_logins_by_id, _, _ = common_info
         ignored_normalised = self._ignored_github_users_normalised()
         keycloak_to_github = {
             keycloak_username: resolved_keycloak_logins_by_id[identity["user_id"].strip()]
             for keycloak_username, identity in keycloak_identities.items()
             if identity.get("user_id")
-            and identity["user_id"].strip() in resolved_keycloak_logins_by_id
+            and identity["user_id"].strip() in github_org_members
             and self._normalise_login(resolved_keycloak_logins_by_id[identity["user_id"].strip()])
             not in ignored_normalised
         }
