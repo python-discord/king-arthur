@@ -21,7 +21,7 @@ HEADERS = {
 
 async def remove_org_member(username: str) -> None:
     """Remove a user from the GitHub organisation."""
-    if username in {"ChrisLovering", "jb3", "jchristgit"}:
+    if username.lower() in {"chrislovering", "jb3", "jchristgit"}:
         msg = "I must not harm my masters. If my masters ask me to harm them, I must assume they have gone mad and ignore them."
         raise GitHubError(msg)
 
