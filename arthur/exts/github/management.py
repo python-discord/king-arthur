@@ -10,12 +10,18 @@ from discord.ext.commands import Cog
 from arthur.apis.directory import ldap
 from arthur.apis.directory.keycloak import all_github_identities
 from arthur.apis.github import (
+    GitHubError,
+    add_member_to_team,
+    add_org_member,
     get_username_for_user_id,
     list_failed_org_invitations,
     list_organisation_member_identities,
     list_pending_org_invitations,
     list_team_members,
+    remove_member_from_team,
+    remove_org_member,
 )
+from arthur.config import CONFIG
 from arthur.constants import LDAP_ROLE_MAPPING
 from arthur.log import logger
 
@@ -36,7 +42,7 @@ class SyncCommonInfo:
 
 @dataclass(frozen=True)
 class MembershipDiff:
-    """Resolved dry-run membership actions for a single scope."""
+    """Resolved membership actions for a single scope."""
 
     to_add: list[str]
     to_remove: list[str]
@@ -45,19 +51,16 @@ class MembershipDiff:
 
 @dataclass(frozen=True)
 class OrgSyncPlan:
-    """Dry-run decisions for organisation sync."""
+    """Resolved decisions for organisation sync."""
 
     diff: MembershipDiff
     skipped_pending: list[str]
     skipped_failed: list[str]
-    actionable_add_count: int
-    remove_count: int
-    keep_count: int
 
 
 @dataclass(frozen=True)
 class TeamSyncPlan:
-    """Dry-run decisions for a single team sync."""
+    """Resolved decisions for a single team sync."""
 
     team_slug: str
     diff: MembershipDiff
@@ -67,8 +70,6 @@ class GitHubManagement(Cog):
     """GitHub organisation membership synchronisation with LDAP."""
 
     MAX_REPORT_MESSAGE_LENGTH = 1900
-    DRY_RUN_CHANNEL_ID = 675756741417369640
-    DRY_RUN_THREAD_ID = 1265289413433364511
     IGNORED_GITHUB_USERS = ("pydis-bot",)
 
     def __init__(self, bot: KingArthurTheTerrible) -> None:
@@ -86,83 +87,83 @@ class GitHubManagement(Cog):
 
     @tasks.loop(minutes=10)
     async def sync_github_org(self) -> None:
-        """
-        Synchronise GitHub organisation membership with LDAP.
-
-        This consists of two components, a synchronisation of GitHub org membership and then a separate
-        sync of GitHub team membership.
-
-        The organisation sync works as follows:
-        1. Fetch all users from Keycloak and their GitHub IDs.
-        2. Fetch all GitHub members of the organisation.
-        3. Compare the two lists and determine which users need to be added or removed from the organisation.
-
-        The team sync works as follows:
-        1. For each LDAP group, fetch the corresponding GitHub team.
-        2. For each team, fetch the current members of the team.
-        3. For each team, determine which users need to be added or removed from the team based on their LDAP group membership.
-        """
+        """Synchronise GitHub organisation and team membership with Keycloak/LDAP."""
         try:
-            report_thread = await self._get_dry_run_thread()
+            report_thread = await self._get_debug_thread()
             if report_thread is None:
                 logger.error(
-                    "GitHub: Dry-run thread not found "
-                    f"(channel={self.DRY_RUN_CHANNEL_ID}, thread={self.DRY_RUN_THREAD_ID})."
+                    "GitHub: Sync debug thread not found "
+                    f"(channel={CONFIG.devops_channel_id}, thread={CONFIG.github_sync_debug})."
                 )
                 return
 
-            await report_thread.send(
-                ":mag: **GitHub membership dry-run started**\n"
-                "No changes will be applied. This is a report of what *would* happen."
-            )
+            await report_thread.send(":mag: **GitHub membership sync started**")
 
             common_info = await self._fetch_common_info()
-            added_org, removed_org, kept_org = await self._sync_github_members(
-                report_thread,
-                common_info,
-            )
-            added_team, removed_team, kept_team = await self._sync_github_teams(
-                report_thread,
-                common_info,
-            )
+            org_added, org_removed = await self._sync_github_members(report_thread, common_info)
+            team_added, team_removed = await self._sync_github_teams(report_thread, common_info)
 
             logger.info(
-                "GitHub: Dry-run complete. "
-                f"Org added={added_org}, org removed={removed_org}, org kept={kept_org}, "
-                f"team added={added_team}, team removed={removed_team}, team kept={kept_team}."
+                "GitHub: Sync complete. "
+                f"Org added={len(org_added)}, org removed={len(org_removed)}, "
+                f"team added={len(team_added)}, team removed={len(team_removed)}."
             )
 
-            await report_thread.send(
-                ":white_check_mark: **GitHub membership dry-run complete**\n"
-                f":office: Org decisions: +{added_org} / -{removed_org} / ={kept_org}\n"
-                f":busts_in_silhouette: Team decisions: +{added_team} / -{removed_team} / ={kept_team}"
+            await self._report_sync_result(
+                report_thread,
+                org_added,
+                org_removed,
+                team_added,
+                team_removed,
             )
         except Exception as e:  # noqa: BLE001
             logger.exception(f"GitHub: Error during sync: {e}", exc_info=True)
-            report_thread = await self._get_dry_run_thread()
+            report_thread = await self._get_debug_thread()
             if report_thread is not None:
-                await report_thread.send(f":x: GitHub dry-run error: ```python\n{e}```")
+                await report_thread.send(f":x: GitHub sync error: ```python\n{e}```")
 
-    async def _get_dry_run_thread(self) -> discord.Thread | None:
-        """Resolve the configured dry-run thread, fetching it when not cached."""
-        channel = self.bot.get_channel(self.DRY_RUN_CHANNEL_ID)
+    async def _report_sync_result(
+        self,
+        report_thread: discord.Thread,
+        org_added: list[str],
+        org_removed: list[str],
+        team_added: list[str],
+        team_removed: list[str],
+    ) -> None:
+        """Report applied membership changes after a sync run."""
+        org_added_text = ", ".join(f"`{username}`" for username in org_added) or "none"
+        org_removed_text = ", ".join(f"`{username}`" for username in org_removed) or "none"
+        team_added_text = ", ".join(f"`{change}`" for change in team_added) or "none"
+        team_removed_text = ", ".join(f"`{change}`" for change in team_removed) or "none"
+
+        await report_thread.send(
+            ":white_check_mark: **GitHub membership sync complete**\n"
+            f":office: Org added: {org_added_text}\n"
+            f":office: Org removed: {org_removed_text}\n"
+            f":busts_in_silhouette: Team added: {team_added_text}\n"
+            f":busts_in_silhouette: Team removed: {team_removed_text}"
+        )
+
+    async def _get_debug_thread(self) -> discord.Thread | None:
+        """Resolve the configured sync debug thread, fetching it when not cached."""
+        channel = self.bot.get_channel(CONFIG.devops_channel_id)
         if not isinstance(channel, discord.TextChannel):
-            fetched_channel = await self.bot.fetch_channel(self.DRY_RUN_CHANNEL_ID)
+            fetched_channel = await self.bot.fetch_channel(CONFIG.devops_channel_id)
             if not isinstance(fetched_channel, discord.TextChannel):
                 return None
             channel = fetched_channel
 
-        thread = self.bot.get_channel(self.DRY_RUN_THREAD_ID)
+        thread = self.bot.get_channel(CONFIG.github_sync_debug)
         if isinstance(thread, discord.Thread):
             return thread
 
-        fetched_thread = await self.bot.fetch_channel(self.DRY_RUN_THREAD_ID)
+        fetched_thread = await self.bot.fetch_channel(CONFIG.github_sync_debug)
         if not isinstance(fetched_thread, discord.Thread):
             return None
 
         if fetched_thread.parent_id != channel.id:
             logger.warning(
-                "GitHub: Dry-run thread parent mismatch "
+                "GitHub: Sync debug thread parent mismatch "
                 f"(expected={channel.id}, actual={fetched_thread.parent_id})."
             )
 
@@ -170,11 +171,11 @@ class GitHubManagement(Cog):
 
     async def _get_devops_channel(self) -> discord.TextChannel | None:
         """Resolve the devops text channel used for invitation state notifications."""
-        channel = self.bot.get_channel(self.DRY_RUN_CHANNEL_ID)
+        channel = self.bot.get_channel(CONFIG.devops_channel_id)
         if isinstance(channel, discord.TextChannel):
             return channel
 
-        fetched_channel = await self.bot.fetch_channel(self.DRY_RUN_CHANNEL_ID)
+        fetched_channel = await self.bot.fetch_channel(CONFIG.devops_channel_id)
         if isinstance(fetched_channel, discord.TextChannel):
             return fetched_channel
 
@@ -274,7 +275,7 @@ class GitHubManagement(Cog):
         return desired_by_user_id, github_by_user_id
 
     def _build_org_sync_plan(self, common_info: SyncCommonInfo) -> OrgSyncPlan:
-        """Construct all dry-run decisions for organisation sync."""
+        """Construct all decisions for organisation sync."""
         desired_by_user_id, github_by_user_id = self._build_org_identity_maps(common_info)
 
         desired_user_ids = set(desired_by_user_id)
@@ -333,9 +334,6 @@ class GitHubManagement(Cog):
             diff=diff,
             skipped_pending=skipped_pending,
             skipped_failed=skipped_failed,
-            actionable_add_count=len(actionable_to_add_user_ids),
-            remove_count=len(to_remove_user_ids),
-            keep_count=len(kept_user_ids),
         )
 
     async def _report_org_sync_plan(
@@ -343,46 +341,23 @@ class GitHubManagement(Cog):
         report_thread: discord.Thread,
         plan: OrgSyncPlan,
     ) -> None:
-        """Send dry-run organisation decisions to the configured report thread."""
-        add_lines = [
-            f":green_circle: would add to org: `{username}`" for username in plan.diff.to_add
-        ]
+        """Send planned organisation changes to the configured report thread."""
+        add_lines = [f":green_circle: add to org: `{username}`" for username in plan.diff.to_add]
         remove_lines = [
-            f":red_circle: would remove from org: `{username}`" for username in plan.diff.to_remove
-        ]
-        keep_lines = [
-            f":large_blue_diamond: would keep in org: `{username}`"
-            for username in plan.diff.to_keep
-        ]
-        skip_pending_lines = [
-            f":yellow_circle: would skip org invite (already pending): `{username}`"
-            for username in plan.skipped_pending
-        ]
-        skip_failed_lines = [
-            f":orange_circle: would skip org invite (failed invite exists): `{username}`"
-            for username in plan.skipped_failed
+            f":red_circle: remove from org: `{username}`" for username in plan.diff.to_remove
         ]
 
         if not add_lines:
             add_lines = [":white_circle: no org additions needed"]
         if not remove_lines:
             remove_lines = [":white_circle: no org removals needed"]
-        if not keep_lines:
-            keep_lines = [":white_circle: no org members would be kept"]
-        if not skip_pending_lines:
-            skip_pending_lines = [":white_circle: no org invites skipped due to pending invites"]
-        if not skip_failed_lines:
-            skip_failed_lines = [":white_circle: no org invites skipped due to failed invites"]
 
         await self._send_report_lines(
             report_thread,
             [
-                ":office: **Org dry-run decisions**",
+                ":office: **Org sync actions**",
                 *add_lines,
                 *remove_lines,
-                *keep_lines,
-                *skip_pending_lines,
-                *skip_failed_lines,
                 ":grey_question: globally ignored users (not affected): "
                 + ", ".join(f"`{username}`" for username in sorted(self.IGNORED_GITHUB_USERS)),
             ],
@@ -399,6 +374,30 @@ class GitHubManagement(Cog):
                 ":warning: GitHub org invite was not re-sent for "
                 f"`{username}` because a failed invitation record already exists."
             )
+
+    async def _apply_org_additions(self, usernames: list[str]) -> list[str]:
+        """Apply organisation additions and return successfully added logins."""
+        added = []
+        for username in usernames:
+            try:
+                await add_org_member(username)
+                added.append(username)
+            except GitHubError as e:
+                logger.opt(exception=e).error(f"GitHub: Failed to add {username} to org")
+
+        return added
+
+    async def _apply_org_removals(self, usernames: list[str]) -> list[str]:
+        """Apply organisation removals and return successfully removed logins."""
+        removed = []
+        for username in usernames:
+            try:
+                await remove_org_member(username)
+                removed.append(username)
+            except GitHubError as e:
+                logger.opt(exception=e).error(f"GitHub: Failed to remove {username} from org")
+
+        return removed
 
     def _build_keycloak_to_github_map(
         self,
@@ -432,7 +431,7 @@ class GitHubManagement(Cog):
         current_team_members: list[str],
         org_users_to_remove_normalised: set[str],
     ) -> TeamSyncPlan:
-        """Construct dry-run decisions for one team."""
+        """Construct decisions for one team."""
         ignored_normalised = self._ignored_github_users_normalised()
         desired_by_normalised = {
             self._normalise_login(username): username for username in desired_team_members
@@ -479,21 +478,17 @@ class GitHubManagement(Cog):
         report_thread: discord.Thread,
         plan: TeamSyncPlan,
     ) -> None:
-        """Send dry-run team decisions to the configured report thread."""
+        """Send planned team changes to the configured report thread."""
         add_lines = [
-            f":green_circle: would add to `{plan.team_slug}`: `{username}`"
+            f":green_circle: add to `{plan.team_slug}`: `{username}`"
             for username in plan.diff.to_add
         ]
         remove_lines = [
-            f":red_circle: would remove from `{plan.team_slug}`: `{username}`"
+            f":red_circle: remove from `{plan.team_slug}`: `{username}`"
             for username in plan.diff.to_remove
         ]
-        keep_lines = [
-            f":large_blue_diamond: would keep in `{plan.team_slug}`: `{username}`"
-            for username in plan.diff.to_keep
-        ]
 
-        if not add_lines and not remove_lines and not keep_lines:
+        if not add_lines and not remove_lines:
             await self._send_report_lines(
                 report_thread,
                 [f":white_circle: **Team `{plan.team_slug}`**: no membership changes needed"],
@@ -504,16 +499,13 @@ class GitHubManagement(Cog):
             add_lines = [f":white_circle: no additions needed in `{plan.team_slug}`"]
         if not remove_lines:
             remove_lines = [f":white_circle: no removals needed in `{plan.team_slug}`"]
-        if not keep_lines:
-            keep_lines = [f":white_circle: no users would be kept in `{plan.team_slug}`"]
 
         await self._send_report_lines(
             report_thread,
             [
-                f":busts_in_silhouette: **Team `{plan.team_slug}` dry-run decisions**",
+                f":busts_in_silhouette: **Team `{plan.team_slug}` sync actions**",
                 *add_lines,
                 *remove_lines,
-                *keep_lines,
             ],
         )
 
@@ -521,26 +513,28 @@ class GitHubManagement(Cog):
         self,
         report_thread: discord.Thread,
         common_info: SyncCommonInfo,
-    ) -> tuple[int, int, int]:
-        """Dry-run GitHub organisation membership synchronisation with Keycloak."""
+    ) -> tuple[list[str], list[str]]:
+        """Synchronise GitHub organisation membership with Keycloak."""
         plan = self._build_org_sync_plan(common_info)
         await self._report_org_sync_plan(report_thread, plan)
         await self._notify_failed_invites(plan.skipped_failed)
 
-        return plan.actionable_add_count, plan.remove_count, plan.keep_count
+        added = await self._apply_org_additions(plan.diff.to_add)
+        removed = await self._apply_org_removals(plan.diff.to_remove)
+
+        return added, removed
 
     async def _sync_github_teams(
         self,
         report_thread: discord.Thread,
         common_info: SyncCommonInfo,
-    ) -> tuple[int, int, int]:
-        """Dry-run GitHub team membership synchronisation with Keycloak."""
+    ) -> tuple[list[str], list[str]]:
+        """Synchronise GitHub team membership with Keycloak."""
         keycloak_to_github = self._build_keycloak_to_github_map(common_info)
         org_users_to_remove_normalised = self._org_users_to_remove_normalised(common_info)
 
-        added = 0
-        removed = 0
-        kept = 0
+        added: list[str] = []
+        removed: list[str] = []
 
         for ldap_group, mapping in LDAP_ROLE_MAPPING.items():
             github_team_slug = mapping["github_team_slug"]
@@ -561,11 +555,25 @@ class GitHubManagement(Cog):
             )
             await self._report_team_sync_plan(report_thread, plan)
 
-            added += len(plan.diff.to_add)
-            removed += len(plan.diff.to_remove)
-            kept += len(plan.diff.to_keep)
+            for username in plan.diff.to_add:
+                try:
+                    await add_member_to_team(username, github_team_slug)
+                    added.append(f"{username} -> {github_team_slug}")
+                except GitHubError as e:
+                    logger.opt(exception=e).error(
+                        f"GitHub: Failed to add {username} to team {github_team_slug}"
+                    )
 
-        return added, removed, kept
+            for username in plan.diff.to_remove:
+                try:
+                    await remove_member_from_team(username, github_team_slug)
+                    removed.append(f"{username} -> {github_team_slug}")
+                except GitHubError as e:
+                    logger.opt(exception=e).error(
+                        f"GitHub: Failed to remove {username} from team {github_team_slug}"
+                    )
+
+        return added, removed
 
 
 async def setup(bot: KingArthurTheTerrible) -> None:
