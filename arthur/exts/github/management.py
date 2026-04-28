@@ -27,6 +27,7 @@ class GitHubManagement(Cog):
     MAX_REPORT_MESSAGE_LENGTH = 1900
     DRY_RUN_CHANNEL_ID = 675756741417369640
     DRY_RUN_THREAD_ID = 1265289413433364511
+    IGNORED_GITHUB_USERS = ("pydis-bot",)
 
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
@@ -35,6 +36,11 @@ class GitHubManagement(Cog):
     def _normalise_login(username: str) -> str:
         """Return a case-insensitive key used for login comparisons."""
         return username.casefold()
+
+    @classmethod
+    def _ignored_github_users_normalised(cls) -> set[str]:
+        """Return globally ignored GitHub logins as normalised comparison keys."""
+        return {username.casefold() for username in cls.IGNORED_GITHUB_USERS}
 
     @tasks.loop(minutes=10)
     async def sync_github_org(self) -> None:
@@ -190,6 +196,17 @@ class GitHubManagement(Cog):
         github_by_normalised = {
             self._normalise_login(username): username for username in github_org_members
         }
+        ignored_normalised = self._ignored_github_users_normalised()
+        desired_by_normalised = {
+            normalised: username
+            for normalised, username in desired_by_normalised.items()
+            if normalised not in ignored_normalised
+        }
+        github_by_normalised = {
+            normalised: username
+            for normalised, username in github_by_normalised.items()
+            if normalised not in ignored_normalised
+        }
 
         desired_normalised = set(desired_by_normalised)
         github_normalised = set(github_by_normalised)
@@ -203,6 +220,16 @@ class GitHubManagement(Cog):
         }
         failed_by_normalised = {
             self._normalise_login(username): username for username in failed_invitations
+        }
+        pending_by_normalised = {
+            normalised: username
+            for normalised, username in pending_by_normalised.items()
+            if normalised not in ignored_normalised
+        }
+        failed_by_normalised = {
+            normalised: username
+            for normalised, username in failed_by_normalised.items()
+            if normalised not in ignored_normalised
         }
 
         pending_to_add_normalised = to_add_normalised & set(pending_by_normalised)
@@ -264,6 +291,8 @@ class GitHubManagement(Cog):
                 *keep_lines,
                 *skip_pending_lines,
                 *skip_failed_lines,
+                ":grey_question: globally ignored users (not affected): "
+                + ", ".join(f"`{username}`" for username in sorted(self.IGNORED_GITHUB_USERS)),
             ],
         )
 
@@ -288,10 +317,12 @@ class GitHubManagement(Cog):
     ) -> tuple[int, int, int]:
         """Dry-run GitHub team membership synchronisation with Keycloak."""
         keycloak_identities, _, _, _ = common_info
+        ignored_normalised = self._ignored_github_users_normalised()
         keycloak_to_github = {
             keycloak_username: identity["user_name"]
             for keycloak_username, identity in keycloak_identities.items()
             if identity.get("user_name")
+            and self._normalise_login(identity["user_name"]) not in ignored_normalised
         }
 
         added = 0
@@ -314,6 +345,16 @@ class GitHubManagement(Cog):
             }
             current_by_normalised = {
                 self._normalise_login(username): username for username in current_team_members
+            }
+            desired_by_normalised = {
+                normalised: username
+                for normalised, username in desired_by_normalised.items()
+                if normalised not in ignored_normalised
+            }
+            current_by_normalised = {
+                normalised: username
+                for normalised, username in current_by_normalised.items()
+                if normalised not in ignored_normalised
             }
 
             desired_normalised = set(desired_by_normalised)
