@@ -1,5 +1,6 @@
 """Commands for managing the GitHub organisation and teams."""
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import discord
@@ -20,6 +21,46 @@ from arthur.log import logger
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
+
+
+@dataclass(frozen=True)
+class SyncCommonInfo:
+    """Shared data fetched once and re-used by org and team sync planning."""
+
+    keycloak_identities: dict[str, dict[str, str]]
+    github_org_members_by_id: dict[str, str]
+    resolved_logins_by_user_id: dict[str, str]
+    pending_invitations: set[str]
+    failed_invitations: set[str]
+
+
+@dataclass(frozen=True)
+class MembershipDiff:
+    """Resolved dry-run membership actions for a single scope."""
+
+    to_add: list[str]
+    to_remove: list[str]
+    to_keep: list[str]
+
+
+@dataclass(frozen=True)
+class OrgSyncPlan:
+    """Dry-run decisions for organisation sync."""
+
+    diff: MembershipDiff
+    skipped_pending: list[str]
+    skipped_failed: list[str]
+    actionable_add_count: int
+    remove_count: int
+    keep_count: int
+
+
+@dataclass(frozen=True)
+class TeamSyncPlan:
+    """Dry-run decisions for a single team sync."""
+
+    team_slug: str
+    diff: MembershipDiff
 
 
 class GitHubManagement(Cog):
@@ -161,14 +202,32 @@ class GitHubManagement(Cog):
         """Stop the GitHub synchronisation task."""
         self.sync_github_org.cancel()
 
-    async def _fetch_common_info(
-        self,
-    ) -> tuple[dict[str, dict[str, str]], dict[str, str], dict[str, str], set[str], set[str]]:
+    async def _fetch_common_info(self) -> SyncCommonInfo:
         """Fetch common data needed for both GitHub org and team synchronisation."""
         keycloak_identities = await all_github_identities()
         github_org_members = await list_organisation_member_identities()
-        resolved_keycloak_logins_by_id = dict(github_org_members)
+        resolved_keycloak_logins_by_id = await self._resolve_logins_by_user_id(
+            keycloak_identities,
+            github_org_members,
+        )
+        pending_invitations = await list_pending_org_invitations()
+        failed_invitations = await list_failed_org_invitations()
 
+        return SyncCommonInfo(
+            keycloak_identities=keycloak_identities,
+            github_org_members_by_id=github_org_members,
+            resolved_logins_by_user_id=resolved_keycloak_logins_by_id,
+            pending_invitations=pending_invitations,
+            failed_invitations=failed_invitations,
+        )
+
+    async def _resolve_logins_by_user_id(
+        self,
+        keycloak_identities: dict[str, dict[str, str]],
+        github_org_members: dict[str, str],
+    ) -> dict[str, str]:
+        """Resolve the latest GitHub login for each Keycloak-linked GitHub account ID."""
+        resolved_keycloak_logins_by_id = dict(github_org_members)
         unresolved_user_ids = {
             identity["user_id"].strip()
             for identity in keycloak_identities.values()
@@ -183,51 +242,40 @@ class GitHubManagement(Cog):
 
             logger.warning(f"GitHub: Could not resolve login for GitHub user ID {user_id}.")
 
-        pending_invitations = await list_pending_org_invitations()
-        failed_invitations = await list_failed_org_invitations()
+        return resolved_keycloak_logins_by_id
 
-        return (
-            keycloak_identities,
-            github_org_members,
-            resolved_keycloak_logins_by_id,
-            pending_invitations,
-            failed_invitations,
-        )
-
-    async def _sync_github_members(
+    def _build_org_identity_maps(
         self,
-        report_thread: discord.Thread,
-        common_info: tuple[
-            dict[str, dict[str, str]], dict[str, str], dict[str, str], set[str], set[str]
-        ],
-    ) -> tuple[int, int, int]:
-        """Dry-run GitHub organisation membership synchronisation with Keycloak."""
-        (
-            keycloak_identities,
-            github_org_members,
-            resolved_keycloak_logins_by_id,
-            pending_invitations,
-            failed_invitations,
-        ) = common_info
-
+        common_info: SyncCommonInfo,
+    ) -> tuple[dict[str, str], dict[str, str]]:
+        """Build desired/current org user maps keyed by GitHub account ID."""
+        ignored_normalised = self._ignored_github_users_normalised()
         desired_by_user_id = {
-            identity["user_id"].strip(): resolved_keycloak_logins_by_id[identity["user_id"].strip()]
-            for identity in keycloak_identities.values()
+            identity["user_id"].strip(): common_info.resolved_logins_by_user_id[
+                identity["user_id"].strip()
+            ]
+            for identity in common_info.keycloak_identities.values()
             if identity.get("user_id")
-            and identity["user_id"].strip() in resolved_keycloak_logins_by_id
+            and identity["user_id"].strip() in common_info.resolved_logins_by_user_id
         }
-        github_by_user_id = dict(github_org_members)
+        github_by_user_id = dict(common_info.github_org_members_by_id)
 
         desired_by_user_id = {
             user_id: username
             for user_id, username in desired_by_user_id.items()
-            if self._normalise_login(username) not in self._ignored_github_users_normalised()
+            if self._normalise_login(username) not in ignored_normalised
         }
         github_by_user_id = {
             user_id: username
             for user_id, username in github_by_user_id.items()
-            if self._normalise_login(username) not in self._ignored_github_users_normalised()
+            if self._normalise_login(username) not in ignored_normalised
         }
+
+        return desired_by_user_id, github_by_user_id
+
+    def _build_org_sync_plan(self, common_info: SyncCommonInfo) -> OrgSyncPlan:
+        """Construct all dry-run decisions for organisation sync."""
+        desired_by_user_id, github_by_user_id = self._build_org_identity_maps(common_info)
 
         desired_user_ids = set(desired_by_user_id)
         github_user_ids = set(github_by_user_id)
@@ -237,11 +285,14 @@ class GitHubManagement(Cog):
         kept_user_ids = desired_user_ids & github_user_ids
 
         pending_by_normalised = {
-            self._normalise_login(username): username for username in pending_invitations
+            self._normalise_login(username): username
+            for username in common_info.pending_invitations
         }
         failed_by_normalised = {
-            self._normalise_login(username): username for username in failed_invitations
+            self._normalise_login(username): username
+            for username in common_info.failed_invitations
         }
+
         pending_to_add_user_ids = {
             user_id
             for user_id in to_add_user_ids
@@ -256,20 +307,22 @@ class GitHubManagement(Cog):
             to_add_user_ids - pending_to_add_user_ids - failed_to_add_user_ids
         )
 
-        to_add = [desired_by_user_id[user_id] for user_id in sorted(actionable_to_add_user_ids)]
-        to_remove = [github_by_user_id[user_id] for user_id in sorted(to_remove_user_ids)]
-        to_keep = [
-            github_by_user_id.get(user_id, desired_by_user_id[user_id])
-            for user_id in sorted(kept_user_ids)
-        ]
-        to_skip_pending = [
+        diff = MembershipDiff(
+            to_add=[desired_by_user_id[user_id] for user_id in sorted(actionable_to_add_user_ids)],
+            to_remove=[github_by_user_id[user_id] for user_id in sorted(to_remove_user_ids)],
+            to_keep=[
+                github_by_user_id.get(user_id, desired_by_user_id[user_id])
+                for user_id in sorted(kept_user_ids)
+            ],
+        )
+        skipped_pending = [
             pending_by_normalised.get(
                 self._normalise_login(desired_by_user_id[user_id]),
                 desired_by_user_id[user_id],
             )
             for user_id in sorted(pending_to_add_user_ids)
         ]
-        to_skip_failed = [
+        skipped_failed = [
             failed_by_normalised.get(
                 self._normalise_login(desired_by_user_id[user_id]),
                 desired_by_user_id[user_id],
@@ -277,20 +330,39 @@ class GitHubManagement(Cog):
             for user_id in sorted(failed_to_add_user_ids)
         ]
 
-        add_lines = [f":green_circle: would add to org: `{username}`" for username in to_add]
+        return OrgSyncPlan(
+            diff=diff,
+            skipped_pending=skipped_pending,
+            skipped_failed=skipped_failed,
+            actionable_add_count=len(actionable_to_add_user_ids),
+            remove_count=len(to_remove_user_ids),
+            keep_count=len(kept_user_ids),
+        )
+
+    async def _report_org_sync_plan(
+        self,
+        report_thread: discord.Thread,
+        plan: OrgSyncPlan,
+    ) -> None:
+        """Send dry-run organisation decisions to the configured report thread."""
+        add_lines = [
+            f":green_circle: would add to org: `{username}`" for username in plan.diff.to_add
+        ]
         remove_lines = [
-            f":red_circle: would remove from org: `{username}`" for username in to_remove
+            f":red_circle: would remove from org: `{username}`"
+            for username in plan.diff.to_remove
         ]
         keep_lines = [
-            f":large_blue_diamond: would keep in org: `{username}`" for username in to_keep
+            f":large_blue_diamond: would keep in org: `{username}`"
+            for username in plan.diff.to_keep
         ]
         skip_pending_lines = [
             f":yellow_circle: would skip org invite (already pending): `{username}`"
-            for username in to_skip_pending
+            for username in plan.skipped_pending
         ]
         skip_failed_lines = [
             f":orange_circle: would skip org invite (failed invite exists): `{username}`"
-            for username in to_skip_failed
+            for username in plan.skipped_failed
         ]
 
         if not add_lines:
@@ -318,60 +390,156 @@ class GitHubManagement(Cog):
             ],
         )
 
+    async def _notify_failed_invites(self, skipped_failed: list[str]) -> None:
+        """Send notifications for failed invitation re-send skips."""
         devops_channel = await self._get_devops_channel()
-        if devops_channel is not None:
-            for username in to_skip_failed:
-                await devops_channel.send(
-                    ":warning: GitHub org invite was not re-sent for "
-                    f"`{username}` because a failed invitation record already exists."
-                )
+        if devops_channel is None:
+            return
 
-        added = len(actionable_to_add_user_ids)
-        removed = len(to_remove_user_ids)
-        kept = len(kept_user_ids)
+        for username in skipped_failed:
+            await devops_channel.send(
+                ":warning: GitHub org invite was not re-sent for "
+                f"`{username}` because a failed invitation record already exists."
+            )
 
-        return added, removed, kept
+    def _build_keycloak_to_github_map(
+        self,
+        common_info: SyncCommonInfo,
+    ) -> dict[str, str]:
+        """Map Keycloak username to current GitHub login for users currently in the org."""
+        ignored_normalised = self._ignored_github_users_normalised()
+        return {
+            keycloak_username: common_info.resolved_logins_by_user_id[identity["user_id"].strip()]
+            for keycloak_username, identity in common_info.keycloak_identities.items()
+            if identity.get("user_id")
+            and identity["user_id"].strip() in common_info.github_org_members_by_id
+            and self._normalise_login(
+                common_info.resolved_logins_by_user_id[identity["user_id"].strip()]
+            )
+            not in ignored_normalised
+        }
+
+    def _org_users_to_remove_normalised(self, common_info: SyncCommonInfo) -> set[str]:
+        """Return normalised logins for users scheduled to be removed from the org."""
+        desired_org_by_user_id, github_org_by_user_id = self._build_org_identity_maps(common_info)
+        org_users_to_remove = set(github_org_by_user_id) - set(desired_org_by_user_id)
+        return {
+            self._normalise_login(github_org_by_user_id[user_id])
+            for user_id in org_users_to_remove
+        }
+
+    def _build_team_sync_plan(
+        self,
+        team_slug: str,
+        desired_team_members: list[str],
+        current_team_members: list[str],
+        org_users_to_remove_normalised: set[str],
+    ) -> TeamSyncPlan:
+        """Construct dry-run decisions for one team."""
+        ignored_normalised = self._ignored_github_users_normalised()
+        desired_by_normalised = {
+            self._normalise_login(username): username for username in desired_team_members
+        }
+        current_by_normalised = {
+            self._normalise_login(username): username for username in current_team_members
+        }
+
+        desired_by_normalised = {
+            normalised: username
+            for normalised, username in desired_by_normalised.items()
+            if normalised not in ignored_normalised
+        }
+        current_by_normalised = {
+            normalised: username
+            for normalised, username in current_by_normalised.items()
+            if normalised not in ignored_normalised
+            and normalised not in org_users_to_remove_normalised
+        }
+
+        desired_normalised = set(desired_by_normalised)
+        current_normalised = set(current_by_normalised)
+
+        to_add_normalised = desired_normalised - current_normalised
+        to_remove_normalised = current_normalised - desired_normalised
+        kept_normalised = desired_normalised & current_normalised
+
+        return TeamSyncPlan(
+            team_slug=team_slug,
+            diff=MembershipDiff(
+                to_add=[desired_by_normalised[username] for username in sorted(to_add_normalised)],
+                to_remove=[
+                    current_by_normalised[username] for username in sorted(to_remove_normalised)
+                ],
+                to_keep=[
+                    current_by_normalised.get(username, desired_by_normalised[username])
+                    for username in sorted(kept_normalised)
+                ],
+            ),
+        )
+
+    async def _report_team_sync_plan(
+        self,
+        report_thread: discord.Thread,
+        plan: TeamSyncPlan,
+    ) -> None:
+        """Send dry-run team decisions to the configured report thread."""
+        add_lines = [
+            f":green_circle: would add to `{plan.team_slug}`: `{username}`"
+            for username in plan.diff.to_add
+        ]
+        remove_lines = [
+            f":red_circle: would remove from `{plan.team_slug}`: `{username}`"
+            for username in plan.diff.to_remove
+        ]
+        keep_lines = [
+            f":large_blue_diamond: would keep in `{plan.team_slug}`: `{username}`"
+            for username in plan.diff.to_keep
+        ]
+
+        if not add_lines and not remove_lines and not keep_lines:
+            await self._send_report_lines(
+                report_thread,
+                [f":white_circle: **Team `{plan.team_slug}`**: no membership changes needed"],
+            )
+            return
+
+        if not add_lines:
+            add_lines = [f":white_circle: no additions needed in `{plan.team_slug}`"]
+        if not remove_lines:
+            remove_lines = [f":white_circle: no removals needed in `{plan.team_slug}`"]
+        if not keep_lines:
+            keep_lines = [f":white_circle: no users would be kept in `{plan.team_slug}`"]
+
+        await self._send_report_lines(
+            report_thread,
+            [
+                f":busts_in_silhouette: **Team `{plan.team_slug}` dry-run decisions**",
+                *add_lines,
+                *remove_lines,
+                *keep_lines,
+            ],
+        )
+
+    async def _sync_github_members(
+        self,
+        report_thread: discord.Thread,
+        common_info: SyncCommonInfo,
+    ) -> tuple[int, int, int]:
+        """Dry-run GitHub organisation membership synchronisation with Keycloak."""
+        plan = self._build_org_sync_plan(common_info)
+        await self._report_org_sync_plan(report_thread, plan)
+        await self._notify_failed_invites(plan.skipped_failed)
+
+        return plan.actionable_add_count, plan.remove_count, plan.keep_count
 
     async def _sync_github_teams(
         self,
         report_thread: discord.Thread,
-        common_info: tuple[
-            dict[str, dict[str, str]], dict[str, str], dict[str, str], set[str], set[str]
-        ],
+        common_info: SyncCommonInfo,
     ) -> tuple[int, int, int]:
         """Dry-run GitHub team membership synchronisation with Keycloak."""
-        keycloak_identities, github_org_members, resolved_keycloak_logins_by_id, _, _ = common_info
-        ignored_normalised = self._ignored_github_users_normalised()
-
-        desired_org_by_user_id = {
-            identity["user_id"].strip(): resolved_keycloak_logins_by_id[identity["user_id"].strip()]
-            for identity in keycloak_identities.values()
-            if identity.get("user_id")
-            and identity["user_id"].strip() in resolved_keycloak_logins_by_id
-        }
-        desired_org_by_user_id = {
-            user_id: username
-            for user_id, username in desired_org_by_user_id.items()
-            if self._normalise_login(username) not in ignored_normalised
-        }
-        github_org_by_user_id = {
-            user_id: username
-            for user_id, username in github_org_members.items()
-            if self._normalise_login(username) not in ignored_normalised
-        }
-        org_users_to_remove = set(github_org_by_user_id) - set(desired_org_by_user_id)
-        org_users_to_remove_normalised = {
-            self._normalise_login(github_org_by_user_id[user_id]) for user_id in org_users_to_remove
-        }
-
-        keycloak_to_github = {
-            keycloak_username: resolved_keycloak_logins_by_id[identity["user_id"].strip()]
-            for keycloak_username, identity in keycloak_identities.items()
-            if identity.get("user_id")
-            and identity["user_id"].strip() in github_org_members
-            and self._normalise_login(resolved_keycloak_logins_by_id[identity["user_id"].strip()])
-            not in ignored_normalised
-        }
+        keycloak_to_github = self._build_keycloak_to_github_map(common_info)
+        org_users_to_remove_normalised = self._org_users_to_remove_normalised(common_info)
 
         added = 0
         removed = 0
@@ -388,79 +556,17 @@ class GitHubManagement(Cog):
 
             current_team_members = await list_team_members(github_team_slug)
 
-            desired_by_normalised = {
-                self._normalise_login(username): username for username in desired_team_members
-            }
-            current_by_normalised = {
-                self._normalise_login(username): username for username in current_team_members
-            }
-            desired_by_normalised = {
-                normalised: username
-                for normalised, username in desired_by_normalised.items()
-                if normalised not in ignored_normalised
-            }
-            current_by_normalised = {
-                normalised: username
-                for normalised, username in current_by_normalised.items()
-                if normalised not in ignored_normalised
-                and normalised not in org_users_to_remove_normalised
-            }
+            plan = self._build_team_sync_plan(
+                team_slug=github_team_slug,
+                desired_team_members=desired_team_members,
+                current_team_members=current_team_members,
+                org_users_to_remove_normalised=org_users_to_remove_normalised,
+            )
+            await self._report_team_sync_plan(report_thread, plan)
 
-            desired_normalised = set(desired_by_normalised)
-            current_normalised = set(current_by_normalised)
-
-            to_add_normalised = desired_normalised - current_normalised
-            to_remove_normalised = current_normalised - desired_normalised
-            kept_normalised = desired_normalised & current_normalised
-
-            to_add = [desired_by_normalised[username] for username in sorted(to_add_normalised)]
-            to_remove = [
-                current_by_normalised[username] for username in sorted(to_remove_normalised)
-            ]
-            to_keep = [
-                current_by_normalised.get(username, desired_by_normalised[username])
-                for username in sorted(kept_normalised)
-            ]
-
-            add_lines = [
-                f":green_circle: would add to `{github_team_slug}`: `{username}`"
-                for username in to_add
-            ]
-            remove_lines = [
-                f":red_circle: would remove from `{github_team_slug}`: `{username}`"
-                for username in to_remove
-            ]
-            keep_lines = [
-                f":large_blue_diamond: would keep in `{github_team_slug}`: `{username}`"
-                for username in to_keep
-            ]
-
-            if not add_lines and not remove_lines and not keep_lines:
-                await self._send_report_lines(
-                    report_thread,
-                    [f":white_circle: **Team `{github_team_slug}`**: no membership changes needed"],
-                )
-            else:
-                if not add_lines:
-                    add_lines = [f":white_circle: no additions needed in `{github_team_slug}`"]
-                if not remove_lines:
-                    remove_lines = [f":white_circle: no removals needed in `{github_team_slug}`"]
-                if not keep_lines:
-                    keep_lines = [f":white_circle: no users would be kept in `{github_team_slug}`"]
-
-                await self._send_report_lines(
-                    report_thread,
-                    [
-                        f":busts_in_silhouette: **Team `{github_team_slug}` dry-run decisions**",
-                        *add_lines,
-                        *remove_lines,
-                        *keep_lines,
-                    ],
-                )
-
-            added += len(to_add_normalised)
-            removed += len(to_remove_normalised)
-            kept += len(kept_normalised)
+            added += len(plan.diff.to_add)
+            removed += len(plan.diff.to_remove)
+            kept += len(plan.diff.to_keep)
 
         return added, removed, kept
 
