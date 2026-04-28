@@ -151,7 +151,9 @@ class GitHubManagement(Cog):
         added = 0
         removed = 0
 
-        add_lines = [f":green_circle: would add to org: `{username}`" for username in sorted(to_add)]
+        add_lines = [
+            f":green_circle: would add to org: `{username}`" for username in sorted(to_add)
+        ]
         remove_lines = [
             f":red_circle: would remove from org: `{username}`" for username in sorted(to_remove)
         ]
