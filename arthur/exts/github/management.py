@@ -66,19 +66,19 @@ class GitHubManagement(Cog):
                 "No changes will be applied. This is a report of what *would* happen."
             )
 
-            added_org, removed_org = await self._sync_github_members(report_thread)
-            added_team, removed_team = await self._sync_github_teams(report_thread)
+            added_org, removed_org, kept_org = await self._sync_github_members(report_thread)
+            added_team, removed_team, kept_team = await self._sync_github_teams(report_thread)
 
             logger.info(
                 "GitHub: Dry-run complete. "
-                f"Org added={added_org}, org removed={removed_org}, "
-                f"team added={added_team}, team removed={removed_team}."
+                f"Org added={added_org}, org removed={removed_org}, org kept={kept_org}, "
+                f"team added={added_team}, team removed={removed_team}, team kept={kept_team}."
             )
 
             await report_thread.send(
                 ":white_check_mark: **GitHub membership dry-run complete**\n"
-                f":office: Org changes: +{added_org} / -{removed_org}\n"
-                f":busts_in_silhouette: Team changes: +{added_team} / -{removed_team}"
+                f":office: Org decisions: +{added_org} / -{removed_org} / ={kept_org}\n"
+                f":busts_in_silhouette: Team decisions: +{added_team} / -{removed_team} / ={kept_team}"
             )
         except Exception as e:  # noqa: BLE001
             logger.exception(f"GitHub: Error during sync: {e}", exc_info=True)
@@ -140,7 +140,7 @@ class GitHubManagement(Cog):
 
         return keycloak_identities, github_org_members
 
-    async def _sync_github_members(self, report_thread: discord.Thread) -> tuple[int, int]:
+    async def _sync_github_members(self, report_thread: discord.Thread) -> tuple[int, int, int]:
         """Dry-run GitHub organisation membership synchronisation with Keycloak."""
         keycloak_identities, github_org_members = await self._fetch_common_info()
 
@@ -175,7 +175,9 @@ class GitHubManagement(Cog):
         remove_lines = [
             f":red_circle: would remove from org: `{username}`" for username in to_remove
         ]
-        keep_lines = [f":large_blue_circle: would keep in org: `{username}`" for username in to_keep]
+        keep_lines = [
+            f":large_blue_circle: would keep in org: `{username}`" for username in to_keep
+        ]
 
         if not add_lines:
             add_lines = [":white_circle: no org additions needed"]
@@ -191,10 +193,11 @@ class GitHubManagement(Cog):
 
         added = len(to_add_normalised)
         removed = len(to_remove_normalised)
+        kept = len(kept_normalised)
 
-        return added, removed
+        return added, removed, kept
 
-    async def _sync_github_teams(self, report_thread: discord.Thread) -> tuple[int, int]:
+    async def _sync_github_teams(self, report_thread: discord.Thread) -> tuple[int, int, int]:
         """Dry-run GitHub team membership synchronisation with Keycloak."""
         keycloak_identities, _ = await self._fetch_common_info()
         keycloak_to_github = {
@@ -205,6 +208,7 @@ class GitHubManagement(Cog):
 
         added = 0
         removed = 0
+        kept = 0
 
         for ldap_group, mapping in LDAP_ROLE_MAPPING.items():
             github_team_slug = mapping["github_team_slug"]
@@ -229,9 +233,16 @@ class GitHubManagement(Cog):
 
             to_add_normalised = desired_normalised - current_normalised
             to_remove_normalised = current_normalised - desired_normalised
+            kept_normalised = desired_normalised & current_normalised
 
             to_add = [desired_by_normalised[username] for username in sorted(to_add_normalised)]
-            to_remove = [current_by_normalised[username] for username in sorted(to_remove_normalised)]
+            to_remove = [
+                current_by_normalised[username] for username in sorted(to_remove_normalised)
+            ]
+            to_keep = [
+                current_by_normalised.get(username, desired_by_normalised[username])
+                for username in sorted(kept_normalised)
+            ]
 
             add_lines = [
                 f":green_circle: would add to `{github_team_slug}`: `{username}`"
@@ -241,26 +252,39 @@ class GitHubManagement(Cog):
                 f":red_circle: would remove from `{github_team_slug}`: `{username}`"
                 for username in to_remove
             ]
+            keep_lines = [
+                f":large_blue_circle: would keep in `{github_team_slug}`: `{username}`"
+                for username in to_keep
+            ]
 
-            if not add_lines and not remove_lines:
+            if not add_lines and not remove_lines and not keep_lines:
                 await self._send_report_lines(
                     report_thread,
                     [f":white_circle: **Team `{github_team_slug}`**: no membership changes needed"],
                 )
             else:
+                if not add_lines:
+                    add_lines = [f":white_circle: no additions needed in `{github_team_slug}`"]
+                if not remove_lines:
+                    remove_lines = [f":white_circle: no removals needed in `{github_team_slug}`"]
+                if not keep_lines:
+                    keep_lines = [f":white_circle: no users would be kept in `{github_team_slug}`"]
+
                 await self._send_report_lines(
                     report_thread,
                     [
                         f":busts_in_silhouette: **Team `{github_team_slug}` dry-run decisions**",
                         *add_lines,
                         *remove_lines,
+                        *keep_lines,
                     ],
                 )
 
             added += len(to_add_normalised)
             removed += len(to_remove_normalised)
+            kept += len(kept_normalised)
 
-        return added, removed
+        return added, removed, kept
 
 
 async def setup(bot: KingArthurTheTerrible) -> None:
