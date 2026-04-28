@@ -23,20 +23,20 @@ async def force_password_reset(username: str, password: str) -> None:
     """Force a password reset for a user."""
     client = create_client()
 
-    user_id = client.get_user_id(username)
+    user_id = await client.a_get_user_id(username)
 
     if not user_id:
         msg = f"User {username} not found in Keycloak."
         raise ValueError(msg)
 
-    client.set_user_password(user_id, password, temporary=True)
+    await client.a_set_user_password(user_id, password, temporary=True)
 
 
 async def get_user_github_id(username: str) -> str | None:
     """Fetch a users GitHub ID from Keycloak."""
     client = create_client()
 
-    user = client.get_user(username)
+    user = await client.a_get_user(username)
     github_id = None
     for ident in user["federatedIdentities"]:
         if ident["identityProvider"] == "github":
@@ -53,11 +53,11 @@ async def all_github_identities() -> dict[str, dict[str, str]]:
     """Fetch Keycloak usernames and their linked GitHub identity information."""
     client = create_client()
 
-    users = client.get_users()
+    users = await client.a_get_users()
     github_identities = {}
 
     for user in users:
-        user_details = client.get_user(user["id"])
+        user_details = await client.a_get_user(user["id"])
         for ident in user_details["federatedIdentities"]:
             if ident["identityProvider"] == "github":
                 github_identities[user_details["username"]] = {
