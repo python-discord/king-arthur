@@ -289,8 +289,7 @@ class GitHubManagement(Cog):
             for username in common_info.pending_invitations
         }
         failed_by_normalised = {
-            self._normalise_login(username): username
-            for username in common_info.failed_invitations
+            self._normalise_login(username): username for username in common_info.failed_invitations
         }
 
         pending_to_add_user_ids = {
@@ -349,8 +348,7 @@ class GitHubManagement(Cog):
             f":green_circle: would add to org: `{username}`" for username in plan.diff.to_add
         ]
         remove_lines = [
-            f":red_circle: would remove from org: `{username}`"
-            for username in plan.diff.to_remove
+            f":red_circle: would remove from org: `{username}`" for username in plan.diff.to_remove
         ]
         keep_lines = [
             f":large_blue_diamond: would keep in org: `{username}`"
@@ -424,8 +422,7 @@ class GitHubManagement(Cog):
         desired_org_by_user_id, github_org_by_user_id = self._build_org_identity_maps(common_info)
         org_users_to_remove = set(github_org_by_user_id) - set(desired_org_by_user_id)
         return {
-            self._normalise_login(github_org_by_user_id[user_id])
-            for user_id in org_users_to_remove
+            self._normalise_login(github_org_by_user_id[user_id]) for user_id in org_users_to_remove
         }
 
     def _build_team_sync_plan(
