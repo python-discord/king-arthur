@@ -62,6 +62,72 @@ async def add_org_member(username: str) -> None:
                 raise GitHubError(msg)
 
 
+async def list_pending_org_invitations() -> set[str]:
+    """List GitHub logins with pending organisation invitations."""
+    pending = set()
+    page = 1
+    per_page = 100
+
+    async with aiohttp.ClientSession() as session:
+        while True:
+            endpoint = (
+                f"https://api.github.com/orgs/{CONFIG.github_org}/invitations"
+                f"?per_page={per_page}&page={page}"
+            )
+            async with session.get(endpoint, headers=HEADERS) as response:
+                try:
+                    response.raise_for_status()
+                    data = await response.json()
+                    for invitation in data:
+                        login = invitation.get("login") or invitation.get("invitee", {}).get("login")
+                        if login:
+                            pending.add(login)
+
+                    if len(data) < per_page:
+                        break
+                    page += 1
+                except aiohttp.ClientResponseError as e:
+                    msg = f"Failed to list pending organisation invitations: {e.message}"
+                    raise GitHubError(msg)
+
+    return pending
+
+
+async def list_failed_org_invitations() -> set[str]:
+    """List GitHub logins with failed organisation invitations."""
+    failed = set()
+    page = 1
+    per_page = 100
+
+    async with aiohttp.ClientSession() as session:
+        while True:
+            endpoint = (
+                f"https://api.github.com/orgs/{CONFIG.github_org}/failed_invitations"
+                f"?per_page={per_page}&page={page}"
+            )
+            async with session.get(endpoint, headers=HEADERS) as response:
+                try:
+                    response.raise_for_status()
+                    data = await response.json()
+                    for invitation in data:
+                        login = invitation.get("login") or invitation.get("invitee", {}).get("login")
+                        if login:
+                            failed.add(login)
+
+                    if len(data) < per_page:
+                        break
+                    page += 1
+                except aiohttp.ClientResponseError as e:
+                    if e.status == HTTPStatus.NOT_FOUND:
+                        # Some org/API versions may not expose failed invitations.
+                        return failed
+
+                    msg = f"Failed to list failed organisation invitations: {e.message}"
+                    raise GitHubError(msg)
+
+    return failed
+
+
 async def add_member_to_team(username: str, github_team_slug: str) -> None:
     """Add a user to a GitHub team."""
     async with aiohttp.ClientSession() as session:

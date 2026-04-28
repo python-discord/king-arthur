@@ -9,7 +9,9 @@ from discord.ext.commands import Cog
 from arthur.apis.directory import ldap
 from arthur.apis.directory.keycloak import all_github_identities
 from arthur.apis.github import (
+    list_failed_org_invitations,
     list_organisation_members,
+    list_pending_org_invitations,
     list_team_members,
 )
 from arthur.constants import LDAP_ROLE_MAPPING
@@ -66,8 +68,15 @@ class GitHubManagement(Cog):
                 "No changes will be applied. This is a report of what *would* happen."
             )
 
-            added_org, removed_org, kept_org = await self._sync_github_members(report_thread)
-            added_team, removed_team, kept_team = await self._sync_github_teams(report_thread)
+            common_info = await self._fetch_common_info()
+            added_org, removed_org, kept_org = await self._sync_github_members(
+                report_thread,
+                common_info,
+            )
+            added_team, removed_team, kept_team = await self._sync_github_teams(
+                report_thread,
+                common_info,
+            )
 
             logger.info(
                 "GitHub: Dry-run complete. "
@@ -111,6 +120,18 @@ class GitHubManagement(Cog):
 
         return fetched_thread
 
+    async def _get_devops_channel(self) -> discord.TextChannel | None:
+        """Resolve the devops text channel used for invitation state notifications."""
+        channel = self.bot.get_channel(self.DRY_RUN_CHANNEL_ID)
+        if isinstance(channel, discord.TextChannel):
+            return channel
+
+        fetched_channel = await self.bot.fetch_channel(self.DRY_RUN_CHANNEL_ID)
+        if isinstance(fetched_channel, discord.TextChannel):
+            return fetched_channel
+
+        return None
+
     async def _send_report_lines(self, report_thread: discord.Thread, lines: list[str]) -> None:
         """Send report lines in chunks that fit Discord's message length limit."""
         message = ""
@@ -133,16 +154,29 @@ class GitHubManagement(Cog):
         """Stop the GitHub synchronisation task."""
         self.sync_github_org.cancel()
 
-    async def _fetch_common_info(self) -> tuple[dict[str, dict[str, str]], set[str]]:
+    async def _fetch_common_info(
+        self,
+    ) -> tuple[dict[str, dict[str, str]], set[str], set[str], set[str]]:
         """Fetch common data needed for both GitHub org and team synchronisation."""
         keycloak_identities = await all_github_identities()
         github_org_members = set(await list_organisation_members())
+        pending_invitations = await list_pending_org_invitations()
+        failed_invitations = await list_failed_org_invitations()
 
-        return keycloak_identities, github_org_members
+        return keycloak_identities, github_org_members, pending_invitations, failed_invitations
 
-    async def _sync_github_members(self, report_thread: discord.Thread) -> tuple[int, int, int]:
+    async def _sync_github_members(
+        self,
+        report_thread: discord.Thread,
+        common_info: tuple[dict[str, dict[str, str]], set[str], set[str], set[str]],
+    ) -> tuple[int, int, int]:
         """Dry-run GitHub organisation membership synchronisation with Keycloak."""
-        keycloak_identities, github_org_members = await self._fetch_common_info()
+        (
+            keycloak_identities,
+            github_org_members,
+            pending_invitations,
+            failed_invitations,
+        ) = common_info
 
         desired_org_members = [
             identity["user_name"].strip()
@@ -164,11 +198,34 @@ class GitHubManagement(Cog):
         to_remove_normalised = github_normalised - desired_normalised
         kept_normalised = desired_normalised & github_normalised
 
-        to_add = [desired_by_normalised[username] for username in sorted(to_add_normalised)]
+        pending_by_normalised = {
+            self._normalise_login(username): username for username in pending_invitations
+        }
+        failed_by_normalised = {
+            self._normalise_login(username): username for username in failed_invitations
+        }
+
+        pending_to_add_normalised = to_add_normalised & set(pending_by_normalised)
+        failed_to_add_normalised = to_add_normalised & set(failed_by_normalised)
+        actionable_to_add_normalised = (
+            to_add_normalised - pending_to_add_normalised - failed_to_add_normalised
+        )
+
+        to_add = [
+            desired_by_normalised[username] for username in sorted(actionable_to_add_normalised)
+        ]
         to_remove = [github_by_normalised[username] for username in sorted(to_remove_normalised)]
         to_keep = [
             github_by_normalised.get(username, desired_by_normalised[username])
             for username in sorted(kept_normalised)
+        ]
+        to_skip_pending = [
+            pending_by_normalised.get(username, desired_by_normalised[username])
+            for username in sorted(pending_to_add_normalised)
+        ]
+        to_skip_failed = [
+            failed_by_normalised.get(username, desired_by_normalised[username])
+            for username in sorted(failed_to_add_normalised)
         ]
 
         add_lines = [f":green_circle: would add to org: `{username}`" for username in to_add]
@@ -178,6 +235,14 @@ class GitHubManagement(Cog):
         keep_lines = [
             f":large_blue_diamond: would keep in org: `{username}`" for username in to_keep
         ]
+        skip_pending_lines = [
+            f":yellow_circle: would skip org invite (already pending): `{username}`"
+            for username in to_skip_pending
+        ]
+        skip_failed_lines = [
+            f":orange_circle: would skip org invite (failed invite exists): `{username}`"
+            for username in to_skip_failed
+        ]
 
         if not add_lines:
             add_lines = [":white_circle: no org additions needed"]
@@ -185,21 +250,44 @@ class GitHubManagement(Cog):
             remove_lines = [":white_circle: no org removals needed"]
         if not keep_lines:
             keep_lines = [":white_circle: no org members would be kept"]
+        if not skip_pending_lines:
+            skip_pending_lines = [":white_circle: no org invites skipped due to pending invites"]
+        if not skip_failed_lines:
+            skip_failed_lines = [":white_circle: no org invites skipped due to failed invites"]
 
         await self._send_report_lines(
             report_thread,
-            [":office: **Org dry-run decisions**", *add_lines, *remove_lines, *keep_lines],
+            [
+                ":office: **Org dry-run decisions**",
+                *add_lines,
+                *remove_lines,
+                *keep_lines,
+                *skip_pending_lines,
+                *skip_failed_lines,
+            ],
         )
 
-        added = len(to_add_normalised)
+        devops_channel = await self._get_devops_channel()
+        if devops_channel is not None:
+            for username in to_skip_failed:
+                await devops_channel.send(
+                    ":warning: GitHub org invite was not re-sent for "
+                    f"`{username}` because a failed invitation record already exists."
+                )
+
+        added = len(actionable_to_add_normalised)
         removed = len(to_remove_normalised)
         kept = len(kept_normalised)
 
         return added, removed, kept
 
-    async def _sync_github_teams(self, report_thread: discord.Thread) -> tuple[int, int, int]:
+    async def _sync_github_teams(
+        self,
+        report_thread: discord.Thread,
+        common_info: tuple[dict[str, dict[str, str]], set[str], set[str], set[str]],
+    ) -> tuple[int, int, int]:
         """Dry-run GitHub team membership synchronisation with Keycloak."""
-        keycloak_identities, _ = await self._fetch_common_info()
+        keycloak_identities, _, _, _ = common_info
         keycloak_to_github = {
             keycloak_username: identity["user_name"]
             for keycloak_username, identity in keycloak_identities.items()
