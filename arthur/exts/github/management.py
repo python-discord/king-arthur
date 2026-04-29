@@ -108,25 +108,26 @@ class GitHubManagement(Cog):
                 )
                 return
 
-            await report_thread.send(":mag: **GitHub membership sync started**")
 
             common_info = await self._fetch_common_info()
             org_added, org_removed = await self._sync_github_members(report_thread, common_info)
             team_added, team_removed = await self._sync_github_teams(report_thread, common_info)
 
-            logger.info(
-                "GitHub: Sync complete. "
-                f"Org added={len(org_added)}, org removed={len(org_removed)}, "
-                f"team added={len(team_added)}, team removed={len(team_removed)}."
-            )
-
-            await self._report_sync_result(
-                report_thread,
-                org_added,
-                org_removed,
-                team_added,
-                team_removed,
-            )
+            if org_added or org_removed or team_added or team_removed:
+                logger.info(
+                    "GitHub: Sync complete. "
+                    f"Org added={len(org_added)}, org removed={len(org_removed)}, "
+                    f"team added={len(team_added)}, team removed={len(team_removed)}."
+                )
+                await self._report_sync_result(
+                    report_thread,
+                    org_added,
+                    org_removed,
+                    team_added,
+                    team_removed,
+                )
+            else:
+                logger.info("GitHub: Sync complete. No changes needed.")
         except Exception as e:  # noqa: BLE001
             logger.exception(f"GitHub: Error during sync: {e}", exc_info=True)
             report_thread = await self._get_debug_thread()
@@ -142,6 +143,10 @@ class GitHubManagement(Cog):
         team_removed: list[str],
     ) -> None:
         """Report applied membership changes after a sync run."""
+        # Skip reporting if no changes were made
+        if not org_added and not org_removed and not team_added and not team_removed:
+            return
+
         org_added_text = ", ".join(f"`{username}`" for username in org_added) or "none"
         org_removed_text = ", ".join(f"`{username}`" for username in org_removed) or "none"
         team_added_text = ", ".join(f"`{change}`" for change in team_added) or "none"
@@ -353,15 +358,14 @@ class GitHubManagement(Cog):
         plan: OrgSyncPlan,
     ) -> None:
         """Send planned organisation changes to the configured report thread."""
+        # Skip reporting if no changes planned
+        if not plan.diff.to_add and not plan.diff.to_remove:
+            return
+
         add_lines = [f":green_circle: add to org: `{username}`" for username in plan.diff.to_add]
         remove_lines = [
             f":red_circle: remove from org: `{username}`" for username in plan.diff.to_remove
         ]
-
-        if not add_lines:
-            add_lines = [":white_circle: no org additions needed"]
-        if not remove_lines:
-            remove_lines = [":white_circle: no org removals needed"]
 
         await self._send_report_lines(
             report_thread,
@@ -490,6 +494,10 @@ class GitHubManagement(Cog):
         plan: TeamSyncPlan,
     ) -> None:
         """Send planned team changes to the configured report thread."""
+        # Skip reporting if no changes planned
+        if not plan.diff.to_add and not plan.diff.to_remove:
+            return
+
         add_lines = [
             f":green_circle: add to `{plan.team_slug}`: `{username}`"
             for username in plan.diff.to_add
@@ -498,18 +506,6 @@ class GitHubManagement(Cog):
             f":red_circle: remove from `{plan.team_slug}`: `{username}`"
             for username in plan.diff.to_remove
         ]
-
-        if not add_lines and not remove_lines:
-            await self._send_report_lines(
-                report_thread,
-                [f":white_circle: **Team `{plan.team_slug}`**: no membership changes needed"],
-            )
-            return
-
-        if not add_lines:
-            add_lines = [f":white_circle: no additions needed in `{plan.team_slug}`"]
-        if not remove_lines:
-            remove_lines = [f":white_circle: no removals needed in `{plan.team_slug}`"]
 
         await self._send_report_lines(
             report_thread,
