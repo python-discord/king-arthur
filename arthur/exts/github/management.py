@@ -390,13 +390,57 @@ class GitHubManagement(Cog):
                 f"`{username}` because a failed invitation record already exists."
             )
 
-    async def _apply_org_additions(self, usernames: list[str]) -> list[str]:
+    async def _try_dm_user_invite(self, github_username: str, keycloak_user: dict | None) -> None:
+        """DM a user using their Discord ID from Keycloak."""
+        if not keycloak_user:
+            logger.debug(f"No Keycloak user data for GitHub username {github_username}")
+            return
+
+        # Extract Discord ID from Keycloak attributes
+        discord_ids = keycloak_user.get("attributes", {}).get("discordId")
+        if not discord_ids or not isinstance(discord_ids, list) or not discord_ids:
+            logger.debug(f"No Discord ID found in Keycloak for  {keycloak_user.get('username', 'unknown')} (GitHub: {github_username})")
+            return
+
+        try:
+            discord_id = int(discord_ids[0])
+            member = self.bot.get_user(discord_id) or await self.bot.fetch_user(discord_id)
+
+            await member.send(
+                f"You've been invited to join the {CONFIG.github_org} GitHub organization!\n\n"
+                f"Accept your invitation here: https://github.com/orgs/{CONFIG.github_org}/invitation"
+            )
+        except ValueError:
+            logger.debug(f"Invalid Discord ID in Keycloak: {discord_ids[0]}")
+        except discord.Forbidden:
+            logger.debug(f"Could not DM user {discord_id} - DMs disabled")
+        except discord.HTTPException as e:
+            logger.opt(exception=e).warning(f"Failed to DM user {discord_id}")
+        except Exception as e:  # noqa: BLE001
+            logger.opt(exception=e).warning(f"Error sending DM invite to {github_username}")
+
+    async def _apply_org_additions(
+        self,
+        usernames: list[str],
+        keycloak_identities: dict[str, dict[str, str]],
+        resolved_logins_by_user_id: dict[str, str],
+    ) -> list[str]:
         """Apply organisation additions and return successfully added logins."""
+        # Build reverse map: GitHub login -> Keycloak user data
+        github_login_to_keycloak = {}
+        for identity in keycloak_identities.values():
+            user_id = identity.get("user_id", "").strip()
+            if user_id in resolved_logins_by_user_id:
+                github_login = resolved_logins_by_user_id[user_id]
+                github_login_to_keycloak[github_login] = identity
+
         added = []
         for username in usernames:
             try:
                 await add_org_member(username)
                 added.append(username)
+                keycloak_user = github_login_to_keycloak.get(username)
+                await self._try_dm_user_invite(username, keycloak_user)
             except GitHubError as e:
                 logger.opt(exception=e).error(f"GitHub: Failed to add {username} to org")
 
@@ -526,7 +570,11 @@ class GitHubManagement(Cog):
         await self._report_org_sync_plan(report_thread, plan)
         await self._notify_failed_invites(plan.skipped_failed)
 
-        added = await self._apply_org_additions(plan.diff.to_add)
+        added = await self._apply_org_additions(
+            plan.diff.to_add,
+            common_info.keycloak_identities,
+            common_info.resolved_logins_by_user_id,
+        )
         removed = await self._apply_org_removals(plan.diff.to_remove)
 
         return added, removed
