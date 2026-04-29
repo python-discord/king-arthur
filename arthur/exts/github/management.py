@@ -8,7 +8,7 @@ from discord.ext import tasks
 from discord.ext.commands import Cog, group
 
 from arthur.apis.directory import ldap
-from arthur.apis.directory.keycloak import all_github_identities
+from arthur.apis.directory.keycloak import all_github_identities, get_discord_id, get_user_id
 from arthur.apis.github import (
     GitHubError,
     add_member_to_team,
@@ -389,30 +389,67 @@ class GitHubManagement(Cog):
                 f"`{username}` because a failed invitation record already exists."
             )
 
-    async def _try_dm_user_invite(self, github_username: str, keycloak_user: dict | None) -> None:
-        """DM a user using their Discord ID from Keycloak."""
-        if not keycloak_user:
-            logger.debug(f"No Keycloak user data for GitHub username {github_username}")
+    def _get_keycloak_username_for_github_username(
+        self,
+        github_username: str,
+        keycloak_identities: dict[str, dict[str, str]],
+        resolved_logins_by_user_id: dict[str, str],
+    ) -> str | None:
+        """Find the Keycloak username mapped to a GitHub username."""
+        normalised_target = self._normalise_login(github_username)
+
+        for keycloak_username, identity in keycloak_identities.items():
+            user_id = identity.get("user_id", "").strip()
+            if not user_id:
+                continue
+
+            resolved_login = resolved_logins_by_user_id.get(user_id)
+            if resolved_login and self._normalise_login(resolved_login) == normalised_target:
+                return keycloak_username
+
+        return None
+
+    async def _try_dm_user_invite(
+        self,
+        github_username: str,
+        keycloak_username: str | None,
+    ) -> None:
+        """DM a user using their Discord ID from Keycloak user attributes."""
+        if not keycloak_username:
+            logger.debug(f"No Keycloak username for GitHub username {github_username}")
             return
 
-        # Extract Discord ID from Keycloak attributes
-        discord_ids = keycloak_user.get("attributes", {}).get("discordId")
-        if not discord_ids or not isinstance(discord_ids, list) or not discord_ids:
+        keycloak_user_id = await get_user_id(keycloak_username)
+        if not keycloak_user_id:
+            logger.debug(f"No Keycloak user ID found for {keycloak_username}")
+            return
+
+        discord_id = await get_discord_id(keycloak_user_id)
+        if discord_id is None:
             logger.debug(
-                f"No Discord ID found in Keycloak for  {keycloak_user.get('username', 'unknown')} (GitHub: {github_username})"
+                f"No valid Discord ID found in Keycloak for {keycloak_username} (GitHub: {github_username})"
             )
             return
+
+        guild = self.bot.get_guild(CONFIG.guild_id)
+        if guild is None:
+            guild = await self.bot.fetch_guild(CONFIG.guild_id)
+
+        member = guild.get_member(discord_id)
+        if member is None:
+            try:
+                member = await guild.fetch_member(discord_id)
+            except discord.NotFound:
+                logger.debug(
+                    f"User {discord_id} is not a member of guild {CONFIG.guild_id}; skipping GitHub invite DM"
+                )
+                return
 
         try:
-            discord_id = int(discord_ids[0])
-            member = self.bot.get_user(discord_id) or await self.bot.fetch_user(discord_id)
-
             await member.send(
-                f"You've been invited to join the {CONFIG.github_org} GitHub organization!\n\n"
-                f"Accept your invitation here: https://github.com/orgs/{CONFIG.github_org}/invitation"
+                "You've been invited to join the python-discord GitHub organization!\n\n"
+                "Accept your invitation here: https://github.com/orgs/python-discord/invitation"
             )
-        except ValueError:
-            logger.debug(f"Invalid Discord ID in Keycloak: {discord_ids[0]}")
         except discord.Forbidden:
             logger.debug(f"Could not DM user {discord_id} - DMs disabled")
         except discord.HTTPException as e:
@@ -427,21 +464,17 @@ class GitHubManagement(Cog):
         resolved_logins_by_user_id: dict[str, str],
     ) -> list[str]:
         """Apply organisation additions and return successfully added logins."""
-        # Build reverse map: GitHub login -> Keycloak user data
-        github_login_to_keycloak = {}
-        for identity in keycloak_identities.values():
-            user_id = identity.get("user_id", "").strip()
-            if user_id in resolved_logins_by_user_id:
-                github_login = resolved_logins_by_user_id[user_id]
-                github_login_to_keycloak[github_login] = identity
-
         added = []
         for username in usernames:
             try:
                 await add_org_member(username)
                 added.append(username)
-                keycloak_user = github_login_to_keycloak.get(username)
-                await self._try_dm_user_invite(username, keycloak_user)
+                keycloak_username = self._get_keycloak_username_for_github_username(
+                    username,
+                    keycloak_identities,
+                    resolved_logins_by_user_id,
+                )
+                await self._try_dm_user_invite(username, keycloak_username)
             except GitHubError as e:
                 logger.opt(exception=e).error(f"GitHub: Failed to add {username} to org")
 

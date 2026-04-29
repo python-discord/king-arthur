@@ -31,6 +31,30 @@ async def force_password_reset(username: str, password: str) -> None:
 
     await client.a_set_user_password(user_id, password, temporary=True)
 
+async def get_user(user_id: str) -> dict:
+    """Fetch a user from Keycloak using their user ID."""
+    client = create_client()
+
+    return await client.a_get_user(user_id)
+
+
+async def get_discord_id(user_id: str) -> int | None:
+    """Fetch a user's Discord ID from Keycloak attributes."""
+    user = await get_user(user_id)
+    discord_ids = user.get("attributes", {}).get("discordId")
+    if not isinstance(discord_ids, list) or not discord_ids:
+        return None
+
+    try:
+        return int(discord_ids[0])
+    except (TypeError, ValueError):
+        return None
+
+async def get_user_id(username: str) -> str | None:
+    """Fetch a user's Keycloak ID using their username."""
+    client = create_client()
+
+    return await client.a_get_user_id(username)
 
 async def get_user_github_id(username: str) -> str | None:
     """Fetch a users GitHub ID from Keycloak."""
