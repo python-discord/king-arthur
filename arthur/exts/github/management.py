@@ -108,7 +108,6 @@ class GitHubManagement(Cog):
                 )
                 return
 
-
             common_info = await self._fetch_common_info()
             org_added, org_removed = await self._sync_github_members(report_thread, common_info)
             team_added, team_removed = await self._sync_github_teams(report_thread, common_info)
@@ -399,7 +398,9 @@ class GitHubManagement(Cog):
         # Extract Discord ID from Keycloak attributes
         discord_ids = keycloak_user.get("attributes", {}).get("discordId")
         if not discord_ids or not isinstance(discord_ids, list) or not discord_ids:
-            logger.debug(f"No Discord ID found in Keycloak for  {keycloak_user.get('username', 'unknown')} (GitHub: {github_username})")
+            logger.debug(
+                f"No Discord ID found in Keycloak for  {keycloak_user.get('username', 'unknown')} (GitHub: {github_username})"
+            )
             return
 
         try:
