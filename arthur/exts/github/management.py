@@ -26,6 +26,8 @@ from arthur.constants import LDAP_ROLE_MAPPING
 from arthur.log import logger
 
 if TYPE_CHECKING:
+    import aiohttp
+
     from arthur.bot import KingArthurTheTerrible
 
 
@@ -221,13 +223,13 @@ class GitHubManagement(Cog):
     async def _fetch_common_info(self) -> SyncCommonInfo:
         """Fetch common data needed for both GitHub org and team synchronisation."""
         keycloak_identities = await all_github_identities()
-        github_org_members = await list_organisation_member_identities()
+        github_org_members = await list_organisation_member_identities(self.bot.http_session)
         resolved_keycloak_logins_by_id = await self._resolve_logins_by_user_id(
             keycloak_identities,
             github_org_members,
         )
-        pending_invitations = await list_pending_org_invitations()
-        failed_invitations = await list_failed_org_invitations()
+        pending_invitations = await list_pending_org_invitations(self.bot.http_session)
+        failed_invitations = await list_failed_org_invitations(self.bot.http_session)
 
         return SyncCommonInfo(
             keycloak_identities=keycloak_identities,
@@ -251,7 +253,7 @@ class GitHubManagement(Cog):
         }
 
         for user_id in sorted(unresolved_user_ids):
-            resolved_login = await get_username_for_user_id(user_id)
+            resolved_login = await get_username_for_user_id(user_id, self.bot.http_session)
             if resolved_login:
                 resolved_keycloak_logins_by_id[user_id] = resolved_login
                 continue
@@ -462,12 +464,13 @@ class GitHubManagement(Cog):
         usernames: list[str],
         keycloak_identities: dict[str, dict[str, str]],
         resolved_logins_by_user_id: dict[str, str],
+        session: aiohttp.ClientSession,
     ) -> list[str]:
         """Apply organisation additions and return successfully added logins."""
         added = []
         for username in usernames:
             try:
-                await add_org_member(username)
+                await add_org_member(username, session)
                 added.append(username)
                 keycloak_username = self._get_keycloak_username_for_github_username(
                     username,
@@ -480,12 +483,14 @@ class GitHubManagement(Cog):
 
         return added
 
-    async def _apply_org_removals(self, usernames: list[str]) -> list[str]:
+    async def _apply_org_removals(
+        self, usernames: list[str], session: aiohttp.ClientSession
+    ) -> list[str]:
         """Apply organisation removals and return successfully removed logins."""
         removed = []
         for username in usernames:
             try:
-                await remove_org_member(username)
+                await remove_org_member(username, session)
                 removed.append(username)
             except GitHubError as e:
                 logger.opt(exception=e).error(f"GitHub: Failed to remove {username} from org")
@@ -608,8 +613,9 @@ class GitHubManagement(Cog):
             plan.diff.to_add,
             common_info.keycloak_identities,
             common_info.resolved_logins_by_user_id,
+            self.bot.http_session,
         )
-        removed = await self._apply_org_removals(plan.diff.to_remove)
+        removed = await self._apply_org_removals(plan.diff.to_remove, self.bot.http_session)
 
         return added, removed
 
@@ -634,7 +640,7 @@ class GitHubManagement(Cog):
                 if member.uid in keycloak_to_github
             ]
 
-            current_team_members = await list_team_members(github_team_slug)
+            current_team_members = await list_team_members(github_team_slug, self.bot.http_session)
 
             plan = self._build_team_sync_plan(
                 team_slug=github_team_slug,
@@ -646,7 +652,7 @@ class GitHubManagement(Cog):
 
             for username in plan.diff.to_add:
                 try:
-                    await add_member_to_team(username, github_team_slug)
+                    await add_member_to_team(username, github_team_slug, self.bot.http_session)
                     added.append(f"{username} -> {github_team_slug}")
                 except GitHubError as e:
                     logger.opt(exception=e).error(
@@ -655,7 +661,7 @@ class GitHubManagement(Cog):
 
             for username in plan.diff.to_remove:
                 try:
-                    await remove_member_from_team(username, github_team_slug)
+                    await remove_member_from_team(username, github_team_slug, self.bot.http_session)
                     removed.append(f"{username} -> {github_team_slug}")
                 except GitHubError as e:
                     logger.opt(exception=e).error(
