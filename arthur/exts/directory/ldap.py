@@ -161,7 +161,7 @@ class LDAP(commands.Cog):
         try:
             logger.info("Syncing users with the LDAP directory.")
 
-            diff, missing_emp, counts = await self.get_user_diff()
+            diff, missing_emp, counts, ldap_users = await self.get_user_diff()
 
             add_users = counts[LDAPSyncAction.ADD]
             remove_users = counts[LDAPSyncAction.REMOVE]
@@ -205,7 +205,7 @@ class LDAP(commands.Cog):
                     user.ldap_user.employee_number if user.ldap_user else str(user.discord_user.id)
                 )
 
-            await self._handle_left_users(handled)
+            await self._handle_left_users(handled, ldap_users)
 
             logger.info("LDAP: Sync complete.")
         except Exception as e:  # noqa: BLE001
@@ -214,10 +214,8 @@ class LDAP(commands.Cog):
                 f":x: LDAP Sync Error: ```python\n{e}```"
             )
 
-    async def _handle_left_users(self, handled: list[int]) -> None:
+    async def _handle_left_users(self, handled: list[int], ldap_users: list[ldap.LDAPUser]) -> None:
         """Handle users that have left the guild and so were not processed."""
-        ldap_users = await ldap.find_users()
-
         for user in ldap_users:
             if user.employee_number is None or user.employee_number in handled:
                 continue
@@ -367,7 +365,7 @@ class LDAP(commands.Cog):
 
     async def get_user_diff(
         self,
-    ) -> tuple[list[DiffedUser], list[ldap.LDAPUser], Counter[LDAPSyncAction]]:
+    ) -> tuple[list[DiffedUser], list[ldap.LDAPUser], Counter[LDAPSyncAction], list[ldap.LDAPUser]]:
         """Calculate and return the diff of users against LDAP from the guild."""
         guild = self.bot.get_guild(CONFIG.guild_id)
         users = await ldap.find_users()
@@ -416,7 +414,7 @@ class LDAP(commands.Cog):
 
         counter = Counter([user.action for user in diff])
 
-        return diff, missing_emp, counter
+        return diff, missing_emp, counter, users
 
     @staticmethod
     def _format_user(discord_user: discord.Member, ldap_user: ldap.LDAPUser | None) -> str:
@@ -429,7 +427,7 @@ class LDAP(commands.Cog):
     @ldap_group.command(name="sync")
     async def sync(self, ctx: commands.Context) -> None:
         """List users found in the LDAP directory."""
-        diff, missing_emp, counts = await self.get_user_diff()
+        diff, missing_emp, counts, _ = await self.get_user_diff()
 
         add_users = counts[LDAPSyncAction.ADD]
         remove_users = counts[LDAPSyncAction.REMOVE]
