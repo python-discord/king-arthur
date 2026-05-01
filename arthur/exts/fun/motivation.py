@@ -29,6 +29,11 @@ class Motivation(commands.Cog):
         if CONFIG.youtube_api_key:
             self.send_daily_mission.start()
 
+    async def cog_unload(self) -> None:
+        """Cancel background tasks on unload."""
+        self.send_daily_motivation.cancel()
+        self.send_daily_mission.cancel()
+
     @tasks.loop(time=time(hour=12, minute=30, tzinfo=UTC))
     async def send_daily_mission(self) -> None:
         """Send the daily mission to the team."""

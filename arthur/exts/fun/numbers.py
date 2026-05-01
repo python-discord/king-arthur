@@ -37,6 +37,7 @@ class Numbers(commands.GroupCog):
 
     async def cog_unload(self) -> None:
         """Disconnect from devops channel on cog unload."""
+        self.devops_vc_check.cancel()
         if self.devops_vc and (vc := self.devops_vc.guild.voice_client):
             await vc.disconnect(force=True)
 

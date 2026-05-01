@@ -155,6 +155,10 @@ class LDAP(commands.Cog):
         self.bot = bot
         self.sync_users.start()
 
+    async def cog_unload(self) -> None:
+        """Cancel background tasks on unload."""
+        self.sync_users.cancel()
+
     @tasks.loop(minutes=10)
     async def sync_users(self) -> None:
         """Sync users with the LDAP directory."""

@@ -34,6 +34,10 @@ class GrafanaLDAPTeamSync(commands.Cog):
         self.bot = bot
         self.sync_ldap_grafana_teams.start()
 
+    async def cog_unload(self) -> None:
+        """Cancel background tasks on unload."""
+        self.sync_ldap_grafana_teams.cancel()
+
     async def _add_missing_members(
         self,
         grafana_team_id: int,
