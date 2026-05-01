@@ -30,6 +30,7 @@ class QuotesCog(commands.Cog):
 
     async def cog_load(self) -> None:
         """Fetch the quotes to be used."""
+        self.quotes.clear()
         try:
             async with self.bot.http_session.get(
                 "http://quotes.cat-v.org/programming/"
