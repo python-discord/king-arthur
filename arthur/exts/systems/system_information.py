@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Literal, TYPE_CHECKING
 from urllib import parse
 
-import aiohttp
 from discord import File, Member, Message
 from discord.ext import tasks
 from discord.ext.commands import Cog, Context, Converter, command
@@ -68,7 +67,7 @@ class SystemInformation(Cog):
         """Fetch the file contents of the given filename, starting from ``/``."""
         if name not in self.cached_resources:
             url = BASE_RESOURCE.format(name)
-            async with aiohttp.ClientSession() as session, session.get(url) as resp:
+            async with self.bot.http_session.get(url) as resp:
                 self.cached_resources[name] = await resp.text()
         return self.cached_resources[name]
 
@@ -178,7 +177,7 @@ class SystemInformation(Cog):
 
             await ctx.message.attachments[0].save(image_bytes)
         else:
-            async with aiohttp.ClientSession() as session, session.get(image_url) as resp:
+            async with self.bot.http_session.get(image_url) as resp:
                 if resp.ok:
                     image_bytes.write(await resp.read())
                     image_bytes.seek(0)
