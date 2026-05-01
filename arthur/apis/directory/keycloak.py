@@ -2,7 +2,8 @@
 
 from functools import cache
 
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, urls_patterns
+from keycloak.exceptions import KeycloakGetError, raise_error_from_response
 
 from arthur.config import CONFIG
 
@@ -79,15 +80,20 @@ async def get_user_github_id(username: str) -> str | None:
 async def all_github_identities() -> dict[str, dict[str, str]]:
     """Fetch Keycloak usernames and their linked GitHub identity information."""
     client = create_client()
-
     users = await client.a_get_users()
     github_identities = {}
 
     for user in users:
-        user_details = await client.a_get_user(user["id"])
-        for ident in user_details["federatedIdentities"]:
+        url = urls_patterns.URL_ADMIN_USER_FEDERATED_IDENTITIES.format(
+            **{"realm-name": client.connection.realm_name, "id": user["id"]}
+        )
+        identities = raise_error_from_response(
+            await client.connection.a_raw_get(url),
+            KeycloakGetError,
+        )
+        for ident in identities:
             if ident["identityProvider"] == "github":
-                github_identities[user_details["username"]] = {
+                github_identities[user["username"]] = {
                     "user_id": ident.get("userId", ""),
                     "user_name": ident.get("userName", ""),
                 }
