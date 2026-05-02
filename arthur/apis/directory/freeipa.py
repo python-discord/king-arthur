@@ -1,5 +1,6 @@
 """API utilities for modifying data via FreeIPA."""
 
+from functools import cache
 from secrets import token_urlsafe
 
 try:
@@ -17,6 +18,7 @@ from arthur.constants import LDAP_ROLE_MAPPING
 PW_LENGTH = 20
 
 
+@cache
 def create_client() -> ClientMeta:
     """Create a new client and login to FreeIPA."""
     username = LDAPDN(CONFIG.ldap_bind_user).rdns[0][0][1]
