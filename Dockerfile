@@ -40,6 +40,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     imagemagick \
     libldap2 \
+    tini \
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf/*
 
 # Copy a static build of ffmpeg from the ffmpeg stage.
@@ -55,5 +56,5 @@ WORKDIR /app
 COPY . .
 ENV PATH="/opt/king-arthur/.venv/bin:$PATH"
 
-ENTRYPOINT ["python"]
-CMD ["-m", "arthur"]
+ENTRYPOINT ["tini", "--"]
+CMD ["python", "-m", "arthur"]
