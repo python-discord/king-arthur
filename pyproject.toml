@@ -15,6 +15,7 @@ dependencies = [
     "jishaku==2.6.3",
     "kubernetes-asyncio==35.0.1",
     "loguru==0.7.3",
+    "memray==1.19.3",
     "pydantic==2.12.5",
     "pydantic-settings==2.13.1",
     "python-freeipa==1.0.10",
