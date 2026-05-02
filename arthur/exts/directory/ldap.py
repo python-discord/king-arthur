@@ -16,6 +16,8 @@ from arthur.constants import HELPER_ROLE_ID, LDAP_ROLE_MAPPING
 from arthur.log import logger
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from arthur.bot import KingArthurTheTerrible
 
 PASSWORD_RESET_LENGTH = 16
@@ -153,6 +155,8 @@ class LDAP(commands.Cog):
 
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
+        self._notified_user_ids: set[int] = set()
+        self._last_history_scan: datetime | None = None
         self.sync_users.start()
 
     async def cog_unload(self) -> None:
@@ -187,11 +191,14 @@ class LDAP(commands.Cog):
                     ":x: LDAP Sync: Some users are missing an employee number. This may lead to duplicate users, please rectify."
                 )
 
-            notified_users = []
-
-            async for message in self.bot.get_channel(CONFIG.ldap_bootstrap_channel_id).history(
-                limit=None, oldest_first=True
-            ):
+            now = discord.utils.utcnow()
+            channel = self.bot.get_channel(CONFIG.ldap_bootstrap_channel_id)
+            history = (
+                channel.history(after=self._last_history_scan, oldest_first=True)
+                if self._last_history_scan is not None
+                else channel.history(limit=None, oldest_first=True)
+            )
+            async for message in history:
                 if (
                     "Python Discord LDAP enrollment" in message.content
                     or len(message.mentions) == 0
@@ -199,12 +206,14 @@ class LDAP(commands.Cog):
                 ):
                     continue
 
-                notified_users.append(message.mentions[0])
+                self._notified_user_ids.add(message.mentions[0].id)
+
+            self._last_history_scan = now
 
             handled = set()
 
             for user in diff:
-                await self._process_user(user, notified_users)
+                await self._process_user(user, self._notified_user_ids)
                 handled.add(
                     user.ldap_user.employee_number if user.ldap_user else str(user.discord_user.id)
                 )
@@ -231,9 +240,9 @@ class LDAP(commands.Cog):
             logger.info(f"LDAP: Deactivating user {user.uid} as they are no longer in the guild.")
             freeipa.deactivate_user(user.uid)
 
-    async def _process_user(self, user: DiffedUser, notified_users: list[discord.User]) -> None:
+    async def _process_user(self, user: DiffedUser, notified_user_ids: set[int]) -> None:
         if user.action == LDAPSyncAction.ADD:
-            if user.discord_user in notified_users:
+            if user.discord_user.id in notified_user_ids:
                 return
 
             if NOTIFICATIONS_ENABLED:
