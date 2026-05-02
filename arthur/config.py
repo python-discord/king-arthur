@@ -55,6 +55,15 @@ class Config(
 
     ldap_certificate_location: pydantic.FilePath | None = None
 
+    # Email
+
+    email_host: str | None = None
+    email_port: int = 587
+    email_from: str | None = None
+    email_username: str | None = None
+    email_password: pydantic.SecretStr | None = None
+    email_starttls: bool = True
+
     # Keycloak
 
     keycloak_address: pydantic.AnyUrl | None = None
