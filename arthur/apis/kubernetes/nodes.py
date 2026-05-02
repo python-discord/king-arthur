@@ -3,7 +3,8 @@
 from typing import TYPE_CHECKING
 
 from kubernetes_asyncio import client
-from kubernetes_asyncio.client.api_client import ApiClient
+
+from arthur.apis.kubernetes import get_api_client
 
 if TYPE_CHECKING:
     from kubernetes_asyncio.client.models import V1NodeList
@@ -11,18 +12,16 @@ if TYPE_CHECKING:
 
 async def list_nodes() -> V1NodeList:
     """List Kubernetes nodes."""
-    async with ApiClient() as api_client:
-        api = client.CoreV1Api(api_client)
-        return await api.list_node()
+    api = client.CoreV1Api(get_api_client())
+    return await api.list_node()
 
 
 async def _change_cordon(node: str, *, cordon: bool) -> None:
-    async with ApiClient() as api_client:
-        api = client.CoreV1Api(api_client)
-        await api.patch_node(
-            node,
-            body={"spec": {"unschedulable": cordon}},
-        )
+    api = client.CoreV1Api(get_api_client())
+    await api.patch_node(
+        node,
+        body={"spec": {"unschedulable": cordon}},
+    )
 
 
 async def cordon_node(node: str) -> None:
