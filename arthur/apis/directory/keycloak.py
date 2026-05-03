@@ -87,11 +87,13 @@ async def _fetch_user_github_identity(
     url = urls_patterns.URL_ADMIN_USER_FEDERATED_IDENTITIES.format(
         **{"realm-name": client.connection.realm_name, "id": user["id"]}
     )
-    async with semaphore, await client.connection.a_raw_get(url) as response:
-        identities = raise_error_from_response(
-            response,
-            KeycloakGetError,
-        )
+    async with semaphore:
+        response = await client.connection.a_raw_get(url)
+        with response:
+            identities = raise_error_from_response(
+                response,
+                KeycloakGetError,
+            )
 
     for ident in identities:
         if ident["identityProvider"] == "github":
