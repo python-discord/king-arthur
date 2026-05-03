@@ -89,11 +89,10 @@ async def _fetch_user_github_identity(
     )
     async with semaphore:
         response = await client.connection.a_raw_get(url)
-        with response:
-            identities = raise_error_from_response(
-                response,
-                KeycloakGetError,
-            )
+        identities = raise_error_from_response(
+            response,
+            KeycloakGetError,
+        )
 
     for ident in identities:
         if ident["identityProvider"] == "github":
