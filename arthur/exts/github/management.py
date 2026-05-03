@@ -76,6 +76,7 @@ class GitHubManagement(Cog):
 
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
+        self._resolved_logins_cache: dict[str, str] = {}
 
     @staticmethod
     def _normalise_login(username: str) -> str:
@@ -224,6 +225,10 @@ class GitHubManagement(Cog):
         """Fetch common data needed for both GitHub org and team synchronisation."""
         keycloak_identities = await all_github_identities()
         github_org_members = await list_organisation_member_identities(self.bot.http_session)
+
+        # Update cache with current org members
+        self._resolved_logins_cache.update(github_org_members)
+
         resolved_keycloak_logins_by_id = await self._resolve_logins_by_user_id(
             keycloak_identities,
             github_org_members,
@@ -253,9 +258,14 @@ class GitHubManagement(Cog):
         }
 
         for user_id in sorted(unresolved_user_ids):
+            if user_id in self._resolved_logins_cache:
+                resolved_keycloak_logins_by_id[user_id] = self._resolved_logins_cache[user_id]
+                continue
+
             resolved_login = await get_username_for_user_id(user_id, self.bot.http_session)
             if resolved_login:
                 resolved_keycloak_logins_by_id[user_id] = resolved_login
+                self._resolved_logins_cache[user_id] = resolved_login
                 continue
 
             logger.warning(f"GitHub: Could not resolve login for GitHub user ID {user_id}.")
