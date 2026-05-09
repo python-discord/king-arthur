@@ -561,8 +561,8 @@ class GitHubManagement(Cog):
 
         try:
             await member.send(
-                "Your GitHub organisation invite failed to send.\n\n"
-                "Please reconnect your GitHub account in Keycloak and we will try again:\n"
+                "Your GitHub organisation invite expired/was not accepted. It will not be retried automatically.\n\n"
+                "Please reconnect your GitHub account in Keycloak and we will try again:\n\n"
                 f"{self.GITHUB_RECONNECT_LINK}"
             )
         except discord.Forbidden:
