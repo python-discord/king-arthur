@@ -23,6 +23,7 @@ from arthur.apis.github import (
     list_organisation_member_identities,
     list_pending_org_invitations,
     list_team_members,
+    remove_failed_org_invitation,
     remove_member_from_team,
     remove_org_member,
 )
@@ -413,6 +414,13 @@ class GitHubManagement(Cog):
                     ":warning: GitHub org invite failed for "
                     f"`{username}` because a failed invitation record exists. "
                     "Removing the Keycloak GitHub link and notifying the user to reconnect."
+                )
+
+            try:
+                await remove_failed_org_invitation(username, self.bot.http_session)
+            except GitHubError as e:
+                logger.opt(exception=e).warning(
+                    f"GitHub: Failed to remove failed invitation record for {username}."
                 )
 
             keycloak_username = self._get_keycloak_username_for_github_username(

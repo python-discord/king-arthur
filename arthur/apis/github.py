@@ -170,6 +170,78 @@ async def list_failed_org_invitations(session: aiohttp.ClientSession) -> set[str
     return failed
 
 
+def _extract_invitation_id(invitation: dict) -> int | None:
+    """Extract a numeric invitation ID from a GitHub invitation payload."""
+    raw_id = invitation.get("id")
+    if isinstance(raw_id, int):
+        return raw_id
+    if isinstance(raw_id, str) and raw_id.isdigit():
+        return int(raw_id)
+    return None
+
+
+async def _find_failed_org_invitation_id(
+    username: str,
+    session: aiohttp.ClientSession,
+) -> int | None:
+    """Find failed org invitation ID for a GitHub login."""
+    page = 1
+    per_page = 100
+
+    while True:
+        endpoint = (
+            f"https://api.github.com/orgs/{CONFIG.github_org}/failed_invitations"
+            f"?per_page={per_page}&page={page}"
+        )
+        async with session.get(endpoint, headers=HEADERS) as response:
+            try:
+                response.raise_for_status()
+                data = await response.json()
+            except aiohttp.ClientResponseError as e:
+                if e.status == HTTPStatus.NOT_FOUND:
+                    # Some org/API versions may not expose failed invitations.
+                    return None
+
+                msg = f"Failed to list failed organisation invitations: {e.message}"
+                raise GitHubError(msg)
+
+        for invitation in data:
+            login = invitation.get("login") or invitation.get("invitee", {}).get("login")
+            if login and login.casefold() == username.casefold():
+                return _extract_invitation_id(invitation)
+
+        if len(data) < per_page:
+            return None
+
+        page += 1
+
+
+async def remove_failed_org_invitation(username: str, session: aiohttp.ClientSession) -> None:
+    """Remove a failed organisation invitation for a GitHub login."""
+    invitation_id = await _find_failed_org_invitation_id(username, session)
+    if invitation_id is None:
+        # Missing failed invitation record is safe to ignore.
+        return
+
+    endpoint = f"https://api.github.com/orgs/{CONFIG.github_org}/invitations/{invitation_id}"
+    async with session.delete(endpoint, headers=HEADERS) as response:
+        try:
+            response.raise_for_status()
+        except aiohttp.ClientResponseError as e:
+            if e.status == HTTPStatus.NOT_FOUND:
+                # Invitation already removed.
+                return
+            if e.status == HTTPStatus.FORBIDDEN:
+                msg = f"Forbidden: {e.message}"
+                raise GitHubError(msg)
+
+            msg = (
+                "Failed to remove failed organisation invitation for "
+                f"{username} (invitation_id={invitation_id}): {e.message}"
+            )
+            raise GitHubError(msg)
+
+
 async def add_member_to_team(
     username: str, github_team_slug: str, session: aiohttp.ClientSession
 ) -> None:
