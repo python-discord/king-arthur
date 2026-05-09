@@ -8,7 +8,12 @@ from discord.ext import tasks
 from discord.ext.commands import Cog, group
 
 from arthur.apis.directory import ldap
-from arthur.apis.directory.keycloak import all_github_identities, get_discord_id, get_user_id
+from arthur.apis.directory.keycloak import (
+    all_github_identities,
+    get_discord_id,
+    get_user_id,
+    remove_federated_identity_provider_link,
+)
 from arthur.apis.github import (
     GitHubError,
     add_member_to_team,
@@ -73,6 +78,10 @@ class GitHubManagement(Cog):
 
     MAX_REPORT_MESSAGE_LENGTH = 1900
     IGNORED_GITHUB_USERS = ("pydis-bot",)
+    KEYCLOAK_GITHUB_PROVIDER = "github"
+    GITHUB_RECONNECT_LINK = (
+        "https://id.pydis.wtf/realms/pydis/account/account-security/linked-accounts"
+    )
 
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
@@ -389,17 +398,54 @@ class GitHubManagement(Cog):
             ],
         )
 
-    async def _notify_failed_invites(self, skipped_failed: list[str]) -> None:
-        """Send notifications for failed invitation re-send skips."""
+    async def _handle_failed_invites(
+        self,
+        skipped_failed: list[str],
+        keycloak_identities: dict[str, dict[str, str]],
+        resolved_logins_by_user_id: dict[str, str],
+    ) -> None:
+        """Handle users with failed invite records."""
         devops_channel = await self._get_devops_channel()
-        if devops_channel is None:
-            return
 
         for username in skipped_failed:
-            await devops_channel.send(
-                ":warning: GitHub org invite was not re-sent for "
-                f"`{username}` because a failed invitation record already exists."
+            if devops_channel is not None:
+                await devops_channel.send(
+                    ":warning: GitHub org invite failed for "
+                    f"`{username}` because a failed invitation record exists. "
+                    "Removing the Keycloak GitHub link and notifying the user to reconnect."
+                )
+
+            keycloak_username = self._get_keycloak_username_for_github_username(
+                username,
+                keycloak_identities,
+                resolved_logins_by_user_id,
             )
+            if keycloak_username is None:
+                logger.warning(
+                    f"GitHub: Could not find Keycloak username for failed invite user {username}."
+                )
+                continue
+
+            keycloak_user_id = await get_user_id(keycloak_username)
+            if not keycloak_user_id:
+                logger.warning(
+                    "GitHub: Could not find Keycloak user ID for failed invite user "
+                    f"{keycloak_username} (GitHub: {username})."
+                )
+                continue
+
+            try:
+                await remove_federated_identity_provider_link(
+                    keycloak_user_id,
+                    self.KEYCLOAK_GITHUB_PROVIDER,
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.opt(exception=e).warning(
+                    "GitHub: Failed to remove Keycloak GitHub link for "
+                    f"{keycloak_username} (GitHub: {username})."
+                )
+
+            await self._try_dm_user_failed_invite(username, keycloak_username)
 
     def _get_keycloak_username_for_github_username(
         self,
@@ -468,6 +514,57 @@ class GitHubManagement(Cog):
             logger.opt(exception=e).warning(f"Failed to DM user {discord_id}")
         except Exception as e:  # noqa: BLE001
             logger.opt(exception=e).warning(f"Error sending DM invite to {github_username}")
+
+    async def _try_dm_user_failed_invite(
+        self,
+        github_username: str,
+        keycloak_username: str | None,
+    ) -> None:
+        """DM a user when their GitHub org invite is in a failed state."""
+        if not keycloak_username:
+            logger.debug(f"No Keycloak username for GitHub username {github_username}")
+            return
+
+        keycloak_user_id = await get_user_id(keycloak_username)
+        if not keycloak_user_id:
+            logger.debug(f"No Keycloak user ID found for {keycloak_username}")
+            return
+
+        discord_id = await get_discord_id(keycloak_user_id)
+        if discord_id is None:
+            logger.debug(
+                f"No valid Discord ID found in Keycloak for {keycloak_username} (GitHub: {github_username})"
+            )
+            return
+
+        guild = self.bot.get_guild(CONFIG.guild_id)
+        if guild is None:
+            guild = await self.bot.fetch_guild(CONFIG.guild_id)
+
+        member = guild.get_member(discord_id)
+        if member is None:
+            try:
+                member = await guild.fetch_member(discord_id)
+            except discord.NotFound:
+                logger.debug(
+                    f"User {discord_id} is not a member of guild {CONFIG.guild_id}; skipping failed invite DM"
+                )
+                return
+
+        try:
+            await member.send(
+                "Your GitHub organisation invite failed to send.\n\n"
+                "Please reconnect your GitHub account in Keycloak and we will try again:\n"
+                f"{self.GITHUB_RECONNECT_LINK}"
+            )
+        except discord.Forbidden:
+            logger.debug(f"Could not DM user {discord_id} - DMs disabled")
+        except discord.HTTPException as e:
+            logger.opt(exception=e).warning(
+                f"Failed to DM user {discord_id} about GitHub invite failure"
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.opt(exception=e).warning(f"Error sending failed invite DM to {github_username}")
 
     async def _apply_org_additions(
         self,
@@ -617,7 +714,11 @@ class GitHubManagement(Cog):
         """Synchronise GitHub organisation membership with Keycloak."""
         plan = self._build_org_sync_plan(common_info)
         await self._report_org_sync_plan(report_thread, plan)
-        await self._notify_failed_invites(plan.skipped_failed)
+        await self._handle_failed_invites(
+            plan.skipped_failed,
+            common_info.keycloak_identities,
+            common_info.resolved_logins_by_user_id,
+        )
 
         added = await self._apply_org_additions(
             plan.diff.to_add,

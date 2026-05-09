@@ -63,6 +63,12 @@ async def get_user_id(username: str) -> str | None:
     return await client.a_get_user_id(username)
 
 
+async def remove_federated_identity_provider_link(user_id: str, provider: str) -> None:
+    """Remove a federated identity provider link from a Keycloak user."""
+    client = create_client()
+    await client.a_delete_user_social_login(user_id, provider)
+
+
 async def get_user_github_id(username: str) -> str | None:
     """Fetch a users GitHub ID from Keycloak."""
     client = create_client()
