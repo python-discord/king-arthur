@@ -792,4 +792,3 @@ class GitHubManagement(Cog):
 
 async def setup(bot: KingArthurTheTerrible) -> None:
     """Add cog to bot."""
-    pass
