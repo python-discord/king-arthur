@@ -1,7 +1,6 @@
 """Return system information on our production 9front infrastructure."""
 
 import asyncio
-import base64
 import io
 import random
 import sys
@@ -18,7 +17,6 @@ from wand.image import Image
 
 from arthur.apis.systems import lib9front
 from arthur.config import CONFIG
-from arthur.exts.systems._motd import MOTD
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
@@ -221,13 +219,6 @@ class SystemInformation(Cog):
         contents = await self.fetch_resource("lib/troll")
         result = random.choice(contents.splitlines())
         await ctx.reply(result)
-
-    @command(name="motd")
-    async def motd(self, ctx: Context) -> None:
-        """Generate an image representing the message of the day."""
-        payload = MOTD.replace(b"\n", b"")
-        file = File(io.BytesIO(base64.b64decode(payload)), filename="motd.png")
-        await ctx.send(file=file)
 
     @command(name="uwsgi")
     async def uwsgi(self, ctx: Context) -> None:
