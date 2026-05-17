@@ -14,29 +14,34 @@ import sys
 import textwrap
 from pathlib import Path
 
+# Ensure the project root is on sys.path when run as a script.
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from loguru import logger
 
 from arthur.config import CONFIG
 from arthur.exts.motd._motd_crypto import encrypt_motd
 
-_HERE = Path(__file__).parent
+_HERE = Path(__file__).parent.parent / "arthur" / "exts" / "motd"
 _MOTD_PY = _HERE / "_motd_data.py"
 _LINE_WIDTH = 76  # base-64 characters per line inside the bytes literal
 
 
 def _load_key() -> str:
+    """Load the MOTD key from config, exiting if it is unset."""
     if CONFIG.motd_key is None:
         sys.exit("KING_ARTHUR_MOTD_KEY is not set. Run with --generate-key to create one.")
     return CONFIG.motd_key.get_secret_value()
 
 
 def cmd_generate_key() -> None:
+    """Generate and print a new random 32-byte hex key."""
     key_hex = secrets.token_hex(32)
     logger.info(f"Generated key (store this as KING_ARTHUR_MOTD_KEY):\n\n  {key_hex}\n")
 
 
 def cmd_encrypt(png_path: Path) -> None:
-
+    """Encrypt *png_path* and write the result to ``_motd_data.py``."""
     key = _load_key()
     plaintext = png_path.read_bytes()
     encrypted = encrypt_motd(plaintext, key)
@@ -57,6 +62,7 @@ def cmd_encrypt(png_path: Path) -> None:
 
 
 def main() -> None:
+    """Entry point for the MOTD encryption CLI."""
     parser = argparse.ArgumentParser(description="MOTD encryption tool")
     parser.add_argument(
         "png",
