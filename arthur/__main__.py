@@ -10,7 +10,7 @@ from discord.ext import commands
 import arthur
 from arthur.bot import KingArthurTheTerrible
 from arthur.config import CONFIG
-from arthur.log import logger, setup_sentry
+from arthur.log import logger, setup_sentry, setup_stdlib_logging
 
 
 async def main() -> None:
@@ -43,6 +43,7 @@ async def main() -> None:
 
 
 setup_sentry()
+setup_stdlib_logging()
 
 with logger.catch():
     asyncio.run(main())
