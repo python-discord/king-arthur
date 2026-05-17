@@ -11,6 +11,7 @@ dependencies = [
     "audioop-lts==0.2.2",
     "asyncssh==2.22.0",
     "beautifulsoup4==4.14.3",
+    "cryptography>=44.0.0",
     "humanize==4.15.0",
     "jishaku==2.6.3",
     "kubernetes-asyncio==35.0.1",

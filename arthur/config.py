@@ -71,6 +71,10 @@ class Config(
     keycloak_password: pydantic.SecretStr | None = None
     keycloak_user_realm: str = "pydis"
 
+    # MOTD encryption
+    # 32-byte key encoded as 64 hex characters, used for AES-256-GCM decryption of the MOTD image.
+    motd_key: pydantic.SecretStr | None = None
+
 
 GIT_SHA = environ.get("GIT_SHA", "development")
 

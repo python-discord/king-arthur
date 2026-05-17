@@ -24,3 +24,7 @@ start:
 
 format:
 	uv run ruff format arthur
+
+encrypt-motd:
+	@test -n "$(PNG)" || (echo "Usage: make encrypt-motd PNG=path/to/motd.png" && exit 1)
+	uv run python scripts/encrypt_motd.py $(PNG)
