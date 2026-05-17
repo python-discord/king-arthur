@@ -8,15 +8,15 @@ license = {text = "MIT"}
 requires-python = "~=3.14.0"
 dependencies = [
     "pydis-core[voice]==11.9.2",
-    "audioop-lts==0.2.2",
     "asyncssh==2.22.0",
+    "audioop-lts==0.2.2",
     "beautifulsoup4==4.14.3",
     "cryptography>=44.0.0",
     "humanize==4.15.0",
     "jishaku==2.6.3",
     "kubernetes-asyncio==35.0.1",
     "loguru==0.7.3",
-    "memray==1.19.3",
+    "memray==1.19.3; sys_platform != 'win32'",
     "pydantic==2.12.5",
     "pydantic-settings==2.13.1",
     "python-freeipa==1.0.10",
