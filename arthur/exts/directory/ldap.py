@@ -46,10 +46,16 @@ You will be prompted to change your password on first login. You will then be pr
 
 Once you have set these credentials, hold onto them as they will be used to access various services provided by Python Discord.
 
-**We will gradually be phasing out the use of GitHub logins for our services in favor of this new system, which mirrors accesses directly from Discord.**
-
 If you have any questions or need help, feel free to ask in the <#{devops_channel_id}> channel.
+
+## GitHub Membership
+
+Once you have created your account, you can link your GitHub account [here](https://id.pydis.wtf/realms/pydis/account/account-security/linked-accounts) to be added to the Python Discord GitHub organization.
+
+This is required to access private repositories and take part in repository maintenance, as well as access the organisation repository that contains discussions.
+
 ## Why `pydis.wtf`?
+
 `pydis.wtf` is our internal tooling and systems domain, which is the primary address for our managed services.
 
 Your primary alias is `username@pydis.wtf`, but you will also receive mail to `username@pydis.com` and `username@pythondiscord.com`.
@@ -57,9 +63,12 @@ Your primary alias is `username@pydis.wtf`, but you will also receive mail to `u
 Please note, all addresses are solely forwarding addresses to your configured mailbox (e.g. GMail, Outlook).
 
 These addresses are by design not public or intended for public usage, and should be used only for Python Discord managed services.
+
 ## Important Information
+
 - Your username will be set to your Discord account name. Please let DevOps know if you would prefer something else.
 - Once you have logged into the account console, you can update your forwarding address.
+
 ## Supported Services
 
 - [Grafana](https://grafana.pydis.wtf/)
@@ -67,8 +76,6 @@ These addresses are by design not public or intended for public usage, and shoul
 - [PyDis ID Self-Service](<https://id.pydis.wtf/>)
 - [ModMail](https://modmail.pydis.wtf/)
 - Anti-Spam Message Deletions
-
-If you require data from the old system, please let us know and we can assist you in migrating it over.
 """
 
 CREDENTIALS_SECTION = """
