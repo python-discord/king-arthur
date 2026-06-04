@@ -298,7 +298,7 @@ class LDAP(commands.Cog):
         generated_pw = freeipa.create_user(
             user.name,
             user.display_name,
-            self._user_groups(user),
+            await self._user_groups(user),
             user.id,
         )
 
@@ -374,14 +374,16 @@ class LDAP(commands.Cog):
         """Commands for working with the Python Discord directory."""
         await ctx.send_help(ctx.command)
 
-    @staticmethod
-    def _user_groups(user: discord.Member) -> list[str]:
+    async def _user_groups(self, user: discord.Member) -> list[str]:
         """Return the groups a user is enrolled in."""
-        return [
-            role
-            for role, mapping in LDAP_ROLE_MAPPING.items()
-            if mapping["discord_role_id"] in [r.id for r in user.roles]
-        ]
+        groups = []
+        for role, mapping in LDAP_ROLE_MAPPING.items():
+            if mapping["discord_role_id"] not in [r.id for r in user.roles]:
+                continue
+            if role == "devops" and not await self.bot.is_owner(user):
+                continue
+            groups.append(role)
+        return groups
 
     async def get_user_diff(
         self,
@@ -415,7 +417,7 @@ class LDAP(commands.Cog):
             user_role_ids = {r.id for r in user.roles}
 
             if enrolled_roles & user_role_ids:
-                roles = self._user_groups(user)
+                roles = await self._user_groups(user)
                 if user.id in ldap_discord_id_map:
                     diff.append(
                         DiffedUser(user, ldap_discord_id_map[user.id], roles, LDAPSyncAction.KEEP)
