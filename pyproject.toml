@@ -14,7 +14,7 @@ dependencies = [
     "cryptography>=48.0.0",
     "humanize==4.15.0",
     "jishaku==2.6.3",
-    "kubernetes-asyncio==35.0.1",
+    "kubernetes-asyncio==36.1.0",
     "loguru==0.7.3",
     "memray==1.19.3; sys_platform != 'win32'",
     "pydantic==2.12.5",
