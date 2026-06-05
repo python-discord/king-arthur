@@ -56,16 +56,11 @@ This is required to access private repositories and take part in repository main
 
 `pydis.wtf` is our internal tooling and systems domain, which is the primary address for our managed services.
 
-Your primary alias is `username@pydis.wtf`, but you will also receive mail to `username@pydis.com` and `username@pythondiscord.com`.
+Your primary alias is `user@pydis.wtf`, but you will also receive mail to `user@pydis.com` and `user@pythondiscord.com`.
 
-Please note, all addresses are solely forwarding addresses to your configured mailbox (e.g. GMail, Outlook).
+Please note, all addresses are solely forwarding addresses.
 
-These addresses are by design not public or intended for public usage, and should be used only for Python Discord managed services.
-
-## Important Information
-
-- Your username will be set to your Discord account name. Please let DevOps know if you would prefer something else.
-- Once you have logged into the account console, you can update your forwarding address.
+Your username will be set to your Discord account name. Please let DevOps know if you would prefer something else.
 
 ## Supported Services
 
