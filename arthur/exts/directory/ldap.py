@@ -38,13 +38,11 @@ BOOTSTRAP_MESSAGE = """
 # Python Discord LDAP
 Hello! :wave:
 
-You have been added to the Python Discord LDAP directory. You can now log in to Python Discord managed services using a newly created `@pydis.wtf` account.
+You have been added to the Python Discord LDAP directory. You can now log in to Python Discord managed services using a `@pydis.wtf` account.
 
 **Please press the button below to generate your login credentials.**
 
 You will be prompted to change your password on first login. You will then be prompted to optionally update your name and forwarding email address.
-
-Once you have set these credentials, hold onto them as they will be used to access various services provided by Python Discord.
 
 If you have any questions or need help, feel free to ask in the <#{devops_channel_id}> channel.
 
@@ -70,6 +68,8 @@ These addresses are by design not public or intended for public usage, and shoul
 - Once you have logged into the account console, you can update your forwarding address.
 
 ## Supported Services
+
+**Note:** most of the below services are only accessible to certain groups, so you may not have access to all of them depending on your roles.
 
 - [Grafana](https://grafana.pydis.wtf/)
 - [Metabase](https://metabase.pydis.wtf/)
