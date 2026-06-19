@@ -18,7 +18,7 @@ dependencies = [
     "loguru==0.7.3",
     "memray==1.19.3; sys_platform != 'win32'",
     "pydantic==2.12.5",
-    "pydantic-settings==2.13.1",
+    "pydantic-settings==2.14.2",
     "python-freeipa==1.0.10",
     "python-keycloak==7.1.1",
     "sentry-sdk==2.56.0",
