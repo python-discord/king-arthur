@@ -68,11 +68,26 @@ class Motivation(commands.Cog):
 
     @tasks.loop(time=time(hour=9, tzinfo=UTC))
     async def send_daily_motivation(self) -> None:
+        """Scheduled task to send motivation to the people who need it most."""
+        await self._send_garfield(self.devops_channel)
+
+    @commands.command(name="garfield", aliases=("garf",))
+    async def garfield_command(self, ctx: commands.Context) -> None:
+        """Command to send on-demand motivation to the people who need it most."""
+        await self._send_garfield(ctx.channel)
+
+    async def _send_garfield(self, dest: discord.abc.Messageable) -> None:
         """Send motivation to the people who need it most."""
         today_date = datetime.now(UTC).date().isoformat()
         today_date_url_friendly = today_date.replace("-", "/")
 
-        async with self.bot.http_session.get(GARF_URL + today_date_url_friendly) as resp:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; KingArthur; +https://github.com/python-discord/king-arthur)"
+        }
+
+        async with self.bot.http_session.get(
+            GARF_URL + today_date_url_friendly, headers=headers
+        ) as resp:
             resp.raise_for_status()
             raw_content = await resp.text()
         image = MOTIVATION_IMAGE_RE.search(raw_content).group(1)
@@ -84,7 +99,7 @@ class Motivation(commands.Cog):
         )
         embed.set_author(name="GoComics.com", icon_url=THE_CAT, url=GARF_URL)
         embed.set_image(url=image)
-        await self.devops_channel.send(embed=embed)
+        await dest.send(embed=embed)
 
     @commands.command(name="monitor")
     async def monitor(
