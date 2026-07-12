@@ -25,14 +25,14 @@ class Motivation(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
         self.devops_channel = bot.get_channel(CONFIG.devops_channel_id)
-        self.send_daily_motivation.start()
-        if CONFIG.youtube_api_key:
-            self.send_daily_mission.start()
+        # self.send_daily_motivation.start()  # noqa: ERA001
+        # if CONFIG.youtube_api_key:
+        #     self.send_daily_mission.start()  # noqa: ERA001
 
     async def cog_unload(self) -> None:
         """Cancel background tasks on unload."""
-        self.send_daily_motivation.cancel()
-        self.send_daily_mission.cancel()
+        # self.send_daily_motivation.cancel()  # noqa: ERA001
+        # self.send_daily_mission.cancel()  # noqa: ERA001
 
     @tasks.loop(time=time(hour=12, minute=30, tzinfo=UTC))
     async def send_daily_mission(self) -> None:
