@@ -66,7 +66,13 @@ class SystemInformation(Cog):
         if name not in self.cached_resources:
             url = BASE_RESOURCE.format(name)
             async with self.bot.http_session.get(url) as resp:
-                self.cached_resources[name] = await resp.text()
+                body = await resp.text()
+                if "You have been tagged." in body:
+                    # Thank you Chris
+                    async with self.bot.http_session.get(url) as untagged_resp:
+                        body = await untagged_resp.text()
+
+                self.cached_resources[name] = body
         return self.cached_resources[name]
 
     async def cog_unload(self) -> None:
