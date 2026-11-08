@@ -75,6 +75,7 @@ class Numbers(commands.Cog):
         If channel is not provided, the bot will join the voice channel of the user who invoked the command.
         """
         if not ctx.guild:
+            await ctx.send(":x: This command can only be used in a server.", ephemeral=True)
             return
 
         if not channel and isinstance(ctx.author, discord.Member) and (vs := ctx.author.voice):
@@ -91,6 +92,8 @@ class Numbers(commands.Cog):
             if isinstance(vc, discord.VoiceClient):
                 await vc.move_to(channel)
                 await self._signal(ctx, "🔊")
+            else:
+                await ctx.send(":x: Unable to move the current voice connection.")
             return
 
         vc = await channel.connect(self_deaf=True, self_mute=False)
@@ -101,14 +104,15 @@ class Numbers(commands.Cog):
     @app_commands.describe(text="Text to read out")
     async def tts(self, ctx: commands.Context, *, text: str) -> None:
         """Have KA read out a message in the current VC."""
-        if not ctx.guild or not ctx.guild.voice_client:
-            return
-
         if not await ctx.bot.is_owner(ctx.author):
             if ctx.interaction is not None:
                 await ctx.send("❌", ephemeral=True)
             else:
                 await ctx.message.add_reaction("❌")
+            return
+
+        if not ctx.guild or not ctx.guild.voice_client:
+            await ctx.send(":x: Not in a voice channel!", ephemeral=True)
             return
 
         await ctx.defer()

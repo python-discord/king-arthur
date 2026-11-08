@@ -46,8 +46,9 @@ class RemoteCommands(Cog):
     @hybrid_command(name="rce")
     @app_commands.describe(command="Command to run on the remote host")
     async def rce(self, ctx: Context, *, command: str) -> None:
-        """Ed is the standard text editor."""
+        """Run a command on the remote host (bot owner only)."""
         if not ctx.guild:
+            await ctx.send(":x: This command can only be used in a server.", ephemeral=True)
             return
         if not await ctx.bot.is_owner(ctx.author):
             if ctx.interaction is not None:

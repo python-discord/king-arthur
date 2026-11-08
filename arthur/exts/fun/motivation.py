@@ -112,6 +112,7 @@ class Motivation(commands.Cog):
     ) -> None:
         """Obey."""
         if not ctx.guild:
+            await ctx.send(":x: This command can only be used in a server.", ephemeral=True)
             return
 
         if not channel and isinstance(ctx.author, discord.Member) and (vs := ctx.author.voice):
