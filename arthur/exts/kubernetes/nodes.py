@@ -8,6 +8,7 @@ from discord.ext import commands
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import nodes
+from arthur.autocomplete import node_autocomplete
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
@@ -79,6 +80,7 @@ class Nodes(commands.Cog):
 
     @nodes.command(name="cordon")
     @app_commands.describe(node="Name of the node to cordon")
+    @app_commands.autocomplete(node=node_autocomplete)
     async def nodes_cordon(self, ctx: commands.Context, *, node: str) -> None:
         """
         Cordon a node in the cluster.
@@ -95,6 +97,7 @@ class Nodes(commands.Cog):
 
     @nodes.command(name="uncordon")
     @app_commands.describe(node="Name of the node to uncordon")
+    @app_commands.autocomplete(node=node_autocomplete)
     async def nodes_uncordon(self, ctx: commands.Context, *, node: str) -> None:
         """
         Uncordon a node in the cluster.

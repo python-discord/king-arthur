@@ -3,9 +3,11 @@
 from typing import TYPE_CHECKING
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from arthur.apis.cloudflare import zones
+from arthur.autocomplete import zone_autocomplete
 from arthur.config import CONFIG
 from arthur.log import logger
 from arthur.utils import generate_error_message
@@ -14,6 +16,22 @@ if TYPE_CHECKING:
     import aiohttp
 
     from arthur.bot import KingArthurTheTerrible
+
+
+async def purge_zone_message(session: aiohttp.ClientSession, zone_id: str, zone_name: str) -> str:
+    """Purge a zone's cache, returning the message describing the outcome."""
+    purge_attempt_response = await zones.purge_zone(session, zone_id)
+    if purge_attempt_response["success"]:
+        message = ":white_check_mark:"
+        message += " **Cache cleared!** "
+        message += f"The Cloudflare cache for `{zone_name}` was cleared."
+    else:
+        description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
+        if errors := purge_attempt_response["errors"]:
+            for error in errors:
+                description_content += f"`{error['code']}`: {error['message']}\n"
+        message = generate_error_message(description=description_content, emote=":x:")
+    return message
 
 
 class ZonesView(discord.ui.View):
@@ -45,18 +63,7 @@ class ZonesView(discord.ui.View):
         """Drop down menu contains the list of zones."""
         zone_name = dropdown.values[0]
 
-        required_id = self.domains[zone_name]
-        purge_attempt_response = await zones.purge_zone(self.session, required_id)
-        if purge_attempt_response["success"]:
-            message = ":white_check_mark:"
-            message += " **Cache cleared!** "
-            message += f"The Cloudflare cache for `{zone_name}` was cleared."
-        else:
-            description_content = f"The cache for `{zone_name}` couldn't be cleared.\n"
-            if errors := purge_attempt_response["errors"]:
-                for error in errors:
-                    description_content += f"`{error['code']}`: {error['message']}\n"
-            message = generate_error_message(description=description_content, emote=":x:")
+        message = await purge_zone_message(self.session, self.domains[zone_name], zone_name)
 
         self.disable_select()
 
@@ -76,9 +83,20 @@ class Zones(commands.Cog):
         await ctx.send_help(ctx.command)
 
     @zones.command(name="purge")
-    async def purge(self, ctx: commands.Context) -> None:
+    @app_commands.describe(zone="Zone to purge (shows a menu if omitted)")
+    @app_commands.autocomplete(zone=zone_autocomplete)
+    async def purge(self, ctx: commands.Context, zone: str | None = None) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
         await ctx.defer()
+
+        if zone is not None:
+            cf_zones = await zones.list_zones(self.bot.http_session, zone)
+            if zone not in cf_zones:
+                await ctx.send(generate_error_message(description=f"Zone `{zone}` not found."))
+                return
+            await ctx.send(await purge_zone_message(self.bot.http_session, cf_zones[zone], zone))
+            return
+
         cf_zones = await zones.list_zones(self.bot.http_session)
 
         view = ZonesView(cf_zones, self.bot.http_session)

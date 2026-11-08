@@ -8,6 +8,7 @@ from discord.ext import commands
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import certificates
+from arthur.autocomplete import namespace_autocomplete
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
@@ -26,6 +27,7 @@ class Certificates(commands.Cog):
 
     @certificates.command(name="list", aliases=["ls"])
     @app_commands.describe(namespace="Kubernetes namespace to list certificates in")
+    @app_commands.autocomplete(namespace=namespace_autocomplete)
     async def certificates_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List TLS certificates in the selected namespace (defaults to default)."""
         await ctx.defer()

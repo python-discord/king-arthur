@@ -13,6 +13,7 @@ from loguru import logger
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import pods
+from arthur.autocomplete import namespace_autocomplete, pod_autocomplete
 from arthur.config import CONFIG
 from arthur.pagination import LinePaginator
 from arthur.utils import generate_error_message
@@ -48,6 +49,7 @@ class Pods(commands.Cog):
 
     @pods_cmd.command(name="list", aliases=["ls"])
     @app_commands.describe(namespace="Kubernetes namespace to list pods in")
+    @app_commands.autocomplete(namespace=namespace_autocomplete)
     async def pods_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List pods in the selected namespace (defaults to default)."""
         await ctx.defer()
@@ -112,6 +114,7 @@ class Pods(commands.Cog):
         namespace="Kubernetes namespace the pod is in",
         lines="Number of log lines to tail",
     )
+    @app_commands.autocomplete(namespace=namespace_autocomplete, pod_name=pod_autocomplete)
     @commands.check(lambda ctx: ctx.channel.id == CONFIG.devops_channel_id)
     async def pods_logs(
         self, ctx: commands.Context, pod_name: str, namespace: str = "default", lines: int = 15

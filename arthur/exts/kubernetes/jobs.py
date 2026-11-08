@@ -1,17 +1,31 @@
 """The zones cog helps with managing Cloudflare zones."""
 
+from http import HTTPStatus
 from typing import TYPE_CHECKING
 
 import discord
+from discord import app_commands
 from discord.ext import commands
+from kubernetes_asyncio.client.rest import ApiException
 
 from arthur.apis.kubernetes import jobs
+from arthur.autocomplete import cronjob_autocomplete
 from arthur.config import CONFIG
+from arthur.utils import generate_error_message
 
 if TYPE_CHECKING:
     from kubernetes_asyncio.client.models import V1CronJobList
 
     from arthur.bot import KingArthurTheTerrible
+
+
+async def spawn_job(namespace: str, cronjob_name: str, suffix: int) -> str:
+    """Create a job from a cronjob's template, returning the new job's name."""
+    cronjob = await jobs.get_cronjob(namespace, cronjob_name)
+    new_job = await jobs.create_job(
+        namespace, f"{cronjob_name}-{suffix}", cronjob.spec.job_template.spec
+    )
+    return new_job.metadata.name
 
 
 class CronJobView(discord.ui.View):
@@ -46,18 +60,12 @@ class CronJobView(discord.ui.View):
         """Drop down menu contains the list of cronjobsb."""
         cronjob_namespace, cronjob_name = dropdown.values[0].split("/")
 
-        cronjob = await jobs.get_cronjob(cronjob_namespace, cronjob_name)
-
-        new_job = await jobs.create_job(
-            cronjob_namespace,
-            f"{cronjob_name}-{interaction.message.id}",
-            cronjob.spec.job_template.spec,
-        )
+        new_job_name = await spawn_job(cronjob_namespace, cronjob_name, interaction.message.id)
 
         self.disable_select()
 
         await interaction.message.edit(view=self)
-        await interaction.response.send_message(f"🌬️ Spawned job `{new_job.metadata.name}`")
+        await interaction.response.send_message(f"🌬️ Spawned job `{new_job_name}`")
 
 
 class Jobs(commands.Cog):
@@ -72,9 +80,33 @@ class Jobs(commands.Cog):
         await ctx.send_help(ctx.command)
 
     @cronjob.command(name="trigger")
-    async def trigger(self, ctx: commands.Context) -> None:
+    @app_commands.describe(cronjob="CronJob to trigger as namespace/name (shows a menu if omitted)")
+    @app_commands.autocomplete(cronjob=cronjob_autocomplete)
+    async def trigger(self, ctx: commands.Context, cronjob: str | None = None) -> None:
         """Command to trigger a Kubernetes cronjob now."""
         await ctx.defer()
+
+        if cronjob is not None:
+            namespace, _, cronjob_name = cronjob.partition("/")
+            if not cronjob_name:
+                await ctx.send(
+                    generate_error_message(description="Use the form `namespace/cronjob-name`.")
+                )
+                return
+            suffix = ctx.interaction.id if ctx.interaction else ctx.message.id
+            try:
+                new_job_name = await spawn_job(namespace, cronjob_name, suffix)
+            except ApiException as e:
+                description = (
+                    "CronJob not found, check the namespace and name."
+                    if e.status == HTTPStatus.NOT_FOUND
+                    else str(e)
+                )
+                await ctx.send(generate_error_message(description=description))
+                return
+            await ctx.send(f"🌬️ Spawned job `{new_job_name}`")
+            return
+
         cronjobs = await jobs.list_cronjobs()
 
         view = CronJobView(cronjobs)

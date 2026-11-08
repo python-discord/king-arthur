@@ -10,6 +10,7 @@ from kubernetes_asyncio.client.rest import ApiException
 from tabulate import tabulate
 
 from arthur.apis.kubernetes import deployments
+from arthur.autocomplete import deployment_autocomplete, namespace_autocomplete
 from arthur.utils import generate_error_message
 
 if TYPE_CHECKING:
@@ -104,6 +105,7 @@ class Deployments(commands.Cog):
 
     @deployments.command(name="list", aliases=["ls"])
     @app_commands.describe(namespace="Kubernetes namespace to list deployments in")
+    @app_commands.autocomplete(namespace=namespace_autocomplete)
     async def deployments_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List deployments in the selected namespace (defaults to default)."""
         await ctx.defer()
@@ -159,6 +161,7 @@ class Deployments(commands.Cog):
         deployment="Deployment name, or namespace/deployment (kubectl notation)",
         namespace="Kubernetes namespace the deployment is in",
     )
+    @app_commands.autocomplete(namespace=namespace_autocomplete, deployment=deployment_autocomplete)
     async def deployments_restart(
         self, ctx: commands.Context, deployment: str, namespace: str = "default"
     ) -> None:

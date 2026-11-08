@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 import discord
-from discord import app_commands
+from discord import Interaction, Member, app_commands
 from discord.ext.commands import Cog, Context, Greedy, MissingRole, hybrid_group
 
 from arthur.config import CONFIG
@@ -37,8 +37,29 @@ class Rules(Cog):
             number, rule = line.split(".", maxsplit=1)
             self.rules[int(number)] = rule.strip()
 
+    async def _rules_autocomplete(
+        self, interaction: Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        """Complete the last rule number in the space separated list typed so far."""
+        user = interaction.user
+        if not isinstance(user, Member) or CONFIG.helpers_role not in {r.id for r in user.roles}:
+            return []
+        done, _, partial = current.rpartition(" ")
+        chosen = set(done.split())
+        needle = partial.lower()
+        choices = []
+        for number, rule in self.rules.items():
+            if str(number) in chosen or not (
+                str(number).startswith(needle) or needle in rule.lower()
+            ):
+                continue
+            value = f"{done} {number}".strip()
+            choices.append(app_commands.Choice(name=f"{value}: {rule}"[:100], value=value[:100]))
+        return choices[:25]
+
     @hybrid_group(name="rules", aliases=("rule",), invoke_without_command=True, fallback="list")
-    @app_commands.describe(rules="Rule numbers to show")
+    @app_commands.describe(rules="Rule numbers to show, separated by spaces")
+    @app_commands.autocomplete(rules=_rules_autocomplete)
     async def rules_group(self, ctx: Context, rules: Greedy[int]) -> None:
         """List the requested rule(s), or all of them if not defined."""
         role_ids = {r.id for r in ctx.author.roles}
