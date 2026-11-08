@@ -3,6 +3,7 @@
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
+from discord import app_commands
 from discord.ext import commands
 from tabulate import tabulate
 
@@ -18,7 +19,7 @@ class Nodes(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @commands.group(name="nodes", aliases=["node"], invoke_without_command=True)
+    @commands.hybrid_group(name="nodes", aliases=["node"], invoke_without_command=True)
     async def nodes(self, ctx: commands.Context) -> None:
         """Commands for working with Kubernetes nodes."""
         await ctx.send_help(ctx.command)
@@ -26,6 +27,7 @@ class Nodes(commands.Cog):
     @nodes.command(name="list", aliases=["ls"])
     async def nodes_list(self, ctx: commands.Context) -> None:
         """List Kubernetes nodes in the cluster."""
+        await ctx.defer()
         cluster_nodes = await nodes.list_nodes()
 
         table_data = []
@@ -76,12 +78,14 @@ class Nodes(commands.Cog):
         await ctx.send(return_message.format(table))
 
     @nodes.command(name="cordon")
+    @app_commands.describe(node="Name of the node to cordon")
     async def nodes_cordon(self, ctx: commands.Context, *, node: str) -> None:
         """
         Cordon a node in the cluster.
 
         Cordoning a node has the effect of preventing any new deployments from being scheduled.
         """
+        await ctx.defer()
         await nodes.cordon_node(node)
 
         await ctx.send(
@@ -90,12 +94,14 @@ class Nodes(commands.Cog):
         )
 
     @nodes.command(name="uncordon")
+    @app_commands.describe(node="Name of the node to uncordon")
     async def nodes_uncordon(self, ctx: commands.Context, *, node: str) -> None:
         """
         Uncordon a node in the cluster.
 
         Cordoning a node has the effect of preventing any new deployments from being scheduled.
         """
+        await ctx.defer()
         await nodes.uncordon_node(node)
 
         await ctx.send(

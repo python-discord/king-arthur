@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import discord
 import humanize
+from discord import app_commands
 from discord.ext import commands
 from kubernetes_asyncio.client.rest import ApiException
 from loguru import logger
@@ -40,14 +41,16 @@ class Pods(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @commands.group(name="pods", aliases=["pod"], invoke_without_command=True)
+    @commands.hybrid_group(name="pods", aliases=["pod"], invoke_without_command=True)
     async def pods_cmd(self, ctx: commands.Context) -> None:
         """Commands for working with Kubernetes Pods."""
         await ctx.send_help(ctx.command)
 
     @pods_cmd.command(name="list", aliases=["ls"])
+    @app_commands.describe(namespace="Kubernetes namespace to list pods in")
     async def pods_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List pods in the selected namespace (defaults to default)."""
+        await ctx.defer()
         pod_list = await pods.list_pods(namespace)
 
         if len(pod_list.items) == 0:
@@ -104,6 +107,11 @@ class Pods(commands.Cog):
         return
 
     @pods_cmd.command(name="logs", aliases=["log", "tail"])
+    @app_commands.describe(
+        pod_name="Pod name, or deploy/<deployment-name> for the deployment's first pod",
+        namespace="Kubernetes namespace the pod is in",
+        lines="Number of log lines to tail",
+    )
     @commands.check(lambda ctx: ctx.channel.id == CONFIG.devops_channel_id)
     async def pods_logs(
         self, ctx: commands.Context, pod_name: str, namespace: str = "default", lines: int = 15
@@ -113,6 +121,7 @@ class Pods(commands.Cog):
 
         We also support the syntax of `deploy/<deployment-name>` to get the logs of the first pod associated with the deployment.
         """
+        await ctx.defer()
         if pod_name.startswith("deploy/"):
             pod_names = await pods.get_pod_names_from_deployment(
                 namespace, pod_name.removeprefix("deploy/")

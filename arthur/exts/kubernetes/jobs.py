@@ -66,7 +66,7 @@ class Jobs(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @commands.group(name="cronjob", aliases=["cronjobs", "cj"], invoke_without_command=True)
+    @commands.hybrid_group(name="cronjob", aliases=["cronjobs", "cj"], invoke_without_command=True)
     async def cronjob(self, ctx: commands.Context) -> None:
         """Commands for working with Kubernetes CronJobs."""
         await ctx.send_help(ctx.command)
@@ -74,6 +74,7 @@ class Jobs(commands.Cog):
     @cronjob.command(name="trigger")
     async def trigger(self, ctx: commands.Context) -> None:
         """Command to trigger a Kubernetes cronjob now."""
+        await ctx.defer()
         cronjobs = await jobs.list_cronjobs()
 
         view = CronJobView(cronjobs)

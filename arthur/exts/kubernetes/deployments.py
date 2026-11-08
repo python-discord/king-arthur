@@ -4,7 +4,7 @@ from http import HTTPStatus
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
-from discord import ButtonStyle, Interaction, ui
+from discord import ButtonStyle, Interaction, app_commands, ui
 from discord.ext import commands
 from kubernetes_asyncio.client.rest import ApiException
 from tabulate import tabulate
@@ -97,14 +97,16 @@ class Deployments(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @commands.group(name="deployments", aliases=["deploy"], invoke_without_command=True)
+    @commands.hybrid_group(name="deployments", aliases=["deploy"], invoke_without_command=True)
     async def deployments(self, ctx: commands.Context) -> None:
         """Commands for working with Kubernetes Deployments."""
         await ctx.send_help(ctx.command)
 
     @deployments.command(name="list", aliases=["ls"])
+    @app_commands.describe(namespace="Kubernetes namespace to list deployments in")
     async def deployments_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List deployments in the selected namespace (defaults to default)."""
+        await ctx.defer()
         deploys = await deployments.list_deployments(namespace)
 
         table_data = []
@@ -153,6 +155,10 @@ class Deployments(commands.Cog):
         return None
 
     @deployments.command(name="restart", aliases=["redeploy"])
+    @app_commands.describe(
+        deployment="Deployment name, or namespace/deployment (kubectl notation)",
+        namespace="Kubernetes namespace the deployment is in",
+    )
     async def deployments_restart(
         self, ctx: commands.Context, deployment: str, namespace: str = "default"
     ) -> None:

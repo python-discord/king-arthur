@@ -3,6 +3,7 @@
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
+from discord import app_commands
 from discord.ext import commands
 from tabulate import tabulate
 
@@ -18,14 +19,16 @@ class Certificates(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @commands.group(name="certificates", aliases=["certs"], invoke_without_command=True)
+    @commands.hybrid_group(name="certificates", aliases=["certs"], invoke_without_command=True)
     async def certificates(self, ctx: commands.Context) -> None:
         """Commands for working with TLS certificates."""
         await ctx.send_help(ctx.command)
 
     @certificates.command(name="list", aliases=["ls"])
+    @app_commands.describe(namespace="Kubernetes namespace to list certificates in")
     async def certificates_list(self, ctx: commands.Context, namespace: str = "default") -> None:
         """List TLS certificates in the selected namespace (defaults to default)."""
+        await ctx.defer()
         certs = await certificates.list_certificates(namespace)
 
         table_data = [
