@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Literal, TYPE_CHECKING
 from urllib import parse
 
-from discord import File, Member, Message
+from discord import Attachment, File, Member, Message, app_commands
 from discord.ext import tasks
-from discord.ext.commands import Cog, Context, Converter, command
+from discord.ext.commands import Cog, Context, Converter, hybrid_command
 from loguru import logger
 from wand.image import Image
 
@@ -154,16 +154,27 @@ class SystemInformation(Cog):
                 await asyncio.sleep(3)
                 await msg.reply(f"{comment} {random.choice(self.smileys)}")
 
-    @command(name="software")
+    @hybrid_command(name="software")
     async def software(self, ctx: Context) -> None:
         """Return information on installed and available software."""
+        await ctx.defer()
         bullshit = await self.fetch_resource("lib/bullshit")
         program = lib9front.generate_buzzwords(bullshit)
         await ctx.reply(program)
 
-    @command(name="face")
+    @hybrid_command(name="face")
+    @app_commands.describe(
+        resolution="Width and height of the generated image (default 60)",
+        image_url="URL of the image to convert",
+        attachment="Image to convert, if not using a URL",
+    )
     async def face(
-        self, ctx: Context, resolution: int | None = 60, *, image_url: URLConverter | None = None
+        self,
+        ctx: Context,
+        resolution: int | None = 60,
+        *,
+        image_url: URLConverter | None = None,
+        attachment: Attachment | None = None,
     ) -> None:
         """
         Generate a system-compatible face for the given file.
@@ -172,14 +183,18 @@ class SystemInformation(Cog):
 
         The image can be passed in as a URL or attached to the command invocation message.
         """
+        await ctx.defer()
         image_bytes = io.BytesIO()
 
         if not image_url:
-            if len(ctx.message.attachments) == 0:
+            if attachment is None and ctx.message.attachments:
+                attachment = ctx.message.attachments[0]
+
+            if attachment is None:
                 await ctx.reply(":x: Must upload an image or specify image URL")
                 return
 
-            await ctx.message.attachments[0].save(image_bytes)
+            await attachment.save(image_bytes)
         else:
             async with self.bot.http_session.get(image_url) as resp:
                 if resp.ok:
@@ -207,11 +222,13 @@ class SystemInformation(Cog):
 
         await ctx.reply(file=File(out_bytes, filename="face.png"))
 
-    @command(name="wisdom")
+    @hybrid_command(name="wisdom")
+    @app_commands.describe(by="Whose wisdom to retrieve (random if omitted)")
     async def wisdom(
         self, ctx: Context, by: Literal["ken", "rob", "rsc", "theo", "uriel"] | None = None
     ) -> None:
         """Retrieve some software engineering wisdom."""
+        await ctx.defer()
         if by is None:
             by = random.choice(("ken", "rob", "rsc", "theo", "uriel"))
 
@@ -219,14 +236,15 @@ class SystemInformation(Cog):
         result = random.choice(contents.splitlines())
         await ctx.reply(result)
 
-    @command(name="troll")
+    @hybrid_command(name="troll")
     async def troll(self, ctx: Context) -> None:
         """Utter statements of utmost importance."""
+        await ctx.defer()
         contents = await self.fetch_resource("lib/troll")
         result = random.choice(contents.splitlines())
         await ctx.reply(result)
 
-    @command(name="uwsgi")
+    @hybrid_command(name="uwsgi")
     async def uwsgi(self, ctx: Context) -> None:
         """Return a log line suitable for industry standard WSGI servers."""
         message = random.choice(self.uwsgi_loglines)
