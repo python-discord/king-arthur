@@ -70,7 +70,7 @@ class Zones(commands.Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @commands.group(name="zones", invoke_without_command=True)
+    @commands.hybrid_group(name="zones")
     async def zones(self, ctx: commands.Context) -> None:
         """Commands for working with Cloudflare zones."""
         await ctx.send_help(ctx.command)
@@ -78,6 +78,7 @@ class Zones(commands.Cog):
     @zones.command(name="purge")
     async def purge(self, ctx: commands.Context) -> None:
         """Command to clear the Cloudflare cache of the specified zone."""
+        await ctx.defer()
         cf_zones = await zones.list_zones(self.bot.http_session)
 
         view = ZonesView(cf_zones, self.bot.http_session)
