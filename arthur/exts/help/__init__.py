@@ -1,0 +1,1 @@
+"""Help command extension."""

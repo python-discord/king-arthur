@@ -31,7 +31,7 @@ async def main() -> None:
         arthur.instance = KingArthurTheTerrible(
             guild_id=CONFIG.guild_id,
             http_session=session,
-            command_prefix=commands.when_mentioned_or(*CONFIG.prefixes),
+            command_prefix=commands.when_mentioned,
             allowed_roles=(CONFIG.devops_role,),
             case_insensitive=True,
             intents=intents,
