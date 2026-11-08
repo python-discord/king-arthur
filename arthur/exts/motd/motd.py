@@ -3,7 +3,7 @@ import io
 from typing import TYPE_CHECKING
 
 from discord import File
-from discord.ext.commands import Cog, Context, command
+from discord.ext.commands import Cog, Context, hybrid_command
 from loguru import logger
 
 from arthur.config import CONFIG
@@ -27,7 +27,7 @@ class MessageOfTheDay(Cog):
         encrypted = base64.b64decode(MOTD.replace(b"\n", b""))
         self.png_bytes = decrypt_motd(encrypted, CONFIG.motd_key.get_secret_value())
 
-    @command(name="motd")
+    @hybrid_command(name="motd")
     async def motd(self, ctx: Context) -> None:
         """Generate an image representing the message of the day."""
         file = File(io.BytesIO(self.png_bytes), filename="motd.png")
