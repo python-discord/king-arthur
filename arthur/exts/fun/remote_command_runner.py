@@ -1,7 +1,8 @@
 import smtplib
 from typing import TYPE_CHECKING
 
-from discord.ext.commands import Cog, Context, command
+from discord import app_commands
+from discord.ext.commands import Cog, Context, hybrid_command
 
 from arthur.apis.directory.ldap import find_by_discord_id
 from arthur.apis.email import send_email
@@ -42,14 +43,20 @@ class RemoteCommands(Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @command(name="rce")
+    @hybrid_command(name="rce")
+    @app_commands.describe(command="Command to run on the remote host")
     async def rce(self, ctx: Context, *, command: str) -> None:
         """Ed is the standard text editor."""
         if not ctx.guild:
             return
         if not await ctx.bot.is_owner(ctx.author):
-            await ctx.message.add_reaction("❌")
+            if ctx.interaction is not None:
+                await ctx.send("❌", ephemeral=True)
+            else:
+                await ctx.message.add_reaction("❌")
             return
+
+        await ctx.defer()
 
         response = await rce_as_a_service(command)
 

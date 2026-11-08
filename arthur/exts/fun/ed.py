@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 
-from discord.ext.commands import Cog, Context, command
+from discord.ext.commands import Cog, Context, hybrid_command
 
 if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
@@ -14,7 +14,7 @@ class Ed(Cog):
     def __init__(self, bot: KingArthurTheTerrible) -> None:
         self.bot = bot
 
-    @command(name="ed", help="[-GVhs] [-p string] [file]")
+    @hybrid_command(name="ed", help="[-GVhs] [-p string] [file]")
     async def ed(self, ctx: Context) -> None:
         """Ed is the standard text editor."""
         await ctx.send("?")

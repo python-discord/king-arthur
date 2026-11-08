@@ -3,7 +3,8 @@
 from typing import TYPE_CHECKING
 
 import discord
-from discord.ext.commands import Cog, Context, Greedy, MissingRole, group
+from discord import app_commands
+from discord.ext.commands import Cog, Context, Greedy, MissingRole, hybrid_group
 
 from arthur.config import CONFIG
 
@@ -36,7 +37,8 @@ class Rules(Cog):
             number, rule = line.split(".", maxsplit=1)
             self.rules[int(number)] = rule.strip()
 
-    @group(name="rules", aliases=("rule",), invoke_without_command=True)
+    @hybrid_group(name="rules", aliases=("rule",), invoke_without_command=True, fallback="list")
+    @app_commands.describe(rules="Rule numbers to show")
     async def rules_group(self, ctx: Context, rules: Greedy[int]) -> None:
         """List the requested rule(s), or all of them if not defined."""
         role_ids = {r.id for r in ctx.author.roles}
@@ -69,6 +71,7 @@ class Rules(Cog):
     @rules_group.command(name="refresh", aliases=("fetch", "update"))
     async def update_rules(self, ctx: Context) -> None:
         """Re-fetch the list of rules from notion."""
+        await ctx.defer()
         await self.cog_load()
         await ctx.reply(":+1:")
 

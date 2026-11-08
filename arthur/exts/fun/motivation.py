@@ -6,6 +6,7 @@ from datetime import UTC, datetime, time
 from typing import TYPE_CHECKING
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 from arthur.config import CONFIG
@@ -71,10 +72,11 @@ class Motivation(commands.Cog):
         """Scheduled task to send motivation to the people who need it most."""
         await self._send_garfield(self.devops_channel)
 
-    @commands.command(name="garfield", aliases=("garf",))
+    @commands.hybrid_command(name="garfield", aliases=("garf",))
     async def garfield_command(self, ctx: commands.Context) -> None:
         """Command to send on-demand motivation to the people who need it most."""
-        await self._send_garfield(ctx.channel)
+        await ctx.defer()
+        await self._send_garfield(ctx)
 
     async def _send_garfield(self, dest: discord.abc.Messageable) -> None:
         """Send motivation to the people who need it most."""
@@ -101,7 +103,8 @@ class Motivation(commands.Cog):
         embed.set_image(url=image)
         await dest.send(embed=embed)
 
-    @commands.command(name="monitor")
+    @commands.hybrid_command(name="monitor")
+    @app_commands.describe(channel="Voice channel to join (defaults to yours)")
     async def monitor(
         self,
         ctx: commands.Context,
@@ -118,6 +121,8 @@ class Motivation(commands.Cog):
             await ctx.send(":x: You will join a voice channel or pass one as argument!")
             return
 
+        await ctx.defer()
+
         vc = ctx.guild.voice_client
         if vc is None:
             vc = await channel.connect(self_deaf=True, self_mute=False)
@@ -128,11 +133,13 @@ class Motivation(commands.Cog):
         monitor = f"https://pydis.wtf/~fredrick/monitor-{selection:03d}.mp3"
         audio = await discord.FFmpegOpusAudio.from_probe(monitor)
         vc.play(audio)
-        if random.random() < 0.1:  # noqa: PLR2004
-            for emoji in ("🇴", "🇧", "🇪", "🇾"):
-                await ctx.message.add_reaction(emoji)
-        else:
-            await ctx.message.add_reaction("🔊")
+        emojis = ("🇴", "🇧", "🇪", "🇾") if random.random() < 0.1 else ("🔊",)  # noqa: PLR2004
+        if ctx.interaction is not None:
+            # No real message to react to on slash, so send the signal instead.
+            await ctx.send("".join(emojis))
+            return
+        for emoji in emojis:
+            await ctx.message.add_reaction(emoji)
 
 
 async def setup(bot: KingArthurTheTerrible) -> None:

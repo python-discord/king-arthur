@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 from arthur.apis.netcup.ssh import rce_as_a_service
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
     from arthur.bot import KingArthurTheTerrible
 
 
-class Numbers(commands.GroupCog):
+class Numbers(commands.Cog):
     """Commands for working with and controlling the numbers forwarder."""
 
     def __init__(self, bot: KingArthurTheTerrible):
@@ -53,7 +54,16 @@ class Numbers(commands.GroupCog):
 
         vc.play(discord.FFmpegOpusAudio(CONFIG.numbers_url))
 
-    @commands.group(invoke_without_command=True)
+    @staticmethod
+    async def _signal(ctx: commands.Context, emoji: str) -> None:
+        """Acknowledge with a reaction, or a message on slash where there is nothing to react to."""
+        if ctx.interaction is not None:
+            await ctx.send(emoji)
+        else:
+            await ctx.message.add_reaction(emoji)
+
+    @commands.hybrid_group(invoke_without_command=True, fallback="join")
+    @app_commands.describe(channel="Voice channel to join (defaults to yours)")
     async def numbers(
         self,
         ctx: commands.Context,
@@ -74,39 +84,48 @@ class Numbers(commands.GroupCog):
             await ctx.send(":x: Join a voice channel first!")
             return
 
+        await ctx.defer()
+
         if vc := ctx.guild.voice_client:
             # Should always be the case, but I wanted type hinting
             if isinstance(vc, discord.VoiceClient):
                 await vc.move_to(channel)
-                await ctx.message.add_reaction("🔊")
+                await self._signal(ctx, "🔊")
             return
 
         vc = await channel.connect(self_deaf=True, self_mute=False)
         vc.play(discord.FFmpegOpusAudio(CONFIG.numbers_url))
-        await ctx.message.add_reaction("🔊")
+        await self._signal(ctx, "🔊")
 
     @numbers.command()
+    @app_commands.describe(text="Text to read out")
     async def tts(self, ctx: commands.Context, *, text: str) -> None:
         """Have KA read out a message in the current VC."""
         if not ctx.guild or not ctx.guild.voice_client:
             return
 
         if not await ctx.bot.is_owner(ctx.author):
-            await ctx.message.add_reaction("❌")
+            if ctx.interaction is not None:
+                await ctx.send("❌", ephemeral=True)
+            else:
+                await ctx.message.add_reaction("❌")
             return
 
+        await ctx.defer()
         await rce_as_a_service(
             f"echo '{text}' > /opt/messages/tts_message.txt && "
             "touch -a -m -t 197501010001 /opt/messages/tts_message.txt && "
             "sudo /opt/numbers-code-generator.sh"
         )
+        if ctx.interaction is not None:
+            await ctx.send("👍")
 
     @numbers.command()
     async def stop(self, ctx: commands.Context) -> None:
         """Stop relaying numbers in the voice channel."""
         if ctx.guild and (vc := ctx.guild.voice_client):
             await vc.disconnect(force=True)
-            await ctx.message.add_reaction("🔇")
+            await self._signal(ctx, "🔇")
         else:
             await ctx.send(":x: Not in a voice channel!")
 

@@ -54,7 +54,7 @@ class QuotesCog(commands.Cog):
 
             prev_text = text
 
-    @commands.command(name="quote")
+    @commands.hybrid_command(name="quote")
     async def quote(self, ctx: commands.Context) -> None:
         """Send a random programming quote."""
         if not self.quotes:
