@@ -158,23 +158,14 @@ class Deployments(commands.Cog):
 
     @deployments.command(name="restart", aliases=["redeploy"])
     @app_commands.describe(
-        deployment="Deployment name, or namespace/deployment (kubectl notation)",
         namespace="Kubernetes namespace the deployment is in",
+        deployment="Name of the deployment to restart",
     )
     @app_commands.autocomplete(namespace=namespace_autocomplete, deployment=deployment_autocomplete)
     async def deployments_restart(
-        self, ctx: commands.Context, deployment: str, namespace: str = "default"
+        self, ctx: commands.Context, namespace: str, deployment: str
     ) -> None:
-        """
-        Restart the specified deployment in the selected namespace (defaults to default).
-
-        It is also possible to use the more natural `kubectl` notation, that
-        is, specifying `rollout restart tooling/ff-bot` to restart the
-        deployment `ff-bot` in the namespace `tooling`.
-        """
-        if "/" in deployment and namespace == "default":
-            namespace, deployment = deployment.split("/")
-
+        """Restart the specified deployment in the given namespace."""
         confirmation = ConfirmDeployment(ctx.author.id, [namespace, deployment])
 
         msg = await ctx.send(
