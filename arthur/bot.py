@@ -128,7 +128,7 @@ class KingArthurTheTerrible(BotBase):
             ):
                 self._extensions_finished.set()
 
-    async def _is_devops(self, ctx: commands.Context | Interaction) -> bool:  # noqa: PLR0911
+    async def _is_devops(self, ctx: commands.Context | Interaction) -> bool:
         """Check all commands are executed by authorised personnel."""
         u = ctx.user if isinstance(ctx, Interaction) else ctx.author
         if await arthur.instance.is_owner(u):
@@ -140,10 +140,6 @@ class KingArthurTheTerrible(BotBase):
             return False
 
         if ctx.command.name in {"ed", "rules", "monitor"}:
-            return True
-
-        if ctx.command.cog_name == "GitHubManagement":
-            # Commands in this cog have explicit additional checks.
             return True
 
         if not ctx.guild:
