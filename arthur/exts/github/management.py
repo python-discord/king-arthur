@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import tasks
-from discord.ext.commands import Cog, group
+from discord.ext.commands import Cog, hybrid_group
 
 from arthur.apis.directory import ldap
 from arthur.apis.directory.keycloak import (
@@ -98,7 +98,7 @@ class GitHubManagement(Cog):
         """Return globally ignored GitHub logins as normalised comparison keys."""
         return {username.casefold() for username in cls.IGNORED_GITHUB_USERS}
 
-    @group(name="github", invoke_without_command=True)
+    @hybrid_group(name="github", invoke_without_command=True)
     async def github_group(self, ctx: discord.ext.commands.Context) -> None:
         """Group for GitHub management commands."""
         await ctx.send_help(ctx.command)
@@ -106,6 +106,7 @@ class GitHubManagement(Cog):
     @github_group.command(name="sync")
     async def github_sync(self, ctx: discord.ext.commands.Context) -> None:
         """Manually trigger a GitHub synchronisation run."""
+        await ctx.defer()
         await ctx.send(":arrows_counterclockwise: Triggering GitHub sync...")
         await self.sync_github_org()
 
