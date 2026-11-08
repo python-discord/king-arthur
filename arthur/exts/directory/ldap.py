@@ -364,7 +364,7 @@ class LDAP(commands.Cog):
             except discord.Forbidden:
                 logger.error(f"Could not set permissions for role: {role}")
 
-    @commands.group(name="directory", invoke_without_command=True, aliases=["ldap"])
+    @commands.hybrid_group(name="directory", aliases=["ldap"])
     async def ldap_group(self, ctx: commands.Context) -> None:
         """Commands for working with the Python Discord directory."""
         await ctx.send_help(ctx.command)
@@ -444,6 +444,7 @@ class LDAP(commands.Cog):
     @ldap_group.command(name="sync")
     async def sync(self, ctx: commands.Context) -> None:
         """List users found in the LDAP directory."""
+        await ctx.defer()
         diff, missing_emp, counts, _ = await self.get_user_diff()
 
         add_users = counts[LDAPSyncAction.ADD]
