@@ -163,7 +163,7 @@ class GrafanaLDAPTeamSync(commands.Cog):
         """Ensure task errors are output."""
         logger.error(error)
 
-    @commands.group(name="grafana_ldap", invoke_without_command=True)
+    @commands.hybrid_group(name="grafana_ldap")
     async def grafana_group(self, ctx: commands.Context) -> None:
         """Commands for working with grafana API."""
         await ctx.send_help(ctx.command)
@@ -171,7 +171,10 @@ class GrafanaLDAPTeamSync(commands.Cog):
     @grafana_group.command(name="sync")
     async def sync_teams(self, ctx: commands.Context) -> None:
         """Sync Grafana & LDAP teams now."""
+        await ctx.defer()
         await self.sync_ldap_grafana_teams(ctx.channel)
+        if ctx.interaction is not None:
+            await ctx.send("Sync complete.", ephemeral=True)
 
 
 async def setup(bot: KingArthurTheTerrible) -> None:
