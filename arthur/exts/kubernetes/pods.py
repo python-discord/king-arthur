@@ -110,17 +110,17 @@ class Pods(commands.Cog):
 
     @pods_cmd.command(name="logs", aliases=["log", "tail"])
     @app_commands.describe(
-        pod_name="Pod name, or deploy/<deployment-name> for the deployment's first pod",
         namespace="Kubernetes namespace the pod is in",
+        pod_name="Pod name, or deploy/<deployment-name> for the deployment's first pod",
         lines="Number of log lines to tail",
     )
     @app_commands.autocomplete(namespace=namespace_autocomplete, pod_name=pod_autocomplete)
     @commands.check(lambda ctx: ctx.channel.id == CONFIG.devops_channel_id)
     async def pods_logs(
-        self, ctx: commands.Context, pod_name: str, namespace: str = "default", lines: int = 15
+        self, ctx: commands.Context, namespace: str, pod_name: str, lines: int = 15
     ) -> None:
         """
-        Tail the logs of a pod in the selected namespace (defaults to default).
+        Tail the logs of a pod in the given namespace.
 
         We also support the syntax of `deploy/<deployment-name>` to get the logs of the first pod associated with the deployment.
         """
