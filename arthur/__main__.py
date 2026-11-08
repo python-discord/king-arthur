@@ -16,7 +16,7 @@ from arthur.log import logger, setup_sentry, setup_stdlib_logging
 async def main() -> None:
     """Entry async method for starting the bot."""
     intents = discord.Intents.default()
-    intents.message_content = True
+    intents.message_content = False
     intents.members = True
     intents.dm_typing = False
     intents.dm_reactions = False

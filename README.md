@@ -12,7 +12,6 @@ These environment variables are required to start the bot
 | Environment                           | Description                                                     | Required/Default          |
 | ------------------------------------- | --------------------------------------------------------------- | ------------------------- |
 | KING_ARTHUR_TOKEN                     | The bot token to authorize with Discord                         | Required                  |
-| KING_ARTHUR_PREFIXES                  | The list of prefixes to listen to commands                      | `("arthur ", "M-x ")`     |
 | KING_ARTHUR_DEVOPS_ROLE               | The Discord role that is allowed to run King Arthur \* commands | 409416496733880320        |
 | KING_ARTHUR_GUILD_ID                  | The guild the bot should interact with                          | 267624335836053506        |
 | KING_ARTHUR_DEVOPS_CHANNEL_ID         | The devops Discord channel                                      | 675756741417369640        |

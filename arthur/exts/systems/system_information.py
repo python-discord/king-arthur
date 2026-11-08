@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 BASE_RESOURCE = "https://git.9front.org/plan9front/plan9front/HEAD/{}/raw"
 THRESHOLD = 0.01
 MIN_MINUTES = 30
-BLOG_ABOUT_IT_THRESHOLD = 1000
+NON_DEVOPS_MULTIPLIER = 20
 RESOURCE_PATH = Path(__file__).parent.parent.parent / "resources" / "systems"
 
 
@@ -135,10 +135,7 @@ class SystemInformation(Cog):
         if isinstance(msg.author, Member):
             if CONFIG.devops_role not in (r.id for r in msg.author.roles):
                 logger.trace("Upping threshold due to non-DevOps member")
-                msg_thresh *= 10
-
-        if len(msg.content) > BLOG_ABOUT_IT_THRESHOLD:
-            msg_thresh += 0.10
+                msg_thresh *= NON_DEVOPS_MULTIPLIER
 
         if random.random() < msg_thresh:
             logger.trace("Criteria hit, generating comment.")

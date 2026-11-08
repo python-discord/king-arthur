@@ -15,7 +15,6 @@ class Config(
     """Configuration for King Arthur The Terrible."""
 
     token: pydantic.SecretStr
-    prefixes: tuple[str, ...] = ("arthur ", "M-x ")
 
     cloudflare_token: pydantic.SecretStr | None = None
     youtube_api_key: pydantic.SecretStr | None = None

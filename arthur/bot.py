@@ -1,12 +1,11 @@
 """Module containing the core bot base for King Arthur."""
 
 import asyncio
-import contextlib
 from pathlib import Path
 from typing import Any
 
 import discord
-from discord import HTTPException, Interaction, Member
+from discord import Interaction, Member
 from discord.ext import commands
 from kubernetes_asyncio import config
 from kubernetes_asyncio.client import Configuration
@@ -41,68 +40,6 @@ class KingArthurTheTerrible(BotBase):
     ) -> commands.Context:
         """Build a context, defaulting to the custom BotContext."""
         return await super().get_context(origin, cls=cls)
-
-    def _resolve_command(self, content: str) -> commands.Command | None:
-        """Resolve the command named at the start of ``content`` (prefix already stripped)."""
-        view = content.strip()
-        if not view:
-            return None
-        # Split on backticks so ``cmd```code``` still resolves.
-        first = view.split("`", 1)[0].split(maxsplit=1)
-        if not first:
-            return None
-        command = self.get_command(first[0])
-        rest = view[len(first[0]) :].lstrip()
-        while isinstance(command, commands.Group) and rest:
-            sub_name = rest.split(maxsplit=1)[0]
-            sub = command.get_command(sub_name)
-            if sub is None:
-                break
-            command = sub
-            rest = rest[len(sub_name) :].lstrip()
-        return command
-
-    @staticmethod
-    def _slash_form(command: commands.Command) -> str | None:
-        """Get the slash command form of a command, if it has one."""
-        chain: list[commands.Command] = []
-        current: commands.Command | None = command
-        while current is not None:
-            chain.append(current)
-            current = current.parent
-        chain.reverse()
-        if any(getattr(c, "app_command", None) is None for c in chain):
-            return None
-        names = [c.name for c in chain]
-        if isinstance(command, commands.HybridGroup) and command.fallback:
-            names.append(command.fallback)
-        return "/" + " ".join(names)
-
-    async def process_commands(self, message: discord.Message) -> None:
-        """Reply with a deprecation notice for old-prefix invocations, else process as normal."""
-        if message.author.bot:
-            return
-
-        for prefix in CONFIG.prefixes:
-            if not message.content.lower().startswith(prefix.lower()):
-                continue
-            command = self._resolve_command(message.content[len(prefix) :])
-            if command is None:
-                break
-
-            notice = (
-                f"The `{prefix.strip()}` prefix has been retired. "
-                f"Use `@{self.user.display_name} {command.qualified_name}`"
-            )
-            slash = self._slash_form(command)
-            if slash:
-                notice += f" or `{slash}`"
-            notice += " instead."
-            with contextlib.suppress(HTTPException):
-                await message.reply(notice, mention_author=False)
-            return
-
-        await super().process_commands(message)
 
     async def _sync_app_commands(self) -> None:
         """Sync commands to the guild once every extension has finished loading."""
